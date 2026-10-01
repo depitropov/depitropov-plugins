@@ -1,0 +1,9 @@
+{
+  "name": "depitropov-plugins",
+  "owner": { "name": "Dimitar Epitropov" },
+  "plugins": [
+    { "name": "orchestra", "source": "./plugins/orchestra", "description": "Runs one task through a configured workflow and its gates." },
+    { "name": "standard-workflow", "source": "./plugins/standard-workflow", "description": "Headless, stack-agnostic workflow." },
+    { "name": "java-stack", "source": "./plugins/java-stack", "description": "Stack Skills for Java with Maven." }
+  ]
+}

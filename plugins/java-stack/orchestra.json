@@ -1,0 +1,7 @@
+{
+  "slot": "stack-skills",
+  "params": [],
+  "config": {},
+  "build": { "run": "./mvnw -B verify", "guide": "fix-build", "max_rounds": 3 },
+  "gates": []
+}

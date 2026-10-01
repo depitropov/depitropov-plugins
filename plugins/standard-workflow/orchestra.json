@@ -1,0 +1,8 @@
+{
+  "slot": "workflow",
+  "params": [],
+  "config": {},
+  "gates": [
+    { "name": "logic-review", "phase": "implementation-check", "kind": "agent", "skill": "logic-review", "always": true }
+  ]
+}
