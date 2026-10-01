@@ -92,3 +92,28 @@ test('no task on a branch without a run fails with a hint', () => {
   assert.equal(a.action, 'failed');
   assert.match(a.reason, /No run on branch "main"/);
 });
+
+test('a failed code stage is reported once, then a resume dispatches code again', () => {
+  const dir = project();
+  const a = next(dir, '.orchestra/task.txt');
+  writeJson(path.join(dir, a.result), { stage: 'code', status: 'failed' });
+  assert.equal(next(dir).action, 'failed');
+  assert.equal(next(dir).action, 'dispatch');
+});
+
+test('a malformed code result names the file', () => {
+  const dir = project();
+  const a = next(dir, '.orchestra/task.txt');
+  fs.writeFileSync(path.join(dir, a.result), 'not json');
+  const r = next(dir);
+  assert.equal(r.action, 'failed');
+  assert.match(r.reason, /Invalid result JSON in .*code\.result\.json/);
+});
+
+test('a repo without origin/HEAD fails with the remedy', () => {
+  const dir = project();
+  git(dir, 'remote', 'set-head', 'origin', '-d');
+  const a = next(dir, '.orchestra/task.txt');
+  assert.equal(a.action, 'failed');
+  assert.match(a.reason, /git remote set-head origin -a/);
+});

@@ -19,6 +19,23 @@ function readJson(file) {
   return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
 }
 
+// A result file is written by a subagent, so it can be malformed. Treat that as a failed step.
+function readResult(file) {
+  if (!fs.existsSync(file)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (e) {
+    return { status: 'failed', reason: `Invalid result JSON in ${file}: ${e.message}` };
+  }
+}
+
+// A failed step stops the call once. When the run is called again, the step runs again (S32).
+function reportOnce(file, res) {
+  if (res.reported) return false;
+  fs.writeFileSync(file, JSON.stringify({ ...res, reported: true }, null, 2) + '\n');
+  return true;
+}
+
 function slugify(text) {
   const firstLine = text.split('\n').find(line => line.trim()) || '';
   return firstLine.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+/, '').slice(0, 40).replace(/-+$/, '') || 'task';
@@ -37,7 +54,12 @@ function prepare(project, taskText) {
   if (git(project, 'status', '--porcelain')) {
     return { action: 'failed', reason: 'The working tree is dirty. Commit or stash your changes, then run again.' };
   }
-  const defaultBranch = git(project, 'symbolic-ref', '--short', 'refs/remotes/origin/HEAD').replace(/^origin\//, '');
+  let defaultBranch;
+  try {
+    defaultBranch = git(project, 'symbolic-ref', '--short', 'refs/remotes/origin/HEAD').replace(/^origin\//, '');
+  } catch {
+    return { action: 'failed', reason: 'The default branch is unknown: origin/HEAD is not set. Run `git remote set-head origin -a`, then run again.' };
+  }
   git(project, 'checkout', defaultBranch);
   git(project, 'pull', '--rebase');
   const base = git(project, 'rev-parse', 'HEAD');
@@ -81,9 +103,14 @@ function next(project, taskFile) {
       return { action: 'phase', name: s.name, runDir };
     }
     const result = `${runDir}/${s.name}.result.json`;
-    const res = readJson(path.join(project, result));
+    const file = path.join(project, result);
+    let res = readResult(file);
+    if (res && res.status === 'failed' && !reportOnce(file, res)) {
+      fs.rmSync(file);
+      res = null;
+    }
     if (!res) return { action: 'dispatch', skill: `standard-workflow:${s.name}`, inputs: codeInputs(project, run), result, runDir };
-    if (res.status === 'failed') return { action: 'failed', reason: `Stage ${s.name} failed. See ${result}.`, runDir };
+    if (res.status === 'failed') return { action: 'failed', reason: res.reason || `Stage ${s.name} failed. See ${result}.`, runDir };
   }
   return { action: 'done', runDir };
 }

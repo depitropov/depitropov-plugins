@@ -145,3 +145,39 @@ test('a Decide stops the phase until decisions.md answers that gate', () => {
   t.write(again.result, { stage: 'logic-review', status: 'ok' });
   assert.equal(t.step('implementation-check').status, 'ok');
 });
+
+test('a failed build is reported once, then a resume runs it again', () => {
+  const t = setup({ build: `node -e "process.exit(require('fs').existsSync('fixed') ? 0 : 1)"`, maxRounds: 1 });
+  const a = t.step('implementation-check');
+  t.write(a.result, { stage: 'fixer', status: 'ok' });
+  assert.equal(t.step('implementation-check').status, 'failed');
+  fs.writeFileSync(path.join(t.dir, 'fixed'), '');
+  assert.equal(t.step('implementation-check').status, 'ok');
+});
+
+test('a failed agent gate is reported once, then a resume dispatches it again', () => {
+  const t = setup({ workflowGates: [logicReview] });
+  const a = t.step('implementation-check');
+  t.write(a.result, { stage: 'logic-review', status: 'failed' });
+  assert.equal(t.step('implementation-check').status, 'failed');
+  assert.equal(t.step('implementation-check').action, 'dispatch');
+});
+
+test('a malformed result names the file, then a resume dispatches again', () => {
+  const t = setup({ workflowGates: [logicReview] });
+  const a = t.step('implementation-check');
+  fs.writeFileSync(path.join(t.dir, a.result), '{ "status": "ok", }');
+  const r = t.step('implementation-check');
+  assert.equal(r.status, 'failed');
+  assert.match(r.reason, /Invalid result JSON in .*logic-review\.result\.json/);
+  assert.equal(t.step('implementation-check').action, 'dispatch');
+});
+
+test('a fixer that reports failed ends the gate with its reason', () => {
+  const t = setup({ build: 'node -e "process.exit(1)"', maxRounds: 3 });
+  const a = t.step('implementation-check');
+  t.write(a.result, { stage: 'fixer', status: 'failed', reason: 'Could not resolve dependencies' });
+  const r = t.step('implementation-check');
+  assert.equal(r.status, 'failed');
+  assert.match(r.reason, /Could not resolve dependencies/);
+});

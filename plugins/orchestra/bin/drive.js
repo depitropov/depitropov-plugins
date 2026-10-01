@@ -7,7 +7,7 @@ const { validateAction, withPrompt } = require('../lib/protocol');
 const { load } = require('../lib/resolved');
 const runner = require('../lib/runner');
 const { writeReport } = require('../lib/report');
-const { commitRunDir } = require('../lib/git');
+const { git, commitAll, commitRunDir } = require('../lib/git');
 
 function callNext(nextJs, project, args) {
   const out = execFileSync(process.execPath, [nextJs, '--project', project, ...args], { encoding: 'utf8' });
@@ -21,8 +21,16 @@ function finish(project, action, resolved) {
   return { ...action, report };
 }
 
+// Subagents should commit their work. When one does not, commit it here, so the gates review it.
+function commitLeftovers(project) {
+  const branch = git(project, 'branch', '--show-current');
+  if (!branch.startsWith('task/') || !fs.existsSync(path.join(project, 'docs', 'runs', branch, 'run.json'))) return;
+  commitAll(project, 'orchestra: commit work left uncommitted');
+}
+
 function drive(project, extraArgs = []) {
   const resolved = load(project);
+  if (!extraArgs.length) commitLeftovers(project);
   const config = JSON.parse(fs.readFileSync(path.join(project, '.orchestra', 'config.json'), 'utf8'));
   const nextJs = path.join(resolved.slots.workflow.dir, 'bin', 'next.js');
   let args = extraArgs;

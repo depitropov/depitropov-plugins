@@ -66,3 +66,20 @@ test('drive throws when resolved.json is missing; the CLI prints that as failed'
   const dir = makeRepo();
   assert.throws(() => drive(dir), /No \.orchestra\/resolved\.json/);
 });
+
+test('work a subagent left uncommitted is committed before the next step', () => {
+  const dir = project();
+  const code = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  fs.writeFileSync(path.join(dir, 'Discount.java'), 'class Discount {}\n');
+  writeJson(path.join(dir, code.result), { stage: 'code', status: 'ok' });
+  drive(dir);
+  assert.match(git(dir, 'log', '--format=%s'), /orchestra: commit work left uncommitted/);
+  assert.equal(git(dir, 'status', '--porcelain', '--', 'Discount.java'), '');
+});
+
+test('leftover changes on a branch without a run are not committed', () => {
+  const dir = project();
+  fs.writeFileSync(path.join(dir, 'mine.txt'), 'x');
+  drive(dir);
+  assert.match(git(dir, 'status', '--porcelain'), /mine\.txt/);
+});

@@ -10,6 +10,23 @@ function writeJson(file, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
 }
 
+// A result file is written by a subagent, so it can be malformed. Treat that as a failed step.
+function readResult(file) {
+  if (!fs.existsSync(file)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (e) {
+    return { status: 'failed', reason: `Invalid result JSON in ${file}: ${e.message}` };
+  }
+}
+
+// A failed step stops the call once. When the run is called again, the step runs again (S32).
+function reportOnce(file, res) {
+  if (res.reported) return false;
+  fs.writeFileSync(file, JSON.stringify({ ...res, reported: true }, null, 2) + '\n');
+  return true;
+}
+
 function runCommand(command, cwd, logFile) {
   const r = spawnSync(command, { cwd, shell: true, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
   fs.writeFileSync(logFile, `$ ${command}\n${r.stdout || ''}${r.stderr || ''}${r.error ? String(r.error) : ''}`);
@@ -57,11 +74,18 @@ function fixerDispatch(s, ctx, round) {
 
 function toolStep(s, ctx, state, save) {
   const resultFile = path.join(ctx.abs, `${ctx.phase}.${s.name}.result.json`);
-  const done = readJson(resultFile);
-  if (done) return done.status === 'failed' ? { status: 'failed', reason: done.reason } : null;
+  const done = readResult(resultFile);
+  if (done && done.status === 'failed') {
+    if (reportOnce(resultFile, done)) return { status: 'failed', reason: done.reason };
+    retryTool(s, ctx, state, save);
+  } else if (done) {
+    return null;
+  }
   const rounds = state.rounds[s.name] || 0;
-  if (rounds > 0 && !fs.existsSync(path.join(ctx.abs, `${ctx.phase}.${s.name}.fix${rounds}.result.json`))) {
-    return fixerDispatch(s, ctx, rounds);
+  if (rounds > 0) {
+    const fix = readResult(path.join(ctx.abs, `${ctx.phase}.${s.name}.fix${rounds}.result.json`));
+    if (!fix) return fixerDispatch(s, ctx, rounds);
+    if (fix.status === 'failed') return endTool(s, ctx, resultFile, `The fixer could not fix ${s.name}: ${fix.reason || 'no reason given'}.`, rounds);
   }
   const logRel = `${ctx.runDir}/${ctx.phase}.${s.name}.run${rounds}.log`;
   const code = runCommand(s.run, ctx.project, path.join(ctx.project, logRel));
@@ -75,16 +99,29 @@ function toolStep(s, ctx, state, save) {
     save();
     return fixerDispatch(s, ctx, rounds + 1);
   }
-  const reason = `${s.name} still fails after ${rounds} fix round(s). See ${logRel}.`;
+  return endTool(s, ctx, resultFile, `${s.name} still fails after ${rounds} fix round(s). See ${logRel}.`, rounds);
+}
+
+// A red build fails the run. Any other red tool gate goes to Evaluate and the phase goes on (S47).
+function endTool(s, ctx, resultFile, reason, rounds) {
   const status = s.build ? 'failed' : 'evaluate';
-  writeJson(resultFile, { stage: `${ctx.phase}.${s.name}`, status, log: logRel, rounds, reason });
+  writeJson(resultFile, { stage: `${ctx.phase}.${s.name}`, status, rounds, reason, reported: true });
   return status === 'failed' ? { status: 'failed', reason } : null;
+}
+
+function retryTool(s, ctx, state, save) {
+  const prefix = `${ctx.phase}.${s.name}.`;
+  for (const f of fs.readdirSync(ctx.abs)) {
+    if (f.startsWith(prefix) && (f.endsWith('.result.json'))) fs.rmSync(path.join(ctx.abs, f));
+  }
+  state.rounds[s.name] = 0;
+  save();
 }
 
 function agentStep(s, ctx, state, save) {
   const resultRel = `${ctx.runDir}/${ctx.phase}.${s.name}.result.json`;
   const resultFile = path.join(ctx.project, resultRel);
-  const res = readJson(resultFile);
+  const res = readResult(resultFile);
   const answers = countAnswers(ctx.abs, s.name);
   const send = () => {
     state.seen[s.name] = answers;
@@ -101,7 +138,13 @@ function agentStep(s, ctx, state, save) {
     }
     return { status: 'decide', gate: s.name, questions: res.decide || [] };
   }
-  if (res.status === 'failed') return { status: 'failed', reason: `${s.name} failed. See ${resultRel}.` };
+  if (res.status === 'failed') {
+    if (!reportOnce(resultFile, res)) {
+      fs.rmSync(resultFile);
+      return send();
+    }
+    return { status: 'failed', reason: res.reason || `${s.name} failed. See ${resultRel}.` };
+  }
   return null;
 }
 
