@@ -70,6 +70,7 @@ orchestration, R3 write vs review time).
 | S53 | Guides are declared in `orchestra.json` (`guides.plan`, `guides.code`), not found by fixed skill names. This replaces the fixed names of S36. `disable` takes gate and guide names. | Design pressure test |
 | S54 | Run files are committed and go to the default branch with the PR. | Design pressure test |
 | S55 | orchestra writes `report.md`. The workflow writes `run.json` (`base`, `branch`, `spec`), which the gate runner reads. A Decide answer is a `## <gate name>` section in `decisions.md`; a gate runs again only when a new section for it appears. | Build plan |
+| S56 | Plugins made to work with orchestra carry the prefix `orc-`: `orc-standard-workflow`, `orc-java-stack`. The prefix keeps them apart from plugins with the same base name (the ship.cars `java-stack`). `orchestra` keeps its name. This renames the plugins of S30. | User decision |
 
 ## Open (phase 1)
 

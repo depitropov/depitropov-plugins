@@ -1,6 +1,6 @@
 ---
 name: code
-description: Implements the task of one standard-workflow run, with tests, as small commits. Dispatched by orchestra; not for direct use.
+description: Implements the task of one orc-standard-workflow run, with tests, as small commits. Dispatched by orchestra; not for direct use.
 ---
 
 # Code

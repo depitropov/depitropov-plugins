@@ -1,5 +1,5 @@
 {
-  "name": "standard-workflow",
+  "name": "orc-standard-workflow",
   "version": "0.1.0",
   "description": "A headless, stack-agnostic workflow: prepare, code, then the three gate phases."
 }

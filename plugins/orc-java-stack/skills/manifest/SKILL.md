@@ -1,6 +1,6 @@
 ---
 name: manifest
-description: Reports where the standard-workflow plugin is installed. Invoked by orchestra run during resolution; not for direct use.
+description: Reports where the orc-java-stack plugin is installed. Invoked by orchestra run during resolution; not for direct use.
 ---
 
 # Manifest

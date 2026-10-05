@@ -109,7 +109,7 @@ function next(project, taskFile) {
       fs.rmSync(file);
       res = null;
     }
-    if (!res) return { action: 'dispatch', skill: `standard-workflow:${s.name}`, inputs: codeInputs(project, run), result, runDir };
+    if (!res) return { action: 'dispatch', skill: `orc-standard-workflow:${s.name}`, inputs: codeInputs(project, run), result, runDir };
     if (res.status === 'failed') return { action: 'failed', reason: res.reason || `Stage ${s.name} failed. See ${result}.`, runDir };
   }
   return { action: 'done', runDir };

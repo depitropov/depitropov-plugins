@@ -17,10 +17,10 @@ All three plugins live in this repo (S30).
 | Plugin | Role | Holds |
 |---|---|---|
 | `orchestra` | Orchestrator | `orchestra:init`, `orchestra:run` (resolution and driver), the gate runner, the fixer, the select step, `orchestra check`, the schemas, the authoring skills |
-| `standard-workflow` | Workflow | `next.js`, one skill per stage, its own gates, its `manifest` skill |
-| `java-stack` | Stack Skills | `build`, its gates, fix guides, plan and code guides, its `manifest` skill |
+| `orc-standard-workflow` | Workflow | `next.js`, one skill per stage, its own gates, its `manifest` skill |
+| `orc-java-stack` | Stack Skills | `build`, its gates, fix guides, plan and code guides, its `manifest` skill |
 
-`java-stack` here is the personal, generic rewrite. The ship.cars version lives in a second repo.
+`orc-java-stack` here is the personal, generic rewrite. The ship.cars version lives in a second repo. The `orc-` prefix marks every plugin made to work with orchestra and keeps it apart from plugins with the same base name, such as the ship.cars `java-stack` (S56).
 Commits are copied between the two repos, and the ship.cars repo may diverge (S3).
 
 ## 3. Runtime flow
@@ -57,10 +57,10 @@ step inside a phase from files on disk. The skills never decide the order.
 ```json
 {
   "workflow": {
-    "plugin": "standard-workflow"
+    "plugin": "orc-standard-workflow"
   },
   "stack-skills": {
-    "plugin": "java-stack",
+    "plugin": "orc-java-stack",
     "disable": ["code-guide"],
     "gates": { "crap": { "max_rounds": 5 } }
   }
@@ -275,7 +275,7 @@ The gate reads `decisions.md` and then fixes. So a gate never re-reviews its own
 | State | The run folder, `docs/runs/<branch>/`. It is derived from the branch, never passed (S15, S22). Its files are committed and go to the default branch with the PR (S54). The workflow writes `run.json` in it with `base`, `branch` and `spec` (the path of the file that holds the acceptance criteria). The gate runner reads it (S55). |
 | Mode | Headless or interactive is fixed by the workflow's author when the workflow is built. It is not a runtime setting (S12). |
 
-## 8. `standard-workflow`
+## 8. `orc-standard-workflow`
 
 The rewrite of be-coding-agent (S19). It is stack-agnostic (S27) and headless (S12).
 
@@ -368,7 +368,7 @@ The stack plugin declares what and where. It never declares an order or a loop. 
 can also be invoked by hand on any branch. Each finding cites `file:line` and the rule it breaks
 (R3).
 
-## 10. `java-stack` in phase 1
+## 10. `orc-java-stack` in phase 1
 
 It keeps the one-concern-per-skill shape of the current java-stack (pillar 2).
 
@@ -408,11 +408,11 @@ plugins/
     skills/{init,run,fixer,select,writing-workflows,writing-stack-skills}/SKILL.md
     bin/{check.js,gates.js}
     schemas/{workflow.json,stack-skills.json}
-  standard-workflow/
+  orc-standard-workflow/
     orchestra.json
     skills/{manifest,spec,plan,plan-check,code,logic-review}/SKILL.md
     bin/next.js
-  java-stack/
+  orc-java-stack/
     orchestra.json
     skills/{manifest,plan-guide,code-guide,fix-build,<one per gate>,<one fix guide per tool gate>}/SKILL.md
 scripts/gen-manifests.js
@@ -429,7 +429,7 @@ Phase 1 is done when all five pass (S34):
    final build, and `report.md`.
 3. The same run on Codex. This run also tests that the `manifest` skill finds its folder on Codex.
 4. One run stops on `decide`, gets an answer in `decisions.md`, and resumes to `done`.
-5. `orchestra check` passes on `standard-workflow` and `java-stack`.
+5. `orchestra check` passes on `orc-standard-workflow` and `orc-java-stack`.
 
 ## 14. Out of scope
 
@@ -443,5 +443,5 @@ parallel gates, more than one stack per project.
   `--dry-run` output.
 - How many plan tasks one code subagent gets (be-coding-agent uses 2).
 - When run files are committed: with each stage, or once at the end and on every stop.
-- The final `java-stack` gate list.
+- The final `orc-java-stack` gate list.
 - The sample Java repo and its task.

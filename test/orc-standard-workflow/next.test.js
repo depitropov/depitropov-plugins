@@ -4,11 +4,11 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { makeRepo, writeJson, git } = require('../helpers');
-const { next, slugify } = require('../../plugins/standard-workflow/bin/next');
+const { next, slugify } = require('../../plugins/orc-standard-workflow/bin/next');
 
 function project({ guides, disable } = {}) {
   const dir = makeRepo();
-  writeJson(path.join(dir, '.orchestra/config.json'), { workflow: { plugin: 'standard-workflow' }, 'stack-skills': { plugin: 'st', ...(disable ? { disable } : {}) } });
+  writeJson(path.join(dir, '.orchestra/config.json'), { workflow: { plugin: 'orc-standard-workflow' }, 'stack-skills': { plugin: 'st', ...(disable ? { disable } : {}) } });
   git(dir, 'add', '-A');
   git(dir, 'commit', '-m', 'config');
   git(dir, 'push');
@@ -47,7 +47,7 @@ test('prepare makes the task branch and the run folder, then dispatches code', (
   assert.match(fs.readFileSync(path.join(dir, runDir, 'task.md'), 'utf8'), /Orders over 100/);
   assert.deepEqual(a, {
     action: 'dispatch',
-    skill: 'standard-workflow:code',
+    skill: 'orc-standard-workflow:code',
     inputs: { spec: `${runDir}/task.md`, base, build: '/p/st/mvnw -B verify' },
     result: `${runDir}/code.result.json`,
     runDir,
