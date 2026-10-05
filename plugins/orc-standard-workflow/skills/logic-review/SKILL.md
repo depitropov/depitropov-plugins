@@ -27,6 +27,10 @@ description: Reviews the code of one run for correctness and for a test behind e
    - **Patch**: you can fix it now.
    - **Evaluate**: real, but not for you to fix. A human should look.
    - **Noise**: not a real problem. Drop it.
+
+   A change to existing behaviour that the spec does not ask for is never Noise, even when the spec
+   is silent about it. Examples: a null input that now throws, a changed default, a removed case. It
+   is Evaluate, or Decide when it is a product choice.
 6. Write all findings to `<runDir>/logic-review.md`, each with `file:line` and the point of the
    spec it concerns.
 7. If there is a Decide finding and no `decisions` input, stop here. Do not fix anything. Write the
@@ -45,11 +49,13 @@ Write to the path given in the prompt:
   "status": "ok",
   "decide": [],
   "counts": { "decide": 0, "patch": 2, "evaluate": 1, "noise": 0 },
+  "evaluate": ["PriceCalculator.java:9 — a null amount now throws; before it returned null"],
   "files": ["<runDir>/logic-review.md"]
 }
 ```
 
-`status` is `ok`, `decide`, `skipped` or `failed`.
+`status` is `ok`, `decide`, `skipped` or `failed`. `evaluate` lists every Evaluate finding as one
+line with `file:line`. The report shows these lines to the human.
 
 ## Permitted actions
 

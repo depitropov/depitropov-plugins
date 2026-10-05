@@ -16,6 +16,8 @@ Read `.orchestra/config.json`. If it does not exist, tell the user to run orches
 
 ## 2. Resolve the slots
 
+Resolve at the start of every call, also on a resume. Never reuse an old `.orchestra/resolved.json`.
+
 For each section in the config, take its `plugin` value. Invoke the skill `<plugin>:manifest`. It
 answers with one line, `PLUGIN_DIR=<folder>`.
 
@@ -37,7 +39,8 @@ Start the run:
 
 The command prints one JSON line. Act on its `action`:
 
-- `dispatch`: dispatch a subagent with a clean context. Give it the `prompt` text exactly. Wait
+- `dispatch`: dispatch a general-purpose subagent with a clean context. It must be able to read and
+  edit files and run shell commands. Give it the `prompt` text exactly. Wait
   until it finishes. Then run `node <orchestra>/bin/drive.js` again, with no task.
 - `done`: tell the user the run is done. Show the `report` path.
 - `failed`: show the `reason` and the `report` path, if there is one.

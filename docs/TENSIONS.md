@@ -71,6 +71,7 @@ orchestration, R3 write vs review time).
 | S54 | Run files are committed and go to the default branch with the PR. | Design pressure test |
 | S55 | orchestra writes `report.md`. The workflow writes `run.json` (`base`, `branch`, `spec`), which the gate runner reads. A Decide answer is a `## <gate name>` section in `decisions.md`; a gate runs again only when a new section for it appears. | Build plan |
 | S56 | Plugins made to work with orchestra carry the prefix `orc-`: `orc-standard-workflow`, `orc-java-stack`. The prefix keeps them apart from plugins with the same base name (the ship.cars `java-stack`). `orchestra` keeps its name. This renames the plugins of S30. | User decision |
+| S57 | From the first real run: the dirty-tree failure names the files; `orchestra:run` resolves on every call and asks for a general-purpose subagent that can edit files and run commands; the runner skips a build on the commit of its last green build when the tree is clean; result files carry an `evaluate` list that the report shows; the report is in run order and marks an empty phase "ok (no gates)"; logic-review never calls an unasked behaviour change Noise. | First run feedback |
 
 ## Open (phase 1)
 
@@ -85,6 +86,7 @@ orchestration, R3 write vs review time).
 | O6 | Precedence between PSK and SSK. Direction: resolution (S50) merges the PSK declaration over the Stack Skills declaration: gates, guides and build. The PSK wins. | With the PSK |
 | O7 | Does General Knowledge use the same contract as an SSK? | Next phase |
 | O8 | Adapters for external frameworks (Superpowers, minions, Matt Pocock's skills). Replaces the Executor idea. See "Backlog: adapters" below. | Paused, after phase 1 |
+| O9 | Run in a git worktree instead of the user's checkout, so a run never moves the user's branch or touches their files. | From the first real run |
 
 ## Backlog: adapters (O8)
 

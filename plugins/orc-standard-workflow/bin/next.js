@@ -51,8 +51,10 @@ function branchExists(cwd, branch) {
 }
 
 function prepare(project, taskText) {
-  if (git(project, 'status', '--porcelain')) {
-    return { action: 'failed', reason: 'The working tree is dirty. Commit or stash your changes, then run again.' };
+  const dirty = git(project, 'status', '--porcelain', '--untracked-files=normal').split('\n').filter(Boolean);
+  if (dirty.length) {
+    const files = dirty.slice(0, 5).map(line => line.slice(3)).join(', ') + (dirty.length > 5 ? ', …' : '');
+    return { action: 'failed', reason: `The working tree is dirty: ${files}. Commit, stash or ignore these, then run again.` };
   }
   let defaultBranch;
   try {

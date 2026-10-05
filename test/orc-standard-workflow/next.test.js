@@ -117,3 +117,9 @@ test('a repo without origin/HEAD fails with the remedy', () => {
   assert.equal(a.action, 'failed');
   assert.match(a.reason, /git remote set-head origin -a/);
 });
+
+test('the dirty-tree failure names the dirty files', () => {
+  const dir = project();
+  fs.writeFileSync(path.join(dir, 'dirty.txt'), 'x');
+  assert.match(next(dir, '.orchestra/task.txt').reason, /dirty\.txt/);
+});

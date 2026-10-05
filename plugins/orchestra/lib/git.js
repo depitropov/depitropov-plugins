@@ -19,7 +19,11 @@ function commitPaths(cwd, message, paths) {
   return true;
 }
 
+function isClean(cwd) {
+  return git(cwd, 'status', '--porcelain', '--', '.', ...EXCLUDE) === '';
+}
+
 const commitAll = (cwd, message) => commitPaths(cwd, message, ['.', ...EXCLUDE]);
 const commitRunDir = (cwd, runDir, message) => commitPaths(cwd, message, [runDir]);
 
-module.exports = { git, changedFiles, commitAll, commitRunDir };
+module.exports = { git, changedFiles, isClean, commitAll, commitRunDir };

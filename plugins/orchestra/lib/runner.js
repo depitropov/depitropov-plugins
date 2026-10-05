@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { readJson } = require('./resolved');
-const { changedFiles, commitAll } = require('./git');
+const { git, changedFiles, isClean, commitAll } = require('./git');
 const { collect, select, buildStep, plan } = require('./gates');
 
 function writeJson(file, data) {
@@ -87,10 +87,21 @@ function toolStep(s, ctx, state, save) {
     if (!fix) return fixerDispatch(s, ctx, rounds);
     if (fix.status === 'failed') return endTool(s, ctx, resultFile, `The fixer could not fix ${s.name}: ${fix.reason || 'no reason given'}.`, rounds);
   }
+  // The build is the slowest step. Running it again on the exact commit that last passed proves nothing new.
+  const greenFile = path.join(ctx.abs, 'build.green.json');
+  if (s.build && rounds === 0) {
+    const green = readJson(greenFile);
+    const head = git(ctx.project, 'rev-parse', 'HEAD');
+    if (green && green.head === head && isClean(ctx.project)) {
+      writeJson(resultFile, { stage: `${ctx.phase}.${s.name}`, status: 'ok', rounds, reason: `Skipped: ${head.slice(0, 7)} is the last green build.` });
+      return null;
+    }
+  }
   const logRel = `${ctx.runDir}/${ctx.phase}.${s.name}.run${rounds}.log`;
   const code = runCommand(s.run, ctx.project, path.join(ctx.project, logRel));
   if (code === 0) {
     if (s.fix === 'self') commitAll(ctx.project, `orchestra: ${s.name} (${ctx.phase})`);
+    if (s.build && isClean(ctx.project)) writeJson(greenFile, { head: git(ctx.project, 'rev-parse', 'HEAD') });
     writeJson(resultFile, { stage: `${ctx.phase}.${s.name}`, status: 'ok', log: logRel, rounds });
     return null;
   }
@@ -158,7 +169,7 @@ function step({ project, runDir, phase, resolved, config }) {
     const r = s.kind === 'agent' ? agentStep(s, ctx, state, save) : toolStep(s, ctx, state, save);
     if (r) return r;
   }
-  return { status: 'ok', skipped: state.skipped };
+  return { status: 'ok', skipped: state.skipped, gates: state.steps.filter(s => !s.build).length };
 }
 
 module.exports = { step };

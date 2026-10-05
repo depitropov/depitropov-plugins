@@ -219,7 +219,9 @@ A red build in `finish` ends the run with `failed`.
 `build` is not a gate (S48). It is a required top-level declaration of the Stack Skills plugin. It
 runs the full build and the tests once, the way the stack does it, and it produces the coverage
 data that tools like crap4java read. The gate runner calls it at the start of
-`implementation-check` and at the end of `finish`. No gate list can remove or move it. The code
+`implementation-check` and at the end of `finish`. No gate list can remove or move it. The runner
+records the commit of its last green build, and skips a build when `HEAD` is that commit and the
+tree is clean (S57). The code
 stage uses the same command for its own test runs. Later the PSK can override it.
 
 ### 6.4 Selection
@@ -318,7 +320,7 @@ read only these files.
 ```
 
 `status` is `ok`, `decide`, `failed` or `skipped`. `decide` lists each question as one line with
-its options.
+its options. `evaluate` lists each Evaluate finding as one line with `file:line` (S57).
 
 ### 8.3 Git policy (`prepare`)
 
@@ -350,7 +352,7 @@ or gate that raised the question runs again and reads `decisions.md`.
 
 ### 8.5 `report.md`
 
-orchestra writes it (S55). Status, plugin versions, commits made, assumptions made, counts per bucket per stage and gate, Evaluate findings
+orchestra writes it (S55). Steps are in run order. An empty phase shows "ok (no gates)" (S57). Status, plugin versions, commits made, assumptions made, counts per bucket per stage and gate, Evaluate findings
 (including tool violations left after the last round), skipped gates and why, skipped phases, and
 the open Decide questions if any.
 

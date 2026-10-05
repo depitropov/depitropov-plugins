@@ -181,3 +181,28 @@ test('a fixer that reports failed ends the gate with its reason', () => {
   assert.equal(r.status, 'failed');
   assert.match(r.reason, /Could not resolve dependencies/);
 });
+
+const COUNTING = `node -e "require('fs').appendFileSync('.orchestra/builds.log', 'x')"`;
+const builds = t => fs.readFileSync(path.join(t.dir, '.orchestra/builds.log'), 'utf8').length;
+
+test('the final build is skipped when nothing changed since the last green build', () => {
+  const t = setup({ build: COUNTING });
+  assert.equal(t.step('implementation-check').status, 'ok');
+  assert.equal(t.step('finish').status, 'ok');
+  assert.equal(builds(t), 1);
+  assert.match(t.read(`${t.runDir}/finish.build.result.json`).reason, /last green build/);
+});
+
+test('the final build runs again after a new commit', () => {
+  const t = setup({ build: COUNTING });
+  t.step('implementation-check');
+  fs.writeFileSync(path.join(t.dir, 'src/Car.java'), '@Entity class Car { int x; }\n');
+  git(t.dir, 'commit', '-am', 'review fix');
+  t.step('finish');
+  assert.equal(builds(t), 2);
+});
+
+test('a phase result says how many gates ran', () => {
+  const t = setup();
+  assert.deepEqual(t.step('conventions-check'), { status: 'ok', skipped: [], gates: 0 });
+});

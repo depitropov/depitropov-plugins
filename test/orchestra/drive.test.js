@@ -36,7 +36,7 @@ test('a run goes from task to done: code, logic-review, report, committed run fi
 
   const review = drive(dir);
   assert.equal(review.skill, 'orc-standard-workflow:logic-review');
-  writeJson(path.join(dir, review.result), { stage: 'logic-review', status: 'ok', counts: { patch: 1 } });
+  writeJson(path.join(dir, review.result), { stage: 'logic-review', status: 'ok', counts: { patch: 1, evaluate: 1 }, evaluate: ['PriceCalculator.java:9 — null now throws; before it returned null'] });
 
   const done = drive(dir);
   assert.equal(done.action, 'done');
@@ -45,9 +45,14 @@ test('a run goes from task to done: code, logic-review, report, committed run fi
   assert.match(report, /- Status: done/);
   assert.match(report, /feat: discount/);
   assert.match(report, /orc-standard-workflow 0\.1\.0/);
-  assert.match(report, /\| implementation-check\.logic-review \| ok \| patch 1 \|/);
+  assert.match(report, /\| implementation-check\.logic-review \| ok \| patch 1, evaluate 1 \|/);
   assert.equal(git(dir, 'log', '-1', '--format=%s'), 'orchestra: run state (done)');
   assert.equal(git(dir, 'status', '--porcelain'), '');
+  assert.match(report, /- implementation-check\.logic-review: PriceCalculator\.java:9 — null now throws/);
+  assert.match(report, /\| phase-conventions-check \| ok \(no gates\) \|/);
+  const order = ['| code |', '| implementation-check.build |', '| implementation-check.logic-review |',
+    '| phase-implementation-check |', '| phase-conventions-check |', '| finish.build |', '| phase-finish |'].map(row => report.indexOf(row));
+  assert.ok(order.every((pos, i) => pos >= 0 && (i === 0 || pos > order[i - 1])), `rows out of run order: ${order}`);
 });
 
 test('a Decide ends the call with the questions and a report that says how to answer', () => {
