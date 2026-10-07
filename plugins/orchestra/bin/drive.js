@@ -34,6 +34,14 @@ function drive(project, extraArgs = []) {
   return { ...action, branch: git(project, 'branch', '--show-current') };
 }
 
+// Result names sort wrong (code-1, code-3, plan-check, plan, spec), so the report takes the dispatch order from here.
+function remember(project, a) {
+  const file = path.join(project, a.runDir, 'stages.json');
+  const list = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : [];
+  const name = path.basename(a.result);
+  if (!list.includes(name)) fs.writeFileSync(file, JSON.stringify([...list, name]) + '\n');
+}
+
 function step(project, extraArgs) {
   const resolved = load(project);
   if (!extraArgs.length) commitLeftovers(project);
@@ -43,7 +51,10 @@ function step(project, extraArgs) {
   for (;;) {
     const a = validateAction(callNext(nextJs, project, args));
     args = [];
-    if (a.action === 'dispatch') return withPrompt(a);
+    if (a.action === 'dispatch') {
+      remember(project, a);
+      return withPrompt(a);
+    }
     if (a.action !== 'phase') return finish(project, a, resolved);
     const r = runner.step({ project, runDir: a.runDir, phase: a.name, resolved, config });
     if (r.action === 'dispatch') return withPrompt(r);

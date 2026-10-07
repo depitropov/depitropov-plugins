@@ -24,9 +24,22 @@ function project() {
   return dir;
 }
 
+// Walks spec, plan and plan-check with ok results, and returns the first code dispatch.
+function toCode(dir, tasks = 1) {
+  let a = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  for (const stage of ['spec', 'plan']) {
+    assert.equal(a.skill, `orc-standard-workflow:${stage}`);
+    writeJson(path.join(dir, a.result), { stage, status: 'ok' });
+    a = drive(dir);
+  }
+  assert.equal(a.skill, 'orc-standard-workflow:plan-check');
+  writeJson(path.join(dir, a.result), { stage: 'plan-check', status: 'ok', tasks, counts: { patch: 1 } });
+  return drive(dir);
+}
+
 test('a run goes from task to done: code, logic-review, report, committed run files', () => {
   const dir = project();
-  const code = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  const code = toCode(dir);
   assert.equal(code.skill, 'orc-standard-workflow:code');
   assert.equal(code.branch, 'task/add-a-discount');
   assert.match(code.prompt, /Invoke the skill `orc-standard-workflow:code`/);
@@ -54,16 +67,16 @@ test('a run goes from task to done: code, logic-review, report, committed run fi
   assert.equal(git(dir, 'log', '-1', '--format=%s'), 'orchestra: run notes (done)');
   assert.equal(git(dir, 'status', '--porcelain'), '');
   assert.match(report, /- implementation-check\.logic-review: PriceCalculator\.java:9 — null now throws/);
-  assert.match(report, /## Assumptions\n\n- code: The limit applies before rounding\./);
+  assert.match(report, /## Assumptions\n\n- code-1: The limit applies before rounding\./);
   assert.match(report, /\| phase-conventions-check \| ok \(no gates\) \|/);
-  const order = ['| code |', '| implementation-check.build |', '| implementation-check.logic-review |',
+  const order = ['| spec |', '| plan |', '| plan-check |', '| code-1 |', '| implementation-check.build |', '| implementation-check.logic-review |',
     '| phase-implementation-check |', '| phase-conventions-check |', '| finish.build |', '| phase-finish |'].map(row => report.indexOf(row));
   assert.ok(order.every((pos, i) => pos >= 0 && (i === 0 || pos > order[i - 1])), `rows out of run order: ${order}`);
 });
 
 test('a Decide ends the call with the questions and a report that says how to answer', () => {
   const dir = project();
-  const code = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  const code = toCode(dir);
   writeJson(path.join(dir, code.result), { stage: 'code', status: 'ok' });
   const review = drive(dir);
   writeJson(path.join(dir, review.result), { stage: 'logic-review', status: 'decide', decide: ['Half up or half even? — options: up | even'] });
@@ -80,7 +93,7 @@ test('drive throws when resolved.json is missing; the CLI prints that as failed'
 
 test('work a subagent left uncommitted is committed before the next step', () => {
   const dir = project();
-  const code = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  const code = toCode(dir);
   fs.writeFileSync(path.join(dir, 'Discount.java'), 'class Discount {}\n');
   writeJson(path.join(dir, code.result), { stage: 'code', status: 'ok' });
   drive(dir);
@@ -93,4 +106,31 @@ test('leftover changes on a branch without a run are not committed', () => {
   fs.writeFileSync(path.join(dir, 'mine.txt'), 'x');
   drive(dir);
   assert.match(git(dir, 'status', '--porcelain'), /mine\.txt/);
+});
+
+test('a plan-check Decide ends the call before any code, with how to answer', () => {
+  const dir = project();
+  let a = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  writeJson(path.join(dir, a.result), { stage: 'spec', status: 'ok' });
+  a = drive(dir);
+  writeJson(path.join(dir, a.result), { stage: 'plan', status: 'ok' });
+  a = drive(dir);
+  writeJson(path.join(dir, a.result), { stage: 'plan-check', status: 'decide', decide: ['business fact: the rate? — options: 5% | 10%'] });
+  const stop = drive(dir);
+  assert.equal(stop.action, 'decide');
+  assert.match(fs.readFileSync(path.join(dir, stop.report), 'utf8'), /under the heading `## plan-check`/);
+});
+
+test('chunked code steps keep run order in the report', () => {
+  const dir = project();
+  const c1 = toCode(dir, 3);
+  writeJson(path.join(dir, c1.result), { stage: 'code', status: 'ok' });
+  const c3 = drive(dir);
+  assert.match(c3.result, /code-3\.result\.json$/);
+  writeJson(path.join(dir, c3.result), { stage: 'code', status: 'ok' });
+  const review = drive(dir);
+  writeJson(path.join(dir, review.result), { stage: 'logic-review', status: 'ok' });
+  const report = fs.readFileSync(path.join(dir, drive(dir).report), 'utf8');
+  const order = ['| spec |', '| plan |', '| plan-check |', '| code-1 |', '| code-3 |'].map(row => report.indexOf(row));
+  assert.ok(order.every((pos, i) => pos >= 0 && (i === 0 || pos > order[i - 1])), `rows out of run order: ${order}`);
 });

@@ -19,6 +19,7 @@ function runOrder(abs, files) {
   const take = f => {
     if (results.includes(f) && !ordered.includes(f)) ordered.push(f);
   };
+  if (files.includes('stages.json')) readJson(path.join(abs, 'stages.json')).forEach(take);
   results.filter(f => !f.startsWith('phase-') && !PHASES.some(p => f.startsWith(`${p}.`))).forEach(take);
   for (const phase of PHASES) {
     const state = files.includes(`${phase}.state.json`) ? readJson(path.join(abs, `${phase}.state.json`)) : null;
