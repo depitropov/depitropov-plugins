@@ -12,7 +12,7 @@
 
 ## Scope of this plan
 
-This is plan 1 of 5 for phase 1. Each plan ends with working software.
+This is plan 1 of 5 for phase 1. Each plan ends with working software. The order after this plan was changed to 3, 4, 2, 5 (row S61 in `docs/TENSIONS.md`).
 
 | Plan | Delivers |
 |---|---|
