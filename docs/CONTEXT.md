@@ -20,5 +20,5 @@ The glossary of this project. Use these names and no others.
 | **Fixer** | The orchestra subagent that fixes a failed tool gate. It uses orchestra's generic fixer procedure plus the gate's fix guide. |
 | **Fix guide** | A skill, owned by the gate's declarer, that says how to fix one tool's findings. |
 | **Guide** | Short write-time rules for the planner (`guides.plan`) or the coder (`guides.code`), declared by the Stack Skills. |
-| **Run folder** | `tmp/runs/<branch>/`. The orchestration state of one run: results, checkpoints, logs, `run.json`. Git-ignored. |
-| **Notes folder** | `docs/runs/<branch>/`. What a human reads about one run: `task.md`, `decisions.md`, review notes, `report.md`. Committed. |
+| **Run folder** | `tmp/runs/<branch>/`. The orchestration state of one run: results, checkpoints, logs, `run.json`, `stages.json`. Git-ignored. |
+| **Notes folder** | `docs/runs/<branch>/`. What a human reads about one run: `task.md`, `brief.md`, `plan.md`, `decisions.md`, review notes, `report.md`. Committed. |
