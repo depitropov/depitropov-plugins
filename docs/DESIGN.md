@@ -288,13 +288,15 @@ The rewrite of be-coding-agent (S19). It is stack-agnostic (S27) and headless (S
 | 0 | prepare | code in `next.js` | — | branch, run folder | Git policy, see 8.3 (S23) |
 | 1 | spec | subagent | `task.md` | `brief.md` | Given-when-then acceptance criteria. An open business fact is a `business fact:` line |
 | 2 | plan | subagent | `brief.md` | `plan.md` | No code. Loads the stack's plan guide |
-| 3 | plan-check | subagent | `brief.md`, `plan.md` | both patched, `plan-check.md` | Fresh agent (S26). Checks the brief and the plan together. Loads the stack's plan guide. Raises every open business fact as Decide (S62). `next.js` counts the plan's tasks `### T1`…`### Tn`; a plan with no tasks in order runs plan-check again |
+| 3 | plan-check | subagent | `brief.md`, `plan.md` | both patched, `plan-check.md` | Fresh agent (S26). Checks the brief and the plan together. Loads the stack's plan guide. Raises a business fact only when neither the brief nor `decisions` gives it (S63). `next.js` counts the plan's tasks `### T1`…`### Tn`; a plan with no tasks in order runs plan-check again |
 | 4 | code | subagent per chunk of `tasks-per-coder` tasks | `brief.md`, `plan.md` | commits, `implementation-log.md`, `code.md` | One commit per task. Loads the stack's code guide |
 | 5 | implementation-check | gate runner | — | commits, results | Phase, section 6 |
 | 6 | conventions-check | gate runner | — | commits, results | Phase, section 6 |
 | 7 | finish | gate runner | — | commits, results | Phase, section 6 |
 
 `brief.md`, `plan.md` and the review notes are in the notes folder. The workflow declares the config key `tasks-per-coder` (default 2).
+
+After the spec, `next.js` reads the brief. Each `business fact:` line stops the run with `decide` until `decisions.md` has a `## business-facts` section (S63).
 
 A guide is on when the stack plugin declares it, unless `disable` lists it (S53, S40).
 
@@ -350,13 +352,13 @@ sets the action:
 
 When a stage or a phase returns `decide`, `next.js` returns `decide`. The run writes `report.md`
 and stops. The human writes the answers in `decisions.md` in the notes folder. On resume, the stage
-or gate that raised the question runs again and reads `decisions.md`. Among the stages only plan-check returns `decide` (S62).
+or gate that raised the question runs again and reads `decisions.md`. Among the stages only plan-check returns `decide`; `next.js` itself stops after the spec on open business facts (S63). An answer is always a new section.
 
 ### 8.5 `report.md`
 
 orchestra writes it (S55). Steps are in run order. An empty phase shows "ok (no gates)" (S57). Status, plugin versions, commits made, assumptions made, counts per bucket per stage and gate, Evaluate findings
-(including tool violations left after the last round), skipped gates and why, skipped phases, and
-the open Decide questions if any.
+(including tool violations left after the last round), skipped gates and why, skipped phases, the contents of
+`decisions.md`, and the open Decide questions if any.
 
 ## 9. The Stack Skills contract
 
