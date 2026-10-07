@@ -20,8 +20,7 @@ The project's own code wins over a rule: when the project does it another way, f
 
 ## Shape of the change
 
-5. No interface with one implementation, no factory for one product, no new config for a value
-   that never changes.
+5. No factory for one product, and no new config for a value that never changes.
 6. A data holder with no behaviour is a `record`, unless the project uses another form for it.
 7. Money and rates use `BigDecimal`, never `double` or `float`. The plan states the scale and the
    rounding mode.

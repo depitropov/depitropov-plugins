@@ -67,5 +67,6 @@ Stop after `done`, `failed` or `decide`.
   to a `decide`, written to `decisions.md` as above.
 - Do not change the order, skip a dispatch or run a stage that was not printed.
 - Do not push and do not open a pull request.
-- If you cannot dispatch a subagent, invoke the skill named in `skill` yourself, follow the
-  `prompt`, and continue the loop.
+- If you cannot dispatch a subagent, stop the run. Tell the user that orchestra needs subagents:
+  each stage runs in a fresh context, so a reviewer never judges work from its own context. Never
+  do a stage yourself.

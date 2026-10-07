@@ -62,3 +62,9 @@ test('every judging skill takes its triage from orchestra:triage, not from its o
     assert.doesNotMatch(text, /\*\*Noise\*\*: not a real problem/, `${name} still has its own bucket list`);
   }
 });
+
+test('the run skill stops when it cannot dispatch a subagent, and never does a stage itself', () => {
+  const text = fs.readFileSync(path.join(PLUGINS, 'orchestra', 'skills', 'run', 'SKILL.md'), 'utf8');
+  assert.match(text, /cannot dispatch a subagent, stop the run/);
+  assert.doesNotMatch(text, /invoke the skill named in `skill` yourself/);
+});

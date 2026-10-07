@@ -121,7 +121,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
 | The entry checks, never does stage work | run skill "Subagents do the work" | ported | yes |
-| Never switch modes; never run a degraded run | run skill line 70 says the opposite: "invoke the skill yourself" | lost (reversed, no decision) | yes |
+| Never switch modes; never run a degraded run | run skill: "If you cannot dispatch a subagent, stop the run" | ported (S65) | yes |
 | Preflight: stack skills present | resolution (S50) | ported | yes |
 | Preflight: harness tools | — | dropped (S4) | no |
 | Preflight: clean tree | `prepare` (S23, S57) | ported | yes |
@@ -349,7 +349,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 7. **Deviations.** logic-review does not read the plan or the implementation log, and the report shows no deviations.
 8. **Coder blocker context.** A failed chunk runs again without knowing why it failed.
 9. **Spotless.** No `-Dspotless.check.skip` in the build, Spotless runs where it is not set up, and the layout rules are not in §10.
-10. **Report detail and the degraded-run rule.** Files changed, test counts and Patch reasons are gone. The run skill allows a degraded run with no decision behind it.
+10. **Report detail.** Files changed, test counts and Patch reasons are gone. (The degraded run is forbidden now, S65.)
 
 ### java-stack
 
@@ -404,7 +404,7 @@ Short names: PG = plan-guide, CG = code-guide, FB = fix-build, OJ = `orc-java-st
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
 | Layers, dependencies point inward | PG 2 | partial ("point inward" missing) | yes |
-| Interfaces at layer boundaries | PG 5 says the opposite: "No interface with one implementation" | lost (reversed in plan 3, no decision) | unsure: conflict to settle |
+| Interfaces at layer boundaries | — (the reversing PG rule is removed) | planned (plan 4 ports java-architecture, S65) | yes |
 | SOLID | CG 6 (one job only) | partial / planned (structure) | yes |
 | Package by feature | PG 1 | ported | yes |
 | Consistent modules, Maven layout | PG 11 + "project wins" | partial | yes |
@@ -579,7 +579,7 @@ Note: FB's "do not change dependencies" rule blocks a dependency-bump task.
 7. **Spotless has no set-up and no fix guide.** The finish phase fails on a repo without the plugin.
 8. **Empty-line and static-import rules have no gate.** This matters most for the ship.cars version.
 9. **Generic upgrade lessons have no slot,** and FB blocks dependency changes.
-10. **Silent conflicts:** PG 5 against "interfaces at layer boundaries"; Javadoc `@param` in the source itself; the ship.cars `commit-msg` hook against orchestra's commit messages.
+10. **Silent conflicts:** Javadoc `@param` in the source itself; the ship.cars `commit-msg` hook against orchestra's commit messages. (PG 5 against "interfaces at layer boundaries" is settled by S65.)
 
 ### minions
 
