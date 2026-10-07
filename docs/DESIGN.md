@@ -323,6 +323,7 @@ read only these files.
   "status": "ok",
   "decide": [],
   "counts": { "decide": 0, "patch": 3, "evaluate": 1, "noise": 2 },
+  "evaluate": ["PriceCalculator.java:9 — a null amount now throws"],
   "files": ["logic-review.md"]
 }
 ```

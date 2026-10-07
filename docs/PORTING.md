@@ -222,7 +222,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 |---|---|---|---|
 | Only judgement stages triage; mechanical passes do not | §8.4 "every agent gate" | dropped (§8.4) | yes |
 | No severity; the bucket is the action; urgency in flags | `orchestra:triage` intro, Flags | ported (S64) | yes |
-| Five axes: origin, risk, fix-risk, probability, impact | `orchestra:triage` "The five axes" | ported (S64; `implementer-miss` is `coder-miss`) | yes |
+| Five axes: origin, risk, fix-risk, probability, impact | `orchestra:triage` "The five axes" | ported (S64; `implementer-miss` is renamed `coder-miss` to match the code stage) | yes |
 | Fix-Risk scale (Low: one line; Mid; High: new flows, tables, libraries) | `orchestra:triage` axes table | ported (S64) | yes |
 | `security` is never folded into `bug` | `orchestra:triage` Impact row | ported (S64) | yes |
 | Bucket rules 1–4, first match wins | `orchestra:triage` "The bucket" | ported (S64) | yes |

@@ -25,7 +25,7 @@ description: Reviews the code of one run for correctness and for a test behind e
    `orchestra:triage` and follow it: give every finding its axes and one bucket.
 6. Write `<notes>/logic-review.md` in the triage notes format. Each finding names the point of the
    spec it concerns.
-7. If there is a Decide finding and no `decisions` input, stop here. Do not fix anything. Write the
+7. If there is an open Decide finding (one that `decisions` does not answer), stop here. Do not fix anything. Write the
    result with `"status": "decide"`.
 8. Otherwise, read `decisions` if given, and fix every Patch finding (and the answered Decide
    findings). orchestra built and tested this commit just before you: do not run the full build.
