@@ -1,7 +1,9 @@
 {
   "slot": "workflow",
   "params": [],
-  "config": {},
+  "config": {
+    "tasks-per-coder": { "type": "number", "default": 2 }
+  },
   "gates": [
     { "name": "logic-review", "phase": "implementation-check", "kind": "agent", "skill": "logic-review", "always": true }
   ]

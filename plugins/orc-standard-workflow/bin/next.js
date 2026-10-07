@@ -4,12 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
-const STAGES = [
-  { name: 'code', kind: 'dispatch' },
-  { name: 'implementation-check', kind: 'phase' },
-  { name: 'conventions-check', kind: 'phase' },
-  { name: 'finish', kind: 'phase' },
-];
+const PHASES = ['implementation-check', 'conventions-check', 'finish'];
 
 function git(cwd, ...args) {
   return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -75,24 +70,40 @@ function prepare(project, taskText) {
   fs.mkdirSync(path.join(project, runDir), { recursive: true });
   fs.mkdirSync(path.join(project, docs), { recursive: true });
   fs.writeFileSync(path.join(project, docs, 'task.md'), taskText.endsWith('\n') ? taskText : `${taskText}\n`);
-  const run = { base, branch, spec: `${docs}/task.md`, docs };
+  const run = { base, branch, spec: `${docs}/brief.md`, docs };
   fs.writeFileSync(path.join(project, runDir, 'run.json'), JSON.stringify(run, null, 2) + '\n');
   return null;
 }
 
-function codeInputs(project, run) {
+function settings(project) {
   const resolved = readJson(path.join(project, '.orchestra', 'resolved.json'));
   const config = readJson(path.join(project, '.orchestra', 'config.json')) || {};
   const stack = resolved && resolved.slots['stack-skills'];
   if (!stack) throw new Error('No resolved stack-skills slot. orchestra run resolves the slots first.');
-  const inputs = { spec: run.spec, base: run.base, build: stack.declaration.build.run.replace(/\{plugin\}/g, stack.dir), notes: run.docs };
-  const guide = (stack.declaration.guides || {}).code;
   const disabled = (config['stack-skills'] || {}).disable || [];
-  if (guide && !disabled.includes(guide)) inputs.guide = `${stack.plugin}:${guide}`;
-  return inputs;
+  const guide = kind => {
+    const name = (stack.declaration.guides || {})[kind];
+    return name && !disabled.includes(name) ? { guide: `${stack.plugin}:${name}` } : {};
+  };
+  return { build: stack.declaration.build.run.replace(/\{plugin\}/g, stack.dir), guide };
+}
+
+// One step of the workflow: dispatch it, or stop on its result. Returns null when the step is done.
+function stage(ctx, name, inputs, skill = name) {
+  const result = `${ctx.runDir}/${name}.result.json`;
+  const file = path.join(ctx.project, result);
+  let res = readResult(file);
+  if (res && res.status === 'failed' && !reportOnce(file, res)) {
+    fs.rmSync(file);
+    res = null;
+  }
+  if (!res) return { action: 'dispatch', skill: `orc-standard-workflow:${skill}`, inputs, result, runDir: ctx.runDir };
+  if (res.status === 'failed') return { action: 'failed', reason: res.reason || `Stage ${name} failed. See ${result}.`, runDir: ctx.runDir };
+  return null;
 }
 
 function next(project, taskFile) {
+  const s = settings(project);
   if (taskFile !== undefined) {
     const failed = prepare(project, fs.readFileSync(path.resolve(project, taskFile), 'utf8'));
     if (failed) return failed;
@@ -101,21 +112,22 @@ function next(project, taskFile) {
   const runDir = `tmp/runs/${branch}`;
   const run = branch.startsWith('task/') ? readJson(path.join(project, runDir, 'run.json')) : null;
   if (!run) return { action: 'failed', reason: `No run on branch "${branch}". Start a run with a task.` };
-  for (const s of STAGES) {
-    if (s.kind === 'phase') {
-      const res = readJson(path.join(project, runDir, `phase-${s.name}.result.json`));
-      if (res && res.status === 'ok') continue;
-      return { action: 'phase', name: s.name, runDir };
-    }
-    const result = `${runDir}/${s.name}.result.json`;
-    const file = path.join(project, result);
-    let res = readResult(file);
-    if (res && res.status === 'failed' && !reportOnce(file, res)) {
-      fs.rmSync(file);
-      res = null;
-    }
-    if (!res) return { action: 'dispatch', skill: `orc-standard-workflow:${s.name}`, inputs: codeInputs(project, run), result, runDir };
-    if (res.status === 'failed') return { action: 'failed', reason: res.reason || `Stage ${s.name} failed. See ${result}.`, runDir };
+  const ctx = { project, runDir, run };
+  const notes = run.docs;
+  const plan = `${notes}/plan.md`;
+  const steps = [
+    ['spec', { task: `${notes}/task.md`, base: run.base, notes }],
+    ['plan', { spec: run.spec, notes, ...s.guide('plan') }],
+    ['plan-check', { spec: run.spec, plan, notes, ...s.guide('plan') }],
+    ['code', { spec: run.spec, plan, base: run.base, build: s.build, notes, ...s.guide('code') }],
+  ];
+  for (const [name, inputs] of steps) {
+    const a = stage(ctx, name, inputs);
+    if (a) return a;
+  }
+  for (const phase of PHASES) {
+    const res = readJson(path.join(project, runDir, `phase-${phase}.result.json`));
+    if (!res || res.status !== 'ok') return { action: 'phase', name: phase, runDir };
   }
   return { action: 'done', runDir };
 }

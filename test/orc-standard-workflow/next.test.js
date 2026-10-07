@@ -6,18 +6,27 @@ const path = require('node:path');
 const { makeRepo, writeJson, git } = require('../helpers');
 const { next, slugify } = require('../../plugins/orc-standard-workflow/bin/next');
 
-function project({ guides, disable } = {}) {
+function project({ guides, disable, workflow = {} } = {}) {
   const dir = makeRepo();
-  writeJson(path.join(dir, '.orchestra/config.json'), { workflow: { plugin: 'orc-standard-workflow' }, 'stack-skills': { plugin: 'st', ...(disable ? { disable } : {}) } });
+  writeJson(path.join(dir, '.orchestra/config.json'), { workflow: { plugin: 'orc-standard-workflow', ...workflow }, 'stack-skills': { plugin: 'st', ...(disable ? { disable } : {}) } });
   git(dir, 'add', '-A');
   git(dir, 'commit', '-m', 'config');
   git(dir, 'push');
   writeJson(path.join(dir, '.orchestra/resolved.json'), {
     orchestra: { dir: '/orc' },
-    slots: { 'stack-skills': { plugin: 'st', dir: '/p/st', declaration: { build: { run: '{plugin}/mvnw -B verify' }, ...(guides ? { guides } : {}) } } },
+    slots: {
+      workflow: { plugin: 'orc-standard-workflow', dir: '/p/wf', declaration: { config: { 'tasks-per-coder': { type: 'number', default: 2 } } } },
+      'stack-skills': { plugin: 'st', dir: '/p/st', declaration: { build: { run: '{plugin}/mvnw -B verify' }, ...(guides ? { guides } : {}) } },
+    },
   });
   fs.writeFileSync(path.join(dir, '.orchestra/task.txt'), 'Add a discount\n\nOrders over 100 get 10%.\n');
   return dir;
+}
+
+// Writes an ok result for the dispatched stage and returns the next action.
+function pass(dir, a, extra = {}) {
+  writeJson(path.join(dir, a.result), { stage: a.skill.split(':')[1], status: 'ok', ...extra });
+  return next(dir);
 }
 
 test('slugify makes a safe branch name from any task text', () => {
@@ -37,22 +46,48 @@ test('a dirty tree stops the run before any branch is made', () => {
   assert.equal(git(dir, 'branch', '--show-current'), 'main');
 });
 
-test('prepare makes the task branch and the run folder, then dispatches code', () => {
+test('prepare makes the task branch and the run folder, then dispatches spec', () => {
   const dir = project();
   const base = git(dir, 'rev-parse', 'HEAD');
   const a = next(dir, '.orchestra/task.txt');
   const runDir = 'tmp/runs/task/add-a-discount';
   const docs = 'docs/runs/task/add-a-discount';
   assert.equal(git(dir, 'branch', '--show-current'), 'task/add-a-discount');
-  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, runDir, 'run.json'), 'utf8')), { base, branch: 'task/add-a-discount', spec: `${docs}/task.md`, docs });
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, runDir, 'run.json'), 'utf8')), { base, branch: 'task/add-a-discount', spec: `${docs}/brief.md`, docs });
   assert.match(fs.readFileSync(path.join(dir, docs, 'task.md'), 'utf8'), /Orders over 100/);
   assert.deepEqual(a, {
     action: 'dispatch',
-    skill: 'orc-standard-workflow:code',
-    inputs: { spec: `${docs}/task.md`, base, build: '/p/st/mvnw -B verify', notes: docs },
-    result: `${runDir}/code.result.json`,
+    skill: 'orc-standard-workflow:spec',
+    inputs: { task: `${docs}/task.md`, base, notes: docs },
+    result: `${runDir}/spec.result.json`,
     runDir,
   });
+});
+
+test('spec, plan and plan-check run in order with their inputs', () => {
+  const dir = project();
+  const docs = 'docs/runs/task/add-a-discount';
+  const plan = pass(dir, next(dir, '.orchestra/task.txt'));
+  assert.equal(plan.skill, 'orc-standard-workflow:plan');
+  assert.deepEqual(plan.inputs, { spec: `${docs}/brief.md`, notes: docs });
+  const check = pass(dir, plan);
+  assert.equal(check.skill, 'orc-standard-workflow:plan-check');
+  assert.deepEqual(check.inputs, { spec: `${docs}/brief.md`, plan: `${docs}/plan.md`, notes: docs });
+  assert.equal(pass(dir, check, { tasks: 1 }).skill, 'orc-standard-workflow:code');
+});
+
+test('plan and plan-check get the plan guide, code gets the code guide, unless disabled', () => {
+  const guides = { plan: 'plan-guide', code: 'code-guide' };
+  const dir = project({ guides });
+  const plan = pass(dir, next(dir, '.orchestra/task.txt'));
+  assert.equal(plan.inputs.guide, 'st:plan-guide');
+  const check = pass(dir, plan);
+  assert.equal(check.inputs.guide, 'st:plan-guide');
+  assert.equal(pass(dir, check, { tasks: 1 }).inputs.guide, 'st:code-guide');
+
+  const off = project({ guides, disable: ['plan-guide', 'code-guide'] });
+  const plan2 = pass(off, next(off, '.orchestra/task.txt'));
+  assert.equal(plan2.inputs.guide, undefined);
 });
 
 test('a second run of the same task gets its own branch', () => {
@@ -68,25 +103,14 @@ test('a second run of the same task gets its own branch', () => {
 
 test('after code, the three phases follow in order, then done', () => {
   const dir = project();
-  const a = next(dir, '.orchestra/task.txt');
-  writeJson(path.join(dir, a.result), { stage: 'code', status: 'ok' });
+  const code = pass(dir, pass(dir, pass(dir, next(dir, '.orchestra/task.txt'))), { tasks: 1 });
+  const runDir = code.runDir;
+  writeJson(path.join(dir, code.result), { stage: 'code', status: 'ok' });
   for (const phase of ['implementation-check', 'conventions-check', 'finish']) {
-    assert.deepEqual(next(dir), { action: 'phase', name: phase, runDir: a.runDir });
-    writeJson(path.join(dir, a.runDir, `phase-${phase}.result.json`), { stage: `phase-${phase}`, status: 'ok' });
+    assert.deepEqual(next(dir), { action: 'phase', name: phase, runDir });
+    writeJson(path.join(dir, runDir, `phase-${phase}.result.json`), { stage: `phase-${phase}`, status: 'ok' });
   }
-  assert.deepEqual(next(dir), { action: 'done', runDir: a.runDir });
-});
-
-test('a failed code stage fails the run', () => {
-  const dir = project();
-  const a = next(dir, '.orchestra/task.txt');
-  writeJson(path.join(dir, a.result), { stage: 'code', status: 'failed' });
-  assert.equal(next(dir).action, 'failed');
-});
-
-test('the code guide is passed when declared and not disabled', () => {
-  assert.equal(next(project({ guides: { code: 'code-guide' } }), '.orchestra/task.txt').inputs.guide, 'st:code-guide');
-  assert.equal(next(project({ guides: { code: 'code-guide' }, disable: ['code-guide'] }), '.orchestra/task.txt').inputs.guide, undefined);
+  assert.deepEqual(next(dir), { action: 'done', runDir });
 });
 
 test('no task on a branch without a run fails with a hint', () => {
@@ -95,21 +119,23 @@ test('no task on a branch without a run fails with a hint', () => {
   assert.match(a.reason, /No run on branch "main"/);
 });
 
-test('a failed code stage is reported once, then a resume dispatches code again', () => {
+test('a failed stage is reported once, then a resume dispatches it again', () => {
   const dir = project();
   const a = next(dir, '.orchestra/task.txt');
-  writeJson(path.join(dir, a.result), { stage: 'code', status: 'failed' });
-  assert.equal(next(dir).action, 'failed');
-  assert.equal(next(dir).action, 'dispatch');
+  writeJson(path.join(dir, a.result), { stage: 'spec', status: 'failed', reason: 'no idea' });
+  const f = next(dir);
+  assert.equal(f.action, 'failed');
+  assert.equal(f.reason, 'no idea');
+  assert.equal(next(dir).skill, 'orc-standard-workflow:spec');
 });
 
-test('a malformed code result names the file', () => {
+test('a malformed stage result names the file', () => {
   const dir = project();
   const a = next(dir, '.orchestra/task.txt');
   fs.writeFileSync(path.join(dir, a.result), 'not json');
   const r = next(dir);
   assert.equal(r.action, 'failed');
-  assert.match(r.reason, /Invalid result JSON in .*code\.result\.json/);
+  assert.match(r.reason, /Invalid result JSON in .*spec\.result\.json/);
 });
 
 test('a repo without origin/HEAD fails with the remedy', () => {
