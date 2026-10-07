@@ -49,7 +49,7 @@ test('a run goes from task to done: code, logic-review, report, committed run fi
   const report = fs.readFileSync(path.join(dir, done.report), 'utf8');
   assert.match(report, /- Status: done/);
   assert.match(report, /feat: discount/);
-  assert.match(report, /orc-standard-workflow 0\.2\.0/);
+  assert.match(report, /orc-standard-workflow 0\.3\.0/);
   assert.match(report, /\| implementation-check\.logic-review \| ok \| patch 1, evaluate 1 \|/);
   assert.equal(git(dir, 'log', '-1', '--format=%s'), 'orchestra: run notes (done)');
   assert.equal(git(dir, 'status', '--porcelain'), '');
