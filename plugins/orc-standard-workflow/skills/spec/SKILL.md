@@ -26,7 +26,8 @@ and you do not ask the user.
    - A **technical choice** has a sensible default: rounding mode, null handling, the order of two
      steps. Take the boring, minimal default.
    - A **business fact** never has a default: a rate, a price, a limit value, who qualifies. Do not
-     invent one. Write the line with `business fact:` at the start. plan-check asks the human.
+     invent one. Write the line with `business fact:` at the start. orchestra stops the run after you
+     and asks the human.
 5. Write `<notes>/brief.md` with the sections below.
 6. Write the result JSON.
 
@@ -77,8 +78,8 @@ Write to the path given in the prompt:
 }
 ```
 
-`assumptions` holds the technical choices only. Business facts stay in `brief.md`; plan-check
-raises them. Use `"status": "failed"` and add `"reason"` only if the task cannot be understood at
+`assumptions` holds the technical choices only. Business facts stay in `brief.md`; orchestra
+asks the human about them. Use `"status": "failed"` and add `"reason"` only if the task cannot be understood at
 all.
 
 ## Permitted actions

@@ -14,22 +14,13 @@ problems are still cheap. You fix what you can in the two files. You do not writ
 - `plan`: the plan.
 - `notes`: the run's notes folder. Your findings file goes here.
 - `guide` (optional): a skill with short rules for planning in this stack.
-- `decisions` (optional): the human's answers to your earlier questions.
-
-## If `decisions` is given
-
-You ran before and stopped on a question. Do not review again.
-
-1. Read `<notes>/plan-check.md` (your earlier findings) and the `## plan-check` sections of
-   `decisions`.
-2. Write each answer into the brief: a business fact moves from Assumptions into the acceptance
-   criterion it belongs to, as a fact. Change the plan where the answer needs it.
-3. Fix the Patch findings of `plan-check.md`. When you split a task, number the tasks again.
-4. Add a section "Answered" to `plan-check.md`. Write the result JSON with `"status": "ok"`.
+- `decisions` (optional): the human's answers. They settle the questions they answer; do not raise
+  those again.
 
 ## Procedure
 
-1. Read `spec` and `plan`. If `guide` is given, invoke it and use its rules as the reference.
+1. Read `spec` and `plan`. If `decisions` is given, read it first. If `guide` is given, invoke it
+   and use its rules as the reference.
 2. Check against the real code. Read the code; do not trust the plan.
    - **Coverage**: every acceptance criterion is in at least one task's Tests line, with a named test.
    - **Code facts**: every file, signature and pattern the plan names exists as it says.
@@ -40,8 +31,9 @@ You ran before and stopped on a question. Do not review again.
    - **Business facts**: every `business fact:` line in the brief, and every rate, price, limit
      value or rule of who qualifies that the plan uses with no source.
 3. Put each finding into one bucket:
-   - **Decide**: stop for a human. Every business fact the brief does not give is Decide. A design
-     fork is Decide only when you can name two or more real options and no sensible default exists.
+   - **Decide**: stop for a human. Every business fact that neither the brief nor `decisions`
+     gives is Decide. A design fork is Decide only when you can name two or more real options and
+     no sensible default exists.
      Write it as one line: `<question> — options: <a> | <b>`.
    - **Patch**: you can fix it in the brief or the plan now.
    - **Evaluate**: real, but not for you to fix. A technical choice with a sensible default is

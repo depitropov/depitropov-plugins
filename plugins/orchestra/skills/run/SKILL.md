@@ -38,7 +38,12 @@ Start the run:
 - If the user gave a task as text, write it to `.orchestra/task.txt` and run
   `node <orchestra>/bin/drive.js --task-file .orchestra/task.txt`.
 - If the user gave a file path, run `node <orchestra>/bin/drive.js --task-file <path>`.
-- If the user gave no task, this is a resume. Run `node <orchestra>/bin/drive.js`.
+- If the user gave no task, this is a resume. Run `node <orchestra>/bin/drive.js --resume`.
+
+`drive.js` can run the project's full build before it prints, and a build can take many minutes.
+Run every `drive.js` command in the background and wait until it ends, or, when that is not
+possible, with the longest timeout your shell allows. Never stop it early and never start a second
+one while it runs.
 
 The command prints one JSON line. It always names the current `branch`. Tell the user the branch
 once, when the run starts. Act on its `action`:
@@ -48,14 +53,18 @@ once, when the run starts. Act on its `action`:
   until it finishes. Then run `node <orchestra>/bin/drive.js` again, with no task.
 - `done`: tell the user the run is done, on which `branch`, and show the `report` path.
 - `failed`: show the `reason`, the `branch`, and the `report` path, if there is one.
-- `decide`: show each line of `questions` and the `report` path. The report says where to write the
-  answers. Tell the user to call orchestra run again after that.
+- `decide`: show each line of `questions` and the `report` path. The user answers in
+  `decisions.md` in the notes folder: a **new** section `## <gate>` at the end of the file, with
+  the answers. If the user gives the answers to you in the conversation, add that new section
+  yourself, with their words exactly, and then run `node <orchestra>/bin/drive.js --resume`.
+  Otherwise tell the user to call orchestra run again after they write it.
 
 Stop after `done`, `failed` or `decide`.
 
 ## Permitted actions
 
-- Do not edit project files yourself. Subagents do the work.
+- Do not edit project files yourself. Subagents do the work. The one exception: the user's answers
+  to a `decide`, written to `decisions.md` as above.
 - Do not change the order, skip a dispatch or run a stage that was not printed.
 - Do not push and do not open a pull request.
 - If you cannot dispatch a subagent, invoke the skill named in `skill` yourself, follow the
