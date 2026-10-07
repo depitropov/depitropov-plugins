@@ -68,6 +68,8 @@ function prepare(project, taskText) {
   // Orchestration state stays in git-ignored tmp/; only the human-readable files go to docs/ (S58).
   const runDir = `tmp/runs/${branch}`;
   const docs = `docs/runs/${branch}`;
+  // tmp/ is git-ignored, so a deleted branch leaves its run folder behind. A new branch starts clean.
+  fs.rmSync(path.join(project, runDir), { recursive: true, force: true });
   fs.mkdirSync(path.join(project, runDir), { recursive: true });
   fs.mkdirSync(path.join(project, docs), { recursive: true });
   fs.writeFileSync(path.join(project, docs, 'task.md'), taskText.endsWith('\n') ? taskText : `${taskText}\n`);

@@ -287,3 +287,11 @@ test('the dirty-tree failure names a changed tracked file in full', () => {
   fs.writeFileSync(path.join(dir, 'README.md'), 'changed\n');
   assert.match(next(dir, '.orchestra/task.txt').reason, /dirty: README\.md/);
 });
+
+test('a new run on a reused branch name ignores the old run folder', () => {
+  const dir = project();
+  writeJson(path.join(dir, 'tmp/runs/task/add-a-discount/spec.result.json'), { stage: 'spec', status: 'ok' });
+  const a = next(dir, '.orchestra/task.txt');
+  assert.equal(a.skill, 'orc-standard-workflow:spec');
+  assert.equal(fs.existsSync(path.join(dir, 'tmp/runs/task/add-a-discount/spec.result.json')), false);
+});
