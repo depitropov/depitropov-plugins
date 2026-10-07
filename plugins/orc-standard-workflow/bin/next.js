@@ -85,7 +85,12 @@ function settings(project) {
     const name = (stack.declaration.guides || {})[kind];
     return name && !disabled.includes(name) ? { guide: `${stack.plugin}:${name}` } : {};
   };
-  return { build: stack.declaration.build.run.replace(/\{plugin\}/g, stack.dir), guide };
+  const declared = resolved.slots.workflow.declaration.config['tasks-per-coder'].default;
+  const perCoder = (config.workflow || {})['tasks-per-coder'] ?? declared;
+  if (!Number.isInteger(perCoder) || perCoder < 1) {
+    throw new Error(`workflow.tasks-per-coder in .orchestra/config.json must be a whole number of 1 or more, not ${JSON.stringify(perCoder)}.`);
+  }
+  return { build: stack.declaration.build.run.replace(/\{plugin\}/g, stack.dir), guide, perCoder };
 }
 
 function writeJson(file, data) {
@@ -140,10 +145,19 @@ function next(project, taskFile) {
     ['spec', { task: `${notes}/task.md`, base: run.base, notes }],
     ['plan', { spec: run.spec, notes, ...s.guide('plan') }],
     ['plan-check', { spec: run.spec, plan, notes, ...s.guide('plan') }],
-    ['code', { spec: run.spec, plan, base: run.base, build: s.build, notes, ...s.guide('code') }],
   ];
   for (const [name, inputs] of steps) {
     const a = stage(ctx, name, inputs);
+    if (a) return a;
+  }
+  const checked = readJson(path.join(project, runDir, 'plan-check.result.json'));
+  const total = checked.tasks;
+  if (!Number.isInteger(total) || total < 1) {
+    return { action: 'failed', reason: `plan-check reported no plan tasks. See ${runDir}/plan-check.result.json and ${plan}.`, runDir };
+  }
+  for (let from = 1; from <= total; from += s.perCoder) {
+    const to = Math.min(from + s.perCoder - 1, total);
+    const a = stage(ctx, `code-${from}`, { spec: run.spec, plan, from, to, base: run.base, build: s.build, notes, ...s.guide('code') }, 'code');
     if (a) return a;
   }
   for (const phase of PHASES) {

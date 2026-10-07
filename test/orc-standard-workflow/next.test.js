@@ -199,3 +199,39 @@ test('a stage with no answer for it gets no decisions input', () => {
   answer(dir, 'logic-review', 'x');
   assert.equal(pass(dir, plan).inputs.decisions, undefined);
 });
+
+test('the code stage runs in chunks of tasks-per-coder, default 2', () => {
+  const dir = project();
+  const c1 = pass(dir, toPlanCheck(dir), { tasks: 3 });
+  assert.equal(c1.result, `${c1.runDir}/code-1.result.json`);
+  assert.equal(c1.inputs.from, 1);
+  assert.equal(c1.inputs.to, 2);
+  const c3 = pass(dir, c1);
+  assert.equal(c3.result, `${c1.runDir}/code-3.result.json`);
+  assert.equal(c3.inputs.from, 3);
+  assert.equal(c3.inputs.to, 3);
+  assert.equal(pass(dir, c3).action, 'phase');
+});
+
+test('the project config overrides tasks-per-coder', () => {
+  const dir = project({ workflow: { 'tasks-per-coder': 1 } });
+  let a = pass(dir, toPlanCheck(dir), { tasks: 2 });
+  assert.deepEqual([a.inputs.from, a.inputs.to], [1, 1]);
+  a = pass(dir, a);
+  assert.deepEqual([a.inputs.from, a.inputs.to], [2, 2]);
+});
+
+test('a bad tasks-per-coder value fails with the key name', () => {
+  for (const bad of [0, -1, 1.5, '2']) {
+    assert.throws(() => next(project({ workflow: { 'tasks-per-coder': bad } }), '.orchestra/task.txt'), /tasks-per-coder/);
+  }
+});
+
+test('a plan-check result with no task count fails the run', () => {
+  for (const tasks of [0, undefined, '3']) {
+    const dir = project();
+    const a = pass(dir, toPlanCheck(dir), { tasks });
+    assert.equal(a.action, 'failed');
+    assert.match(a.reason, /plan-check reported no plan tasks/);
+  }
+});
