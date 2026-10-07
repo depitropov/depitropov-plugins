@@ -80,7 +80,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Never push, PR or ticket | §8.3 (S17) | ported | yes |
 | Group order: rewriting agents before verify, cosmetic after | phases §6.2 (S45) | ported | yes |
 | Each reviewer fixes in its own session; nothing runs twice | S14, S46 | ported | yes |
-| Finding triage summary (5 axes, 4 buckets) | §8.4, buckets only | partial (see triage.md) | yes |
+| Finding triage summary (5 axes, 4 buckets) | `orchestra:triage`, §8.4 | ported (S64) | yes |
 | Mechanical passes: Fixed/Left, no triage | §8.4 "every agent gate" | dropped (§8.4) | yes |
 | No severity labels | buckets only | ported (no doc says it) | yes |
 | Workspace files | notes folder (§7) | partial (`pass-*.md`, `fix-verify.md` have no equivalent) | yes |
@@ -182,15 +182,15 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
 | Fresh eyes, before any code | plan-check (S26, S38) | ported | yes |
-| Read triage.md first | short inline buckets | partial (see triage.md) | yes |
+| Read triage.md first | plan-check step 4 invokes `orchestra:triage` | ported (S64) | yes |
 | Load the architecture skill | plan guide (S53) | ported | yes |
 | Coverage, code facts, scope, over-building, size, no code | plan-check step 3 | ported | yes |
 | External facts: grounded and cited, else to Assumptions | — | lost | yes |
 | A new dependency is at least Evaluate; apply the Decide test | plan guide rule 8 | partial (no bucket rule) | yes |
 | Patch in place, renumber, keep AC numbers | plan-check step 7 | ported | yes |
-| Evaluate with its axes | `evaluate` lines | partial (no axes) | yes |
+| Evaluate with its axes | `orchestra:triage` notes format | ported (S64) | yes |
 | Decide: other Patches still land | stop before any fix | dropped (S46) | yes |
-| Notes sections: tally, Patched, Skipped, Dropped, Awaiting decision | "by bucket" | partial | yes |
+| Notes sections: tally, Patched, Skipped, Dropped, Awaiting decision | `orchestra:triage` notes format | ported (S64) | yes |
 | Return verdict, counts, decisions | result JSON | ported | yes |
 
 #### stages/implement.md
@@ -221,28 +221,28 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
 | Only judgement stages triage; mechanical passes do not | §8.4 "every agent gate" | dropped (§8.4) | yes |
-| No severity; the bucket is the action; urgency in flags | buckets only | partial (no flags) | yes |
-| Five axes: origin, risk, fix-risk, probability, impact | — | lost | yes |
-| Fix-Risk scale (Low: one line; Mid; High: new flows, tables, libraries) | — | lost | yes |
-| `security` is never folded into `bug` | — | lost | yes |
-| Bucket rules 1–4, first match wins | — | lost | yes |
-| Decide = half A AND half B | plan-check and logic-review, short form | partial | yes |
-| Half A: two or more options with different trade-offs, listed | `options: <a> \| <b>` | partial (no trade-offs) | yes |
-| B1: a product answer you cannot read anywhere; never install a "safe" default | business fact = Decide (S60, S62, S63) | partial (narrowed to rate, price, limit, who qualifies) | yes |
-| B1 bound: an assumption counts only if not derivable and visible to users | technical choice vs business fact (S60) | dropped (S60) | yes |
-| B2: a shape-setting choice with no recommendation | — | lost | yes |
-| Half A without B: make the call; handing it back is a failure | S59, short form | partial | yes |
-| Flags 🔴 / 🟡 | — | lost | unsure |
-| Action per bucket | §8.4 | ported | yes |
+| No severity; the bucket is the action; urgency in flags | `orchestra:triage` intro, Flags | ported (S64) | yes |
+| Five axes: origin, risk, fix-risk, probability, impact | `orchestra:triage` "The five axes" | ported (S64; `implementer-miss` is `coder-miss`) | yes |
+| Fix-Risk scale (Low: one line; Mid; High: new flows, tables, libraries) | `orchestra:triage` axes table | ported (S64) | yes |
+| `security` is never folded into `bug` | `orchestra:triage` Impact row | ported (S64) | yes |
+| Bucket rules 1–4, first match wins | `orchestra:triage` "The bucket" | ported (S64) | yes |
+| Decide = half A AND half B | `orchestra:triage` "The Decide test" | ported (S64) | yes |
+| Half A: two or more options with different trade-offs, listed | `orchestra:triage` Half A; finding format | ported (S64) | yes |
+| B1: a product answer you cannot read anywhere; never install a "safe" default | `orchestra:triage` B1, with the business fact as its sure case | ported (S64) | yes |
+| B1 bound: an assumption counts only if not derivable and visible to users | `orchestra:triage` B1: technical choice vs business fact | dropped, replaced by S60 (S64) | yes |
+| B2: a shape-setting choice with no recommendation | `orchestra:triage` B2 | ported (S64) | yes |
+| Half A without B: make the call; handing it back is a failure | `orchestra:triage` "Half A without half B" | ported (S64) | yes |
+| Flags 🔴 / 🟡 | `orchestra:triage` Flags | ported (S64) | yes |
+| Action per bucket | `orchestra:triage` "The action per bucket", §8.4 short form | ported | yes |
 | Decide lands after the stage's Patches | stop before any fix | dropped (S46, S55) | yes |
-| Check each Patch is right before applying it; reject a wrong one with evidence | — | lost | yes |
-| Finding format: title, prose, "In the code", fix | `file:line` + spec point | partial | yes |
-| A Decide says why the call is not yours | — | lost | yes |
-| Calibration: a real Decide and a near-miss Patch | — | lost | yes |
-| Write for a reader new to the code; length by bucket | — | lost | yes |
-| Notes sections ordered by bucket | "by bucket" | partial | yes |
-| Notes and result must match | — | lost (minor) | yes |
-| Hard gate: both failure directions; size alone is not Decide | S57, S59, Noise side only | partial | yes |
+| Check each Patch is right before applying it; reject a wrong one with evidence | `orchestra:triage` action table, Patch | ported (S64) | yes |
+| Finding format: title, prose, "In the code", fix | `orchestra:triage` "Finding format" | ported (S64) | yes |
+| A Decide says why the call is not yours | `orchestra:triage` "Finding format" | ported (S64) | yes |
+| Calibration: a real Decide and a near-miss Patch | `orchestra:triage` "Calibration" | ported (S64) | yes |
+| Write for a reader new to the code; length by bucket | `orchestra:triage` "Finding format" | ported (S64) | yes |
+| Notes sections ordered by bucket | `orchestra:triage` "The notes file" | ported (S64) | yes |
+| Notes and result must match | `orchestra:triage` "The notes file" | ported (S64) | yes |
+| Hard gate: both failure directions; size alone is not Decide | `orchestra:triage` "Hard gate" | ported (S64) | yes |
 
 #### stages/logic-review.md
 
@@ -258,10 +258,10 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Correctness: bugs, edges, races, transaction and error boundaries | step 4 (no races, no transactions) | partial | yes |
 | Error handling and security | ops gate | planned (plan 4) | yes |
 | Not yours: naming, structure, comments, logs, layout | — | lost (minor) | yes |
-| Patch: check it first, fix minimally | "fix every Patch finding" | partial (no check first) | yes |
+| Patch: check it first, fix minimally | `orchestra:triage` action table | ported (S64) | yes |
 | Evaluate / Noise / Decide actions | steps 5, 7 | ported | yes |
 | Affected tests only; one commit | step 8 (S63) | ported | yes |
-| Notes sections | `logic-review.md` | partial | yes |
+| Notes sections | `logic-review.md` in the `orchestra:triage` notes format | ported (S64) | yes |
 | Return counts, decisions | result JSON | ported | yes |
 
 #### stages/structure.md
@@ -340,8 +340,8 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 
 #### Top losses (be-coding-agent)
 
-1. **Triage depth:** axes, Fix-Risk scale, bucket rules, Decide halves A/B1/B2, "make the call", calibration, hard gate. Without them the buckets drift from run to run.
-2. **Check a Patch before applying it.** A wrong finding now becomes a wrong commit.
+1. ~~**Triage depth.**~~ Fixed: `orchestra:triage` (S64).
+2. ~~**Check a Patch before applying it.**~~ Fixed: `orchestra:triage` (S64).
 3. **A stage that writes no result is dispatched again with no limit.** A loop risk in code, not only lost text.
 4. **Test-quality checks in logic-review.** Fake tests can satisfy the criterion-to-test mapping.
 5. **The Decide hand-off lost its prose and the trade-offs per option.** The human decides from one line.

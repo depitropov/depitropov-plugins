@@ -345,7 +345,9 @@ pushes and never opens a PR.
 ### 8.4 Triage
 
 Judgement stages (plan-check) and every agent gate put each finding into one bucket. The bucket
-sets the action:
+sets the action. The full contract (the five axes, the bucket rules, the Decide test, the finding
+format, the notes format) is one skill, `orchestra:triage`, ported in full from be-coding-agent's
+`triage.md` (S64). Every judging skill invokes it. This table is the short form:
 
 | Bucket | Action |
 |---|---|
@@ -415,7 +417,7 @@ Pillar 4 applies from the first commit (S33):
 ```
 plugins/
   orchestra/
-    skills/{init,run,fixer,select,writing-workflows,writing-stack-skills}/SKILL.md
+    skills/{init,run,fixer,triage,select,writing-workflows,writing-stack-skills}/SKILL.md
     bin/{check.js,gates.js}
     schemas/{workflow.json,stack-skills.json}
   orc-standard-workflow/
