@@ -274,7 +274,7 @@ The gate reads `decisions.md` and then fixes. So a gate never re-reviews its own
 | Resolution | A `manifest` skill (5.2). |
 | Order | `next.js` in Node, standard library only (S10, S11). It prints actions of the orchestra protocol, including `phase`. |
 | Output | One status, `done`, `decide` or `failed`. orchestra writes `report.md` into the notes folder from the result files in the run folder, so no workflow repeats that logic (S55). |
-| State | Two folders, both derived from the branch, never passed (S15, S22). The **run folder** `tmp/runs/<branch>/` holds everything the orchestration uses: results, checkpoints, logs, `run.json`. Git ignores it. The **notes folder** `docs/runs/<branch>/` holds what a human reads: `task.md`, `decisions.md`, review notes and `report.md`. It is committed and goes to the default branch with the PR (S54, S58). The workflow writes `run.json` with `base`, `branch`, `spec` (`<notes>/brief.md`, the file that holds the acceptance criteria) and `docs` (the notes folder). The gate runner reads it (S55). A resume works on the same machine only, because the run folder is not committed. |
+| State | Two folders, both derived from the branch, never passed (S15, S22). The **run folder** `tmp/runs/<branch>/` holds everything the orchestration uses: results, checkpoints, logs, `run.json`, `stages.json` (the order of the stage dispatches, for the report). Git ignores it. The **notes folder** `docs/runs/<branch>/` holds what a human reads: `task.md`, `brief.md`, `plan.md`, `decisions.md`, review notes (`plan-check.md`, `code.md`, `implementation-log.md`, `logic-review.md`) and `report.md`. It is committed and goes to the default branch with the PR (S54, S58). The workflow writes `run.json` with `base`, `branch`, `spec` (`<notes>/brief.md`, the file that holds the acceptance criteria) and `docs` (the notes folder). The gate runner reads it (S55). A resume works on the same machine only, because the run folder is not committed. |
 | Mode | Headless or interactive is fixed by the workflow's author when the workflow is built. It is not a runtime setting (S12). |
 
 ## 8. `orc-standard-workflow`
@@ -288,7 +288,7 @@ The rewrite of be-coding-agent (S19). It is stack-agnostic (S27) and headless (S
 | 0 | prepare | code in `next.js` | — | branch, run folder | Git policy, see 8.3 (S23) |
 | 1 | spec | subagent | `task.md` | `brief.md` | Given-when-then acceptance criteria. An open business fact is a `business fact:` line |
 | 2 | plan | subagent | `brief.md` | `plan.md` | No code. Loads the stack's plan guide |
-| 3 | plan-check | subagent | `brief.md`, `plan.md` | both patched, `plan-check.md` | Fresh agent (S26). Checks the brief and the plan together. Loads the stack's plan guide. Raises every open business fact as Decide (S62) |
+| 3 | plan-check | subagent | `brief.md`, `plan.md` | both patched, `plan-check.md` | Fresh agent (S26). Checks the brief and the plan together. Loads the stack's plan guide. Raises every open business fact as Decide (S62). `next.js` counts the plan's tasks `### T1`…`### Tn`; a plan with no tasks in order runs plan-check again |
 | 4 | code | subagent per chunk of `tasks-per-coder` tasks | `brief.md`, `plan.md` | commits, `implementation-log.md`, `code.md` | One commit per task. Loads the stack's code guide |
 | 5 | implementation-check | gate runner | — | commits, results | Phase, section 6 |
 | 6 | conventions-check | gate runner | — | commits, results | Phase, section 6 |

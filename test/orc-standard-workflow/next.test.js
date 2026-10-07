@@ -29,6 +29,18 @@ function pass(dir, a, extra = {}) {
   return next(dir);
 }
 
+const DOCS = 'docs/runs/task/add-a-discount';
+
+function writePlan(dir, headings) {
+  fs.writeFileSync(path.join(dir, DOCS, 'plan.md'), `# Plan\n\n## Tasks\n\n${headings.map(h => `### ${h} — a task\n`).join('\n')}`);
+}
+
+// Writes a plan with tasks T1..Tn, then passes plan-check.
+function checked(dir, check, n) {
+  writePlan(dir, Array.from({ length: n }, (_, i) => `T${i + 1}`));
+  return pass(dir, check);
+}
+
 test('slugify makes a safe branch name from any task text', () => {
   assert.equal(slugify('Add “discount” > 100!\nmore'), 'add-discount-100');
   assert.equal(slugify('!!!'), 'task');
@@ -73,7 +85,7 @@ test('spec, plan and plan-check run in order with their inputs', () => {
   const check = pass(dir, plan);
   assert.equal(check.skill, 'orc-standard-workflow:plan-check');
   assert.deepEqual(check.inputs, { spec: `${docs}/brief.md`, plan: `${docs}/plan.md`, notes: docs });
-  assert.equal(pass(dir, check, { tasks: 1 }).skill, 'orc-standard-workflow:code');
+  assert.equal(checked(dir, check, 1).skill, 'orc-standard-workflow:code');
 });
 
 test('plan and plan-check get the plan guide, code gets the code guide, unless disabled', () => {
@@ -83,7 +95,7 @@ test('plan and plan-check get the plan guide, code gets the code guide, unless d
   assert.equal(plan.inputs.guide, 'st:plan-guide');
   const check = pass(dir, plan);
   assert.equal(check.inputs.guide, 'st:plan-guide');
-  assert.equal(pass(dir, check, { tasks: 1 }).inputs.guide, 'st:code-guide');
+  assert.equal(checked(dir, check, 1).inputs.guide, 'st:code-guide');
 
   const off = project({ guides, disable: ['plan-guide', 'code-guide'] });
   const plan2 = pass(off, next(off, '.orchestra/task.txt'));
@@ -103,7 +115,7 @@ test('a second run of the same task gets its own branch', () => {
 
 test('after code, the three phases follow in order, then done', () => {
   const dir = project();
-  const code = pass(dir, pass(dir, pass(dir, next(dir, '.orchestra/task.txt'))), { tasks: 1 });
+  const code = checked(dir, pass(dir, pass(dir, next(dir, '.orchestra/task.txt'))), 1);
   const runDir = code.runDir;
   writeJson(path.join(dir, code.result), { stage: 'code', status: 'ok' });
   for (const phase of ['implementation-check', 'conventions-check', 'finish']) {
@@ -166,7 +178,7 @@ test('a plan-check Decide stops the run until decisions.md answers plan-check', 
   const dir = project();
   const check = toPlanCheck(dir);
   const q = 'business fact: the VIP rate? — options: 5% | 10%';
-  writeJson(path.join(dir, check.result), { stage: 'plan-check', status: 'decide', decide: [q], tasks: 2 });
+  writeJson(path.join(dir, check.result), { stage: 'plan-check', status: 'decide', decide: [q] });
   assert.deepEqual(next(dir), { action: 'decide', gate: 'plan-check', questions: [q], runDir: check.runDir });
   assert.equal(next(dir).action, 'decide');
 
@@ -202,7 +214,7 @@ test('a stage with no answer for it gets no decisions input', () => {
 
 test('the code stage runs in chunks of tasks-per-coder, default 2', () => {
   const dir = project();
-  const c1 = pass(dir, toPlanCheck(dir), { tasks: 3 });
+  const c1 = checked(dir, toPlanCheck(dir), 3);
   assert.equal(c1.result, `${c1.runDir}/code-1.result.json`);
   assert.equal(c1.inputs.from, 1);
   assert.equal(c1.inputs.to, 2);
@@ -215,7 +227,7 @@ test('the code stage runs in chunks of tasks-per-coder, default 2', () => {
 
 test('the project config overrides tasks-per-coder', () => {
   const dir = project({ workflow: { 'tasks-per-coder': 1 } });
-  let a = pass(dir, toPlanCheck(dir), { tasks: 2 });
+  let a = checked(dir, toPlanCheck(dir), 2);
   assert.deepEqual([a.inputs.from, a.inputs.to], [1, 1]);
   a = pass(dir, a);
   assert.deepEqual([a.inputs.from, a.inputs.to], [2, 2]);
@@ -227,11 +239,14 @@ test('a bad tasks-per-coder value fails with the key name', () => {
   }
 });
 
-test('a plan-check result with no task count fails the run', () => {
-  for (const tasks of [0, undefined, '3']) {
+test('a plan without tasks T1..Tn in order fails, then plan-check runs again', () => {
+  for (const headings of [null, [], ['T1', 'T3'], ['T2']]) {
     const dir = project();
-    const a = pass(dir, toPlanCheck(dir), { tasks });
-    assert.equal(a.action, 'failed');
-    assert.match(a.reason, /plan-check reported no plan tasks/);
+    const check = toPlanCheck(dir);
+    if (headings) writePlan(dir, headings);
+    const a = pass(dir, check);
+    assert.equal(a.action, 'failed', JSON.stringify(headings));
+    assert.match(a.reason, /plan\.md has no tasks numbered T1, T2/);
+    assert.equal(next(dir).skill, 'orc-standard-workflow:plan-check');
   }
 });

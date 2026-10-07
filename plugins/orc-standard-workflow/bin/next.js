@@ -128,6 +128,13 @@ function stage(ctx, name, inputs, skill = name) {
   return null;
 }
 
+// The plan's task headings, not a count a model writes, decide which code chunks run.
+function planTasks(file) {
+  const text = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  const numbers = [...text.matchAll(/^### T(\d+)\b/gm)].map(m => Number(m[1]));
+  return numbers.length && numbers.every((n, i) => n === i + 1) ? numbers.length : 0;
+}
+
 function next(project, taskFile) {
   const s = settings(project);
   if (taskFile !== undefined) {
@@ -150,10 +157,13 @@ function next(project, taskFile) {
     const a = stage(ctx, name, inputs);
     if (a) return a;
   }
-  const checked = readJson(path.join(project, runDir, 'plan-check.result.json'));
-  const total = checked.tasks;
-  if (!Number.isInteger(total) || total < 1) {
-    return { action: 'failed', reason: `plan-check reported no plan tasks. See ${runDir}/plan-check.result.json and ${plan}.`, runDir };
+  const total = planTasks(path.join(project, plan));
+  if (!total) {
+    // Marked failed and reported, so the next call runs plan-check again (S32).
+    const reason = `${plan} has no tasks numbered T1, T2, … in order. plan-check runs again on the next call.`;
+    const checkFile = path.join(project, runDir, 'plan-check.result.json');
+    writeJson(checkFile, { ...readJson(checkFile), status: 'failed', reason, reported: true });
+    return { action: 'failed', reason, runDir };
   }
   for (let from = 1; from <= total; from += s.perCoder) {
     const to = Math.min(from + s.perCoder - 1, total);

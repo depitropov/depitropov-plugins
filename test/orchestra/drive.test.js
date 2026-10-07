@@ -33,7 +33,9 @@ function toCode(dir, tasks = 1) {
     a = drive(dir);
   }
   assert.equal(a.skill, 'orc-standard-workflow:plan-check');
-  writeJson(path.join(dir, a.result), { stage: 'plan-check', status: 'ok', tasks, counts: { patch: 1 } });
+  const tasks_ = Array.from({ length: tasks }, (_, i) => `### T${i + 1} — a task\n`).join('\n');
+  fs.writeFileSync(path.join(dir, a.inputs.plan), `# Plan\n\n${tasks_}`);
+  writeJson(path.join(dir, a.result), { stage: 'plan-check', status: 'ok', counts: { patch: 1 } });
   return drive(dir);
 }
 

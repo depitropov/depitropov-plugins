@@ -24,7 +24,7 @@ You ran before and stopped on a question. Do not review again.
    `decisions`.
 2. Write each answer into the brief: a business fact moves from Assumptions into the acceptance
    criterion it belongs to, as a fact. Change the plan where the answer needs it.
-3. Fix the Patch findings of `plan-check.md`.
+3. Fix the Patch findings of `plan-check.md`. When you split a task, number the tasks again.
 4. Add a section "Answered" to `plan-check.md`. Write the result JSON with `"status": "ok"`.
 
 ## Procedure
@@ -62,7 +62,6 @@ Write to the path given in the prompt:
 {
   "stage": "plan-check",
   "status": "ok",
-  "tasks": 3,
   "decide": [],
   "counts": { "decide": 0, "patch": 2, "evaluate": 1, "noise": 0 },
   "evaluate": ["plan.md T2 — the plan keeps the old null check; the brief does not say"],
@@ -70,9 +69,9 @@ Write to the path given in the prompt:
 }
 ```
 
-`tasks` is the number of `### T<n>` sections in `plan.md` after your changes. Always write it,
-also on `decide`. `status` is `ok`, `decide` or `failed`. `decide` lists each question as one line
-with its options.
+When you finish, the tasks in `plan.md` must be headed `### T1`, `### T2`, … in order, with no
+gap. orchestra counts them to start the coders. `status` is `ok`, `decide` or `failed`. `decide`
+lists each question as one line with its options.
 
 ## Permitted actions
 
