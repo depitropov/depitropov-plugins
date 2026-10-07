@@ -3,6 +3,8 @@
 This document defines the phase 1 slice: **Orchestrator → Workflow → Stack Skills**.
 Every choice here comes from a settled row (`Sn`) in `docs/TENSIONS.md`. The names come from
 `docs/CONTEXT.md`. The research behind the choices is in `docs/research/` (R1–R4).
+This document sums up the source plugins. It is not the content to port: `docs/PORTING.md` says how
+to port, and what each source file holds.
 
 ## 1. Goal
 

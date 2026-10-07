@@ -3,10 +3,13 @@
 This file describes four existing projects. Each one holds one idea we want to keep. Later work builds
 on these ideas. The file says what each project is and how it works. It does not propose changes.
 
+This file is a summary, for direction only. It leaves out most of each source. To port anything,
+follow `docs/PORTING.md` and read the source files themselves.
+
 | Pillar | Project | Location |
 |---|---|---|
-| 1. Orchestration | be-coding-agent | `~/Projects-other/claude-code-plugins/plugins/be-coding-agent` |
-| 2. Stack knowledge | java-stack | `~/Projects-other/claude-code-plugins/plugins/java-stack` |
+| 1. Orchestration | be-coding-agent | `~/Projects/claude-code-plugins/plugins/be-coding-agent` |
+| 2. Stack knowledge | java-stack | `~/Projects/claude-code-plugins/plugins/java-stack` |
 | 3. Project rails | minions | `~/Projects-other/claude-minions` |
 | 4. Multi-harness delivery | sc-agent-plugins | `~/Projects/sc-agent-plugins` |
 
