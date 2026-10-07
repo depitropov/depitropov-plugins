@@ -27,7 +27,7 @@ function readResult(file) {
 // A failed step stops the call once. When the run is called again, the step runs again (S32).
 function reportOnce(file, res) {
   if (res.reported) return false;
-  fs.writeFileSync(file, JSON.stringify({ ...res, reported: true }, null, 2) + '\n');
+  writeJson(file, { ...res, reported: true });
   return true;
 }
 
@@ -88,17 +88,38 @@ function settings(project) {
   return { build: stack.declaration.build.run.replace(/\{plugin\}/g, stack.dir), guide };
 }
 
+function writeJson(file, data) {
+  fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
+}
+
+// Same rule as the gate runner: an answer is a `## <step>` section in decisions.md.
+function countAnswers(docsAbs, name) {
+  const file = path.join(docsAbs, 'decisions.md');
+  if (!fs.existsSync(file)) return 0;
+  return fs.readFileSync(file, 'utf8').split('\n').filter(line => line.trim() === `## ${name}`).length;
+}
+
 // One step of the workflow: dispatch it, or stop on its result. Returns null when the step is done.
+// A Decide result records how many answers existed when it stopped (`seen`). Only a new answer starts the step again.
 function stage(ctx, name, inputs, skill = name) {
   const result = `${ctx.runDir}/${name}.result.json`;
   const file = path.join(ctx.project, result);
+  const answers = countAnswers(path.join(ctx.project, ctx.run.docs), name);
   let res = readResult(file);
-  if (res && res.status === 'failed' && !reportOnce(file, res)) {
+  const retry = res && ((res.status === 'failed' && !reportOnce(file, res)) || (res.status === 'decide' && res.seen !== undefined && answers > res.seen));
+  if (retry) {
     fs.rmSync(file);
     res = null;
   }
-  if (!res) return { action: 'dispatch', skill: `orc-standard-workflow:${skill}`, inputs, result, runDir: ctx.runDir };
+  if (!res) {
+    const decisions = answers > 0 ? { decisions: `${ctx.run.docs}/decisions.md` } : {};
+    return { action: 'dispatch', skill: `orc-standard-workflow:${skill}`, inputs: { ...inputs, ...decisions }, result, runDir: ctx.runDir };
+  }
   if (res.status === 'failed') return { action: 'failed', reason: res.reason || `Stage ${name} failed. See ${result}.`, runDir: ctx.runDir };
+  if (res.status === 'decide') {
+    if (res.seen === undefined) writeJson(file, { ...res, seen: answers });
+    return { action: 'decide', gate: name, questions: res.decide || [], runDir: ctx.runDir };
+  }
   return null;
 }
 

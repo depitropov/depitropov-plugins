@@ -151,3 +151,51 @@ test('the dirty-tree failure names the dirty files', () => {
   fs.writeFileSync(path.join(dir, 'dirty.txt'), 'x');
   assert.match(next(dir, '.orchestra/task.txt').reason, /dirty\.txt/);
 });
+
+function toPlanCheck(dir) {
+  return pass(dir, pass(dir, next(dir, '.orchestra/task.txt')));
+}
+
+function answer(dir, heading, text) {
+  const file = path.join(dir, 'docs/runs/task/add-a-discount/decisions.md');
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.appendFileSync(file, `## ${heading}\n\n${text}\n\n`);
+}
+
+test('a plan-check Decide stops the run until decisions.md answers plan-check', () => {
+  const dir = project();
+  const check = toPlanCheck(dir);
+  const q = 'business fact: the VIP rate? — options: 5% | 10%';
+  writeJson(path.join(dir, check.result), { stage: 'plan-check', status: 'decide', decide: [q], tasks: 2 });
+  assert.deepEqual(next(dir), { action: 'decide', gate: 'plan-check', questions: [q], runDir: check.runDir });
+  assert.equal(next(dir).action, 'decide');
+
+  answer(dir, 'logic-review', 'not for plan-check');
+  assert.equal(next(dir).action, 'decide');
+
+  answer(dir, 'plan-check', '10%');
+  const again = next(dir);
+  assert.equal(again.skill, 'orc-standard-workflow:plan-check');
+  assert.equal(again.inputs.decisions, 'docs/runs/task/add-a-discount/decisions.md');
+});
+
+test('a used answer does not start plan-check again after a second Decide', () => {
+  const dir = project();
+  const check = toPlanCheck(dir);
+  writeJson(path.join(dir, check.result), { stage: 'plan-check', status: 'decide', decide: ['a?'] });
+  next(dir);
+  answer(dir, 'plan-check', 'a');
+  next(dir);
+  writeJson(path.join(dir, check.result), { stage: 'plan-check', status: 'decide', decide: ['b?'] });
+  assert.deepEqual(next(dir).questions, ['b?']);
+  assert.deepEqual(next(dir).questions, ['b?']);
+  answer(dir, 'plan-check', 'b');
+  assert.equal(next(dir).action, 'dispatch');
+});
+
+test('a stage with no answer for it gets no decisions input', () => {
+  const dir = project();
+  const plan = pass(dir, next(dir, '.orchestra/task.txt'));
+  answer(dir, 'logic-review', 'x');
+  assert.equal(pass(dir, plan).inputs.decisions, undefined);
+});
