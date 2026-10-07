@@ -7,7 +7,7 @@ const { validateAction, withPrompt } = require('../lib/protocol');
 const { load } = require('../lib/resolved');
 const runner = require('../lib/runner');
 const { writeReport } = require('../lib/report');
-const { git, commitAll, commitRunDir } = require('../lib/git');
+const { git, dirtyFiles, commitAll, commitRunDir } = require('../lib/git');
 
 function callNext(nextJs, project, args) {
   const out = execFileSync(process.execPath, [nextJs, '--project', project, ...args], { encoding: 'utf8' });
@@ -29,8 +29,8 @@ function commitLeftovers(project) {
 }
 
 // The model is told the branch on every action, so it never guesses where the commits went.
-function drive(project, extraArgs = []) {
-  const action = step(project, extraArgs);
+function drive(project, extraArgs = [], { resume = false } = {}) {
+  const action = step(project, extraArgs, resume);
   return { ...action, branch: git(project, 'branch', '--show-current') };
 }
 
@@ -42,9 +42,18 @@ function remember(project, a) {
   if (!list.includes(name)) fs.writeFileSync(file, JSON.stringify([...list, name]) + '\n');
 }
 
-function step(project, extraArgs) {
+function step(project, extraArgs, resume) {
   const resolved = load(project);
-  if (!extraArgs.length) commitLeftovers(project);
+  if (resume) {
+    // Between two calls of orchestra run, only the user changes files. Never commit them into the task.
+    const dirty = dirtyFiles(project);
+    if (dirty.length) {
+      const files = dirty.slice(0, 5).join(', ') + (dirty.length > 5 ? ', …' : '');
+      return { action: 'failed', reason: `Files changed since the run stopped: ${files}. Commit or stash them, then run again.` };
+    }
+  } else if (!extraArgs.length) {
+    commitLeftovers(project);
+  }
   const config = JSON.parse(fs.readFileSync(path.join(project, '.orchestra', 'config.json'), 'utf8'));
   const nextJs = path.join(resolved.slots.workflow.dir, 'bin', 'next.js');
   let args = extraArgs;
@@ -70,7 +79,7 @@ if (require.main === module) {
   const argv = process.argv.slice(2);
   const i = argv.indexOf('--task-file');
   try {
-    console.log(JSON.stringify(drive(process.cwd(), i >= 0 ? ['--task-file', argv[i + 1]] : [])));
+    console.log(JSON.stringify(drive(process.cwd(), i >= 0 ? ['--task-file', argv[i + 1]] : [], { resume: argv.includes('--resume') })));
   } catch (e) {
     console.log(JSON.stringify({ action: 'failed', reason: e.message }));
     process.exitCode = 1;

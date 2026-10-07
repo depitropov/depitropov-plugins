@@ -150,3 +150,21 @@ test('the report copies decisions.md, with its headings one level down', () => {
   assert.match(report, /## Decisions\n\n### business-facts\n\nThe VIP rate is 10%\./);
   assert.doesNotMatch(report, /^## business-facts$/m);
 });
+
+test('a resume with changed files stops and names them, and commits nothing', () => {
+  const dir = project();
+  toCode(dir);
+  const head = git(dir, 'rev-parse', 'HEAD');
+  fs.writeFileSync(path.join(dir, 'mine.txt'), 'x');
+  const a = drive(dir, [], { resume: true });
+  assert.equal(a.action, 'failed');
+  assert.match(a.reason, /mine\.txt/);
+  assert.equal(git(dir, 'rev-parse', 'HEAD'), head);
+});
+
+test('a resume with only notes changed goes on', () => {
+  const dir = project();
+  const code = toCode(dir);
+  fs.writeFileSync(path.join(dir, 'docs/runs/task/add-a-discount/decisions.md'), '## plan-check\n\nok\n');
+  assert.equal(drive(dir, [], { resume: true }).skill, code.skill);
+});

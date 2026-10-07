@@ -46,7 +46,8 @@ function branchExists(cwd, branch) {
 }
 
 function prepare(project, taskText) {
-  const dirty = git(project, 'status', '--porcelain', '--untracked-files=normal').split('\n').filter(Boolean);
+  // Not through git(): its trim would cut the first character of the first line (` M file`).
+  const dirty = execFileSync('git', ['status', '--porcelain', '--untracked-files=normal'], { cwd: project, encoding: 'utf8' }).split('\n').filter(Boolean);
   if (dirty.length) {
     const files = dirty.slice(0, 5).map(line => line.slice(3)).join(', ') + (dirty.length > 5 ? ', …' : '');
     return { action: 'failed', reason: `The working tree is dirty: ${files}. Commit, stash or ignore these, then run again.` };

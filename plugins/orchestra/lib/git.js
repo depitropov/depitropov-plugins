@@ -22,11 +22,15 @@ function commitPaths(cwd, message, paths) {
   return true;
 }
 
-function isClean(cwd) {
-  return git(cwd, 'status', '--porcelain', '--', '.', ...EXCLUDE) === '';
+// Not through git(): its trim would cut the first character of the first line (` M file`).
+function dirtyFiles(cwd) {
+  const out = execFileSync('git', ['status', '--porcelain', '--untracked-files=all', '--', '.', ...EXCLUDE], { cwd, encoding: 'utf8' });
+  return out.split('\n').filter(Boolean).map(line => line.slice(3));
 }
+
+const isClean = cwd => dirtyFiles(cwd).length === 0;
 
 const commitAll = (cwd, message) => commitPaths(cwd, message, ['.', ...ADD_EXCLUDE]);
 const commitRunDir = (cwd, runDir, message) => commitPaths(cwd, message, [runDir]);
 
-module.exports = { git, changedFiles, isClean, commitAll, commitRunDir };
+module.exports = { git, changedFiles, dirtyFiles, isClean, commitAll, commitRunDir };

@@ -281,3 +281,9 @@ test('a plan without tasks T1..Tn in order fails, then plan-check runs again', (
     assert.equal(next(dir).skill, 'orc-standard-workflow:plan-check');
   }
 });
+
+test('the dirty-tree failure names a changed tracked file in full', () => {
+  const dir = project();
+  fs.writeFileSync(path.join(dir, 'README.md'), 'changed\n');
+  assert.match(next(dir, '.orchestra/task.txt').reason, /dirty: README\.md/);
+});
