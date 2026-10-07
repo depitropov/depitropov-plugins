@@ -3,5 +3,6 @@
   "params": [],
   "config": {},
   "build": { "run": "./mvnw -B verify", "guide": "fix-build", "max_rounds": 3 },
+  "guides": { "plan": "plan-guide", "code": "code-guide" },
   "gates": []
 }

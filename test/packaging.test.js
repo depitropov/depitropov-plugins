@@ -12,7 +12,8 @@ const skills = plugins.flatMap(p => {
 });
 const REFERENCED = ['orchestra/run', 'orchestra/fixer', 'orc-standard-workflow/manifest', 'orc-standard-workflow/spec',
   'orc-standard-workflow/plan', 'orc-standard-workflow/plan-check', 'orc-standard-workflow/code',
-  'orc-standard-workflow/logic-review', 'orc-java-stack/manifest', 'orc-java-stack/fix-build'];
+  'orc-standard-workflow/logic-review', 'orc-java-stack/manifest', 'orc-java-stack/fix-build',
+  'orc-java-stack/plan-guide', 'orc-java-stack/code-guide'];
 
 test('every skill the code dispatches exists', () => {
   const have = skills.map(s => `${s.plugin}/${s.name}`);
@@ -41,5 +42,15 @@ test('both manifests of each plugin parse and have the same version', () => {
     const b = JSON.parse(fs.readFileSync(path.join(PLUGINS, p, '.claude-plugin', 'plugin.json'), 'utf8'));
     assert.equal(a.name, p);
     assert.equal(a.version, b.version, p);
+  }
+});
+
+test('every guide a stack declares is a skill in that plugin', () => {
+  for (const p of plugins) {
+    const file = path.join(PLUGINS, p, 'orchestra.json');
+    if (!fs.existsSync(file)) continue;
+    for (const name of Object.values(JSON.parse(fs.readFileSync(file, 'utf8')).guides || {})) {
+      assert.ok(fs.existsSync(path.join(PLUGINS, p, 'skills', name, 'SKILL.md')), `${p}: guide ${name} has no skill`);
+    }
   }
 });
