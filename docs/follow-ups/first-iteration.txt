@@ -1,0 +1,20 @@
+Follow-ups from the first iteration (walking skeleton runs, October 2026)
+
+1. Fixed start-up cost of each subagent
+
+   What we saw: in the VIP run, each subagent used about 42K tokens. About 34K of them were
+   fixed context, loaded before the agent did any work: the general-purpose agent's system
+   prompt, its hooks, its skill list and its tool list. The task work itself was only a few
+   thousand tokens. A run with more stages and gates pays this cost once per subagent.
+
+   Why we do not change it now: a lighter agent type exists only as a harness-specific agent
+   file (for example a Claude Code agent in `agents/`). Pillar 4 forbids that, because no
+   plugin file can register an agent on both Claude Code and Codex. Prompt caching also makes
+   the repeated fixed part cheaper than the raw token count shows.
+
+   What to do later:
+   - Measure the real cost per run, with caching, before acting.
+   - Check if a harness can start a subagent with a smaller skill list or tool list in a
+     portable way, for example a setting the skill can name in plain words.
+   - If a harness supports this, add it as an optional, harness-specific optimisation. The
+     portable path stays the default.

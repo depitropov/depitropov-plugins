@@ -1,5 +1,5 @@
 {
   "name": "orchestra",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Runs one task through a configured workflow and its gates, on any harness."
 }

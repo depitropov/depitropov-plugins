@@ -18,7 +18,9 @@ You get the output of one tool that failed, and the name of a fix guide.
 ## Procedure
 
 1. Invoke the skill named in `guide`. Follow its rules for this tool.
-2. Read `output`. List each finding it reports.
+2. Read `output`. List each finding it reports. When you run the build or the tool yourself, never
+   pipe it through `tail`, `head` or `grep`: the pipe hides the exit code. Write the output to a
+   file and check the exit code.
 3. Fix only what the output reports. Stay inside the files changed since `base`
    (`git diff --name-only <base> HEAD`), unless the output names another file.
 4. Never delete or weaken a test to make a tool pass. Never change the tool's configuration or
