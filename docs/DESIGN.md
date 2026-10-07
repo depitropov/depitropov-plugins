@@ -151,7 +151,9 @@ Arguments that the workflow declares are forwarded unread (S41). `orchestra:run 
 them from the declaration. An argument that is not declared gets a warning and is still forwarded.
 
 A stopped run resumes when the user calls `orchestra:run` again on the same task branch (S32). It
-passes no task then. `next.js` and the gate runner find their state in the run folder.
+passes no task then. `next.js` and the gate runner find their state in the run folder. On a resume,
+`drive.js --resume` stops when files outside `docs/runs` changed since the run stopped, and commits
+nothing (S63).
 
 ### 5.3 `orchestra check`
 
@@ -287,8 +289,8 @@ The rewrite of be-coding-agent (S19). It is stack-agnostic (S27) and headless (S
 |---|---|---|---|---|---|
 | 0 | prepare | code in `next.js` | — | branch, run folder | Git policy, see 8.3 (S23) |
 | 1 | spec | subagent | `task.md` | `brief.md` | Given-when-then acceptance criteria. An open business fact is a `business fact:` line |
-| 2 | plan | subagent | `brief.md` | `plan.md` | No code. Loads the stack's plan guide |
-| 3 | plan-check | subagent | `brief.md`, `plan.md` | both patched, `plan-check.md` | Fresh agent (S26). Checks the brief and the plan together. Loads the stack's plan guide. Raises a business fact only when neither the brief nor `decisions` gives it (S63). `next.js` counts the plan's tasks `### T1`…`### Tn`; a plan with no tasks in order runs plan-check again |
+| 2 | plan | subagent | `brief.md`, `decisions.md` | `plan.md`; answered business facts into `brief.md` | No code. Loads the stack's plan guide |
+| 3 | plan-check | subagent | `brief.md`, `plan.md` | both patched, `plan-check.md` | Fresh agent (S26). Checks the brief and the plan together. Loads the stack's plan guide. Writes answers from `decisions` into the brief and the plan. Raises a business fact only when neither the brief nor `decisions` gives it (S63). `next.js` counts the plan's tasks `### T1`…`### Tn`; a plan with no tasks in order runs plan-check again |
 | 4 | code | subagent per chunk of `tasks-per-coder` tasks | `brief.md`, `plan.md` | commits, `implementation-log.md`, `code.md` | One commit per task. Loads the stack's code guide |
 | 5 | implementation-check | gate runner | — | commits, results | Phase, section 6 |
 | 6 | conventions-check | gate runner | — | commits, results | Phase, section 6 |

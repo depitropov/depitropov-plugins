@@ -24,7 +24,7 @@ function commitPaths(cwd, message, paths) {
 
 // Not through git(): its trim would cut the first character of the first line (` M file`).
 function dirtyFiles(cwd) {
-  const out = execFileSync('git', ['status', '--porcelain', '--untracked-files=all', '--', '.', ...EXCLUDE], { cwd, encoding: 'utf8' });
+  const out = execFileSync('git', ['status', '--porcelain', '--untracked-files=normal', '--', '.', ...EXCLUDE], { cwd, encoding: 'utf8' });
   return out.split('\n').filter(Boolean).map(line => line.slice(3));
 }
 

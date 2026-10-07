@@ -159,6 +159,7 @@ test('a resume with changed files stops and names them, and commits nothing', ()
   const a = drive(dir, [], { resume: true });
   assert.equal(a.action, 'failed');
   assert.match(a.reason, /mine\.txt/);
+  assert.match(a.reason, /If a stopped subagent left them, commit them/);
   assert.equal(git(dir, 'rev-parse', 'HEAD'), head);
 });
 

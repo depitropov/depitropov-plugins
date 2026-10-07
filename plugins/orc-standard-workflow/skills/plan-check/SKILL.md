@@ -21,7 +21,11 @@ problems are still cheap. You fix what you can in the two files. You do not writ
 
 1. Read `spec` and `plan`. If `decisions` is given, read it first. If `guide` is given, invoke it
    and use its rules as the reference.
-2. Check against the real code. Read the code; do not trust the plan.
+2. If `decisions` is given, write each answer into the documents first: put the value into the
+   acceptance criterion it belongs to in the brief, remove its `business fact:` line, and change
+   the plan where the answer needs it. The coder and the reviewer read the brief, not
+   `decisions`.
+3. Check against the real code. Read the code; do not trust the plan.
    - **Coverage**: every acceptance criterion is in at least one task's Tests line, with a named test.
    - **Code facts**: every file, signature and pattern the plan names exists as it says.
    - **Scope**: no task goes beyond the brief's scope.
@@ -30,7 +34,7 @@ problems are still cheap. You fix what you can in the two files. You do not writ
    - **Over-building**: no abstraction, layer or new library the goal does not need.
    - **Business facts**: every `business fact:` line in the brief, and every rate, price, limit
      value or rule of who qualifies that the plan uses with no source.
-3. Put each finding into one bucket:
+4. Put each finding into one bucket:
    - **Decide**: stop for a human. Every business fact that neither the brief nor `decisions`
      gives is Decide. A design fork is Decide only when you can name two or more real options and
      no sensible default exists.
@@ -39,12 +43,12 @@ problems are still cheap. You fix what you can in the two files. You do not writ
    - **Evaluate**: real, but not for you to fix. A technical choice with a sensible default is
      Evaluate, never Noise.
    - **Noise**: not a real problem. Drop it.
-4. Write all findings to `<notes>/plan-check.md`, by bucket.
-5. If there is a Decide finding, stop here. Do not change the brief or the plan. Write the result
+5. Write all findings to `<notes>/plan-check.md`, by bucket.
+6. If there is a Decide finding, stop here. Do not fix any finding in the brief or the plan. Write the result
    with `"status": "decide"`.
-6. Otherwise fix every Patch finding in the brief and the plan. When you split a task, number the
+7. Otherwise fix every Patch finding in the brief and the plan. When you split a task, number the
    tasks again. Keep the `AC` numbers.
-7. Write the result JSON.
+8. Write the result JSON.
 
 ## Result
 

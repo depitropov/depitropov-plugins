@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { makeRepo, writeJson, git } = require('../helpers');
-const { changedFiles, commitAll, commitRunDir } = require('../../plugins/orchestra/lib/git');
+const { changedFiles, dirtyFiles, commitAll, commitRunDir } = require('../../plugins/orchestra/lib/git');
 
 test('changedFiles excludes run files and .orchestra', () => {
   const dir = makeRepo();
@@ -28,4 +28,11 @@ test('commitAll leaves run files out; commitRunDir commits only them', () => {
   assert.equal(commitRunDir(dir, 'docs/runs/task/t', 'state'), true);
   assert.equal(git(dir, 'show', '--name-only', '--format=', 'HEAD'), 'docs/runs/task/t/x.json');
   assert.equal(commitAll(dir, 'nothing'), false);
+});
+
+test('dirtyFiles names an untracked folder once, not every file in it', () => {
+  const dir = makeRepo();
+  fs.mkdirSync(path.join(dir, 'target/classes'), { recursive: true });
+  for (let i = 0; i < 3; i++) fs.writeFileSync(path.join(dir, `target/classes/C${i}.class`), 'x');
+  assert.deepEqual(dirtyFiles(dir), ['target/']);
 });

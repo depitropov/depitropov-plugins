@@ -49,7 +49,7 @@ function step(project, extraArgs, resume) {
     const dirty = dirtyFiles(project);
     if (dirty.length) {
       const files = dirty.slice(0, 5).join(', ') + (dirty.length > 5 ? ', …' : '');
-      return { action: 'failed', reason: `Files changed since the run stopped: ${files}. Commit or stash them, then run again.` };
+      return { action: 'failed', reason: `Files changed since the run stopped: ${files}. If a stopped subagent left them, commit them; if they are yours, stash them. Then run again.` };
     }
   } else if (!extraArgs.length) {
     commitLeftovers(project);

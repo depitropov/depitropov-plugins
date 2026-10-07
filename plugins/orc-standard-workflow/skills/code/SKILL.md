@@ -14,6 +14,8 @@ description: Implements a range of plan tasks of one orc-standard-workflow run, 
 - `build`: the command that builds the project and runs all tests. orchestra runs it after you.
 - `notes`: the run's notes folder.
 - `guide` (optional): a skill with short rules for writing code in this stack.
+- `decisions` (optional): the human's answers. The brief already holds them; read this only when
+  the brief and the plan leave a value open.
 
 ## Procedure
 
