@@ -117,7 +117,8 @@ function stage(ctx, name, inputs, skill = name) {
     res = null;
   }
   if (!res) {
-    const decisions = answers > 0 ? { decisions: `${ctx.run.docs}/decisions.md` } : {};
+    const decisionsFile = `${ctx.run.docs}/decisions.md`;
+    const decisions = fs.existsSync(path.join(ctx.project, decisionsFile)) ? { decisions: decisionsFile } : {};
     return { action: 'dispatch', skill: `orc-standard-workflow:${skill}`, inputs: { ...inputs, ...decisions }, result, runDir: ctx.runDir };
   }
   if (res.status === 'failed') return { action: 'failed', reason: res.reason || `Stage ${name} failed. See ${result}.`, runDir: ctx.runDir };
@@ -126,6 +127,12 @@ function stage(ctx, name, inputs, skill = name) {
     return { action: 'decide', gate: name, questions: res.decide || [], runDir: ctx.runDir };
   }
   return null;
+}
+
+// A business fact has no default (S60), so the run asks before anything is planned around a guess.
+function openFacts(file) {
+  const text = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  return [...text.matchAll(/^\s*-\s*(business fact:.*)$/gm)].map(m => m[1].trim());
 }
 
 // The plan's task headings, not a count a model writes, decide which code chunks run.
@@ -148,8 +155,13 @@ function next(project, taskFile) {
   const ctx = { project, runDir, run };
   const notes = run.docs;
   const plan = `${notes}/plan.md`;
+  const specStep = stage(ctx, 'spec', { task: `${notes}/task.md`, base: run.base, notes });
+  if (specStep) return specStep;
+  const facts = openFacts(path.join(project, run.spec));
+  if (facts.length && !countAnswers(path.join(project, notes), 'business-facts')) {
+    return { action: 'decide', gate: 'business-facts', questions: facts, runDir };
+  }
   const steps = [
-    ['spec', { task: `${notes}/task.md`, base: run.base, notes }],
     ['plan', { spec: run.spec, notes, ...s.guide('plan') }],
     ['plan-check', { spec: run.spec, plan, notes, ...s.guide('plan') }],
   ];

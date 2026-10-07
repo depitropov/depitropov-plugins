@@ -205,11 +205,42 @@ test('a used answer does not start plan-check again after a second Decide', () =
   assert.equal(next(dir).action, 'dispatch');
 });
 
-test('a stage with no answer for it gets no decisions input', () => {
+function writeBrief(dir, text) {
+  fs.writeFileSync(path.join(dir, DOCS, 'brief.md'), text);
+}
+
+test('business facts in the brief stop the run after the spec', () => {
+  const dir = project();
+  const spec = next(dir, '.orchestra/task.txt');
+  writeBrief(dir, '# Brief\n\n## Assumptions\n- Rounding is half up.\n- business fact: the VIP rate — options: 5% | 10%\n  - business fact: the fee — options: 4.99 | 5.99\n');
+  writeJson(path.join(dir, spec.result), { stage: 'spec', status: 'ok' });
+  assert.deepEqual(next(dir), {
+    action: 'decide',
+    gate: 'business-facts',
+    questions: ['business fact: the VIP rate — options: 5% | 10%', 'business fact: the fee — options: 4.99 | 5.99'],
+    runDir: spec.runDir,
+  });
+  answer(dir, 'plan-check', 'not for business facts');
+  assert.equal(next(dir).action, 'decide');
+  answer(dir, 'business-facts', 'The VIP rate is 10%. The fee is 4.99.');
+  const plan = next(dir);
+  assert.equal(plan.skill, 'orc-standard-workflow:plan');
+  assert.equal(plan.inputs.decisions, `${DOCS}/decisions.md`);
+});
+
+test('a brief that only mentions business facts in prose does not stop the run', () => {
+  const dir = project();
+  const spec = next(dir, '.orchestra/task.txt');
+  writeBrief(dir, '# Brief\n\nNo business fact: is open here.\n- Rounding is half up.\n');
+  assert.equal(pass(dir, spec).skill, 'orc-standard-workflow:plan');
+});
+
+test('a stage gets no decisions input while decisions.md does not exist', () => {
   const dir = project();
   const plan = pass(dir, next(dir, '.orchestra/task.txt'));
+  assert.equal(plan.inputs.decisions, undefined);
   answer(dir, 'logic-review', 'x');
-  assert.equal(pass(dir, plan).inputs.decisions, undefined);
+  assert.equal(pass(dir, plan).inputs.decisions, `${DOCS}/decisions.md`);
 });
 
 test('the code stage runs in chunks of tasks-per-coder, default 2', () => {
