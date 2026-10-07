@@ -10,7 +10,8 @@ const skills = plugins.flatMap(p => {
   const dir = path.join(PLUGINS, p, 'skills');
   return fs.existsSync(dir) ? fs.readdirSync(dir).map(s => ({ plugin: p, name: s, file: path.join(dir, s, 'SKILL.md') })) : [];
 });
-const REFERENCED = ['orchestra/run', 'orchestra/fixer', 'orc-standard-workflow/manifest', 'orc-standard-workflow/code',
+const REFERENCED = ['orchestra/run', 'orchestra/fixer', 'orc-standard-workflow/manifest', 'orc-standard-workflow/spec',
+  'orc-standard-workflow/plan', 'orc-standard-workflow/plan-check', 'orc-standard-workflow/code',
   'orc-standard-workflow/logic-review', 'orc-java-stack/manifest', 'orc-java-stack/fix-build'];
 
 test('every skill the code dispatches exists', () => {

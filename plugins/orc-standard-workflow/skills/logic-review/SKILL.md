@@ -7,7 +7,7 @@ description: Reviews the code of one run for correctness and for a test behind e
 
 ## Inputs
 
-- `spec`: the task and its acceptance criteria. This is your answer key.
+- `spec`: the brief, with the acceptance criteria. This is your answer key.
 - `base`: the commit before any work.
 - `notes`: the run's notes folder. Your findings file goes here.
 - `decisions` (optional): the human's answers to your earlier questions.
@@ -34,7 +34,8 @@ description: Reviews the code of one run for correctness and for a test behind e
      Examples: a null input that now throws, a changed default, a removed case.
    - A technical choice the coder did not record is Evaluate. A technical choice already in
      `code.md` is not repeated: the report shows it.
-   - A business fact (recorded with `business fact:` or not) is Decide.
+   - A business fact (recorded with `business fact:` or not) is Decide, unless the brief or
+     `decisions` already gives its value. A value from the brief is not asked again.
 6. Write all findings to `<notes>/logic-review.md`, each with `file:line` and the point of the spec
    it concerns.
 7. If there is a Decide finding and no `decisions` input, stop here. Do not fix anything. Write the
