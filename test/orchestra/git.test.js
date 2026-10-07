@@ -13,7 +13,8 @@ test('changedFiles excludes run files and .orchestra', () => {
   fs.writeFileSync(path.join(dir, 'src/A.java'), 'class A {}\n');
   writeJson(path.join(dir, 'docs/runs/task/t/run.json'), { base });
   writeJson(path.join(dir, '.orchestra/config.json'), {});
-  git(dir, 'add', '-A');
+  writeJson(path.join(dir, 'tmp/runs/task/t/run.json'), { base });
+  git(dir, 'add', '-A', '-f');
   git(dir, 'commit', '-m', 'all');
   assert.deepEqual(changedFiles(dir, base), ['src/A.java']);
 });

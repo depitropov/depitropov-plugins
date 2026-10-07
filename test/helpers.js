@@ -23,7 +23,7 @@ function makeRepo() {
   git(dir, 'config', 'user.email', 'test@example.com');
   git(dir, 'config', 'user.name', 'Test');
   git(dir, 'config', 'commit.gpgsign', 'false');
-  fs.writeFileSync(path.join(dir, '.gitignore'), '.orchestra/*\n!.orchestra/config.json\n');
+  fs.writeFileSync(path.join(dir, '.gitignore'), '.orchestra/*\n!.orchestra/config.json\ntmp/\n');
   fs.writeFileSync(path.join(dir, 'README.md'), 'sample\n');
   git(dir, 'add', '-A');
   git(dir, 'commit', '-m', 'init');

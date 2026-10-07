@@ -33,8 +33,8 @@ function runCommand(command, cwd, logFile) {
   return r.status === null ? 1 : r.status;
 }
 
-function countAnswers(runDirAbs, name) {
-  const file = path.join(runDirAbs, 'decisions.md');
+function countAnswers(docsAbs, name) {
+  const file = path.join(docsAbs, 'decisions.md');
   if (!fs.existsSync(file)) return 0;
   return fs.readFileSync(file, 'utf8').split('\n').filter(line => line.trim() === `## ${name}`).length;
 }
@@ -133,12 +133,12 @@ function agentStep(s, ctx, state, save) {
   const resultRel = `${ctx.runDir}/${ctx.phase}.${s.name}.result.json`;
   const resultFile = path.join(ctx.project, resultRel);
   const res = readResult(resultFile);
-  const answers = countAnswers(ctx.abs, s.name);
+  const answers = countAnswers(path.join(ctx.project, ctx.run.docs), s.name);
   const send = () => {
     state.seen[s.name] = answers;
     save();
-    const inputs = { spec: ctx.run.spec, base: ctx.run.base, runDir: ctx.runDir };
-    if (answers > 0) inputs.decisions = `${ctx.runDir}/decisions.md`;
+    const inputs = { spec: ctx.run.spec, base: ctx.run.base, notes: ctx.run.docs };
+    if (answers > 0) inputs.decisions = `${ctx.run.docs}/decisions.md`;
     return { action: 'dispatch', skill: `${s.plugin}:${s.skill}`, inputs, result: resultRel, runDir: ctx.runDir };
   };
   if (!res) return send();

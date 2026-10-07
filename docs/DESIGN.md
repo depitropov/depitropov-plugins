@@ -157,7 +157,7 @@ passes no task then. `next.js` and the gate runner find their state in the run f
 
 A Node CLI, standard library only (S11, S28). It is the guarantee for every contract below. It
 exits non-zero on the first failed rule and prints the rule and the fix. It validates each
-declaration against the JSON Schema of its slot, in `orchestra/schemas/`. A project's `.gitignore` has `.orchestra/*` and `!.orchestra/config.json`.
+declaration against the JSON Schema of its slot, in `orchestra/schemas/`. A project's `.gitignore` has `.orchestra/*`, `!.orchestra/config.json` and `tmp/`.
 
 | Target | Rules |
 |---|---|
@@ -273,8 +273,8 @@ The gate reads `decisions.md` and then fixes. So a gate never re-reviews its own
 | Declaration | `orchestra.json` with `slot: workflow`, its parameters, its config keys and its own gates. |
 | Resolution | A `manifest` skill (5.2). |
 | Order | `next.js` in Node, standard library only (S10, S11). It prints actions of the orchestra protocol, including `phase`. |
-| Output | One status, `done`, `decide` or `failed`. orchestra writes `report.md` from the result files in the run folder, so no workflow repeats that logic (S55). |
-| State | The run folder, `docs/runs/<branch>/`. It is derived from the branch, never passed (S15, S22). Its files are committed and go to the default branch with the PR (S54). The workflow writes `run.json` in it with `base`, `branch` and `spec` (the path of the file that holds the acceptance criteria). The gate runner reads it (S55). |
+| Output | One status, `done`, `decide` or `failed`. orchestra writes `report.md` into the notes folder from the result files in the run folder, so no workflow repeats that logic (S55). |
+| State | Two folders, both derived from the branch, never passed (S15, S22). The **run folder** `tmp/runs/<branch>/` holds everything the orchestration uses: results, checkpoints, logs, `run.json`. Git ignores it. The **notes folder** `docs/runs/<branch>/` holds what a human reads: `task.md`, `decisions.md`, review notes and `report.md`. It is committed and goes to the default branch with the PR (S54, S58). The workflow writes `run.json` with `base`, `branch`, `spec` (the path of the file that holds the acceptance criteria) and `docs` (the notes folder). The gate runner reads it (S55). A resume works on the same machine only, because the run folder is not committed. |
 | Mode | Headless or interactive is fixed by the workflow's author when the workflow is built. It is not a runtime setting (S12). |
 
 ## 8. `orc-standard-workflow`
@@ -329,7 +329,7 @@ This step is code in `next.js`, not prose (S17, S23).
 1. If the working tree is dirty, stop with `failed` and say why.
 2. Read the default branch from `origin/HEAD`. Check it out and run `git pull --rebase`.
 3. Create `task/<slug>`. The slug comes from the task text.
-4. Record the base commit (the HEAD before any work) in `docs/runs/<branch>/run.json`.
+4. Record the base commit (the HEAD before any work) in `tmp/runs/<branch>/run.json`, and write the task to `docs/runs/<branch>/task.md`.
 
 Stages make one commit per plan task. Each gate's fixes are their own commit. The workflow never
 pushes and never opens a PR.
@@ -347,7 +347,7 @@ sets the action:
 | Noise | Drop it. |
 
 When a stage or a phase returns `decide`, `next.js` returns `decide`. The run writes `report.md`
-and stops. The human writes the answers in `decisions.md` in the run folder. On resume, the stage
+and stops. The human writes the answers in `decisions.md` in the notes folder. On resume, the stage
 or gate that raised the question runs again and reads `decisions.md`.
 
 ### 8.5 `report.md`

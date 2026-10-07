@@ -69,10 +69,13 @@ function prepare(project, taskText) {
   let branch = `task/${slug}`;
   for (let n = 2; branchExists(project, branch); n++) branch = `task/${slug}-${n}`;
   git(project, 'checkout', '-b', branch);
-  const runDir = `docs/runs/${branch}`;
+  // Orchestration state stays in git-ignored tmp/; only the human-readable files go to docs/ (S58).
+  const runDir = `tmp/runs/${branch}`;
+  const docs = `docs/runs/${branch}`;
   fs.mkdirSync(path.join(project, runDir), { recursive: true });
-  fs.writeFileSync(path.join(project, runDir, 'task.md'), taskText.endsWith('\n') ? taskText : `${taskText}\n`);
-  const run = { base, branch, spec: `${runDir}/task.md` };
+  fs.mkdirSync(path.join(project, docs), { recursive: true });
+  fs.writeFileSync(path.join(project, docs, 'task.md'), taskText.endsWith('\n') ? taskText : `${taskText}\n`);
+  const run = { base, branch, spec: `${docs}/task.md`, docs };
   fs.writeFileSync(path.join(project, runDir, 'run.json'), JSON.stringify(run, null, 2) + '\n');
   return null;
 }
@@ -82,7 +85,7 @@ function codeInputs(project, run) {
   const config = readJson(path.join(project, '.orchestra', 'config.json')) || {};
   const stack = resolved && resolved.slots['stack-skills'];
   if (!stack) throw new Error('No resolved stack-skills slot. orchestra run resolves the slots first.');
-  const inputs = { spec: run.spec, base: run.base, build: stack.declaration.build.run.replace(/\{plugin\}/g, stack.dir) };
+  const inputs = { spec: run.spec, base: run.base, build: stack.declaration.build.run.replace(/\{plugin\}/g, stack.dir), notes: run.docs };
   const guide = (stack.declaration.guides || {}).code;
   const disabled = (config['stack-skills'] || {}).disable || [];
   if (guide && !disabled.includes(guide)) inputs.guide = `${stack.plugin}:${guide}`;
@@ -95,7 +98,7 @@ function next(project, taskFile) {
     if (failed) return failed;
   }
   const branch = git(project, 'branch', '--show-current');
-  const runDir = `docs/runs/${branch}`;
+  const runDir = `tmp/runs/${branch}`;
   const run = branch.startsWith('task/') ? readJson(path.join(project, runDir, 'run.json')) : null;
   if (!run) return { action: 'failed', reason: `No run on branch "${branch}". Start a run with a task.` };
   for (const s of STAGES) {

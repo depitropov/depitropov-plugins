@@ -44,6 +44,7 @@ function writeReport(project, runDir, final, resolved) {
   const skipped = files.filter(f => f.endsWith('.state.json')).flatMap(f =>
     (readJson(path.join(abs, f)).skipped || []).map(s => `${f.replace('.state.json', '')}: ${s.name} (${s.why})`));
   const commits = run ? git(project, 'log', '--oneline', `${run.base}..HEAD`) : '';
+  const assumptions = results.flatMap(r => (Array.isArray(r.assumptions) ? r.assumptions.map(a => `${r.step}: ${a}`) : []));
   const evaluate = results.flatMap(r => [
     ...(r.status === 'evaluate' ? [`${r.step}: ${r.reason}`] : []),
     ...(Array.isArray(r.evaluate) ? r.evaluate.map(e => `${r.step}: ${e}`) : []),
@@ -57,14 +58,17 @@ function writeReport(project, runDir, final, resolved) {
   lines.push('', '## Commits', '', ...list(commits ? commits.split('\n') : []));
   lines.push('', '## Results', '', '| Step | Status | Counts |', '|---|---|---|');
   for (const r of results) lines.push(`| ${r.step} | ${status(r)} | ${counts(r)} |`);
+  lines.push('', '## Assumptions', '', ...list(assumptions));
   lines.push('', '## Evaluate', '', ...list(evaluate));
   lines.push('', '## Skipped gates', '', ...list(skipped));
+  const docs = run ? run.docs : runDir;
   if (final.action === 'decide') {
     lines.push('', '## Decide', '',
-      `Write your answers in \`${runDir}/decisions.md\` under the heading \`## ${final.gate}\`, then run again.`, '',
+      `Write your answers in \`${docs}/decisions.md\` under the heading \`## ${final.gate}\`, then run again.`, '',
       ...list(final.questions || []));
   }
-  const rel = `${runDir}/report.md`;
+  fs.mkdirSync(path.join(project, docs), { recursive: true });
+  const rel = `${docs}/report.md`;
   fs.writeFileSync(path.join(project, rel), lines.join('\n') + '\n');
   return rel;
 }

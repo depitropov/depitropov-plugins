@@ -17,18 +17,24 @@ function callNext(nextJs, project, args) {
 function finish(project, action, resolved) {
   if (!action.runDir) return action;
   const report = writeReport(project, action.runDir, action, resolved);
-  commitRunDir(project, action.runDir, `orchestra: run state (${action.action})`);
+  commitRunDir(project, path.dirname(report), `orchestra: run notes (${action.action})`);
   return { ...action, report };
 }
 
 // Subagents should commit their work. When one does not, commit it here, so the gates review it.
 function commitLeftovers(project) {
   const branch = git(project, 'branch', '--show-current');
-  if (!branch.startsWith('task/') || !fs.existsSync(path.join(project, 'docs', 'runs', branch, 'run.json'))) return;
+  if (!branch.startsWith('task/') || !fs.existsSync(path.join(project, 'tmp', 'runs', branch, 'run.json'))) return;
   commitAll(project, 'orchestra: commit work left uncommitted');
 }
 
+// The model is told the branch on every action, so it never guesses where the commits went.
 function drive(project, extraArgs = []) {
+  const action = step(project, extraArgs);
+  return { ...action, branch: git(project, 'branch', '--show-current') };
+}
+
+function step(project, extraArgs) {
   const resolved = load(project);
   if (!extraArgs.length) commitLeftovers(project);
   const config = JSON.parse(fs.readFileSync(path.join(project, '.orchestra', 'config.json'), 'utf8'));

@@ -31,21 +31,25 @@ If it exits with an error, show the error and stop.
 
 ## 3. Drive
 
+When the user gave a task, tell them first what the start does: it checks out the default branch,
+pulls it from the remote with `git pull --rebase`, and switches to a new branch `task/<name>`.
+
 Start the run:
 - If the user gave a task as text, write it to `.orchestra/task.txt` and run
   `node <orchestra>/bin/drive.js --task-file .orchestra/task.txt`.
 - If the user gave a file path, run `node <orchestra>/bin/drive.js --task-file <path>`.
 - If the user gave no task, this is a resume. Run `node <orchestra>/bin/drive.js`.
 
-The command prints one JSON line. Act on its `action`:
+The command prints one JSON line. It always names the current `branch`. Tell the user the branch
+once, when the run starts. Act on its `action`:
 
 - `dispatch`: dispatch a general-purpose subagent with a clean context. It must be able to read and
   edit files and run shell commands. Give it the `prompt` text exactly. Wait
   until it finishes. Then run `node <orchestra>/bin/drive.js` again, with no task.
-- `done`: tell the user the run is done. Show the `report` path.
-- `failed`: show the `reason` and the `report` path, if there is one.
-- `decide`: show each line of `questions`. Tell the user to write the answers in
-  `<runDir>/decisions.md` under the heading `## <gate>`, then call orchestra run again.
+- `done`: tell the user the run is done, on which `branch`, and show the `report` path.
+- `failed`: show the `reason`, the `branch`, and the `report` path, if there is one.
+- `decide`: show each line of `questions` and the `report` path. The report says where to write the
+  answers. Tell the user to call orchestra run again after that.
 
 Stop after `done`, `failed` or `decide`.
 

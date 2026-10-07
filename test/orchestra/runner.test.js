@@ -33,11 +33,14 @@ function setup({ build = OK, maxRounds = 1, stackGates = [], workflowGates = [] 
   fs.writeFileSync(path.join(dir, 'src/Car.java'), '@Entity class Car {}\n');
   git(dir, 'add', '-A');
   git(dir, 'commit', '-m', 'code');
-  const runDir = 'docs/runs/task/t';
-  writeJson(path.join(dir, runDir, 'run.json'), { base, branch: 'task/t', spec: `${runDir}/task.md` });
+  const runDir = 'tmp/runs/task/t';
+  const docs = 'docs/runs/task/t';
+  writeJson(path.join(dir, runDir, 'run.json'), { base, branch: 'task/t', spec: `${docs}/task.md`, docs });
+  fs.mkdirSync(path.join(dir, docs), { recursive: true });
   return {
     dir,
     runDir,
+    docs,
     step: phase => runner.step({ project: dir, runDir, phase, resolved, config }),
     write: (rel, data) => writeJson(path.join(dir, rel), data),
     read: rel => JSON.parse(fs.readFileSync(path.join(dir, rel), 'utf8')),
@@ -52,7 +55,8 @@ test('implementation-check runs the build, then dispatches the agent gate', () =
   assert.equal(a.action, 'dispatch');
   assert.equal(a.skill, 'wf:logic-review');
   assert.equal(a.result, `${t.runDir}/implementation-check.logic-review.result.json`);
-  assert.equal(a.inputs.spec, `${t.runDir}/task.md`);
+  assert.equal(a.inputs.spec, `${t.docs}/task.md`);
+  assert.equal(a.inputs.notes, t.docs);
   assert.equal(a.inputs.decisions, undefined);
   assert.equal(t.read(`${t.runDir}/implementation-check.build.result.json`).status, 'ok');
   t.write(a.result, { stage: 'logic-review', status: 'ok' });
@@ -135,13 +139,13 @@ test('a Decide stops the phase until decisions.md answers that gate', () => {
   const a = t.step('implementation-check');
   t.write(a.result, { stage: 'logic-review', status: 'decide', decide: ['Round half up or half even? — options: up | even'] });
   assert.deepEqual(t.step('implementation-check'), { status: 'decide', gate: 'logic-review', questions: ['Round half up or half even? — options: up | even'] });
-  const decisions = path.join(t.dir, t.runDir, 'decisions.md');
+  const decisions = path.join(t.dir, t.docs, 'decisions.md');
   fs.writeFileSync(decisions, '## other-gate\nup\n');
   assert.equal(t.step('implementation-check').status, 'decide');
   fs.appendFileSync(decisions, '## logic-review\nup\n');
   const again = t.step('implementation-check');
   assert.equal(again.action, 'dispatch');
-  assert.equal(again.inputs.decisions, `${t.runDir}/decisions.md`);
+  assert.equal(again.inputs.decisions, `${t.docs}/decisions.md`);
   t.write(again.result, { stage: 'logic-review', status: 'ok' });
   assert.equal(t.step('implementation-check').status, 'ok');
 });

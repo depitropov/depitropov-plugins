@@ -23,8 +23,8 @@ You get the output of one tool that failed, and the name of a fix guide.
    (`git diff --name-only <base> HEAD`), unless the output names another file.
 4. Never delete or weaken a test to make a tool pass. Never change the tool's configuration or
    threshold.
-5. Commit your fix once, with the message `fix(<gate>): <short summary>`. Do not add files under
-   `docs/runs/`.
+5. Commit your fix once, with the message `fix(<gate>): <short summary>`. orchestra handles its own
+   files: do not stage files under `docs/runs/` or `tmp/`.
 6. Write the result JSON.
 
 ## Result

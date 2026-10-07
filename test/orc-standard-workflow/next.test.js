@@ -41,14 +41,15 @@ test('prepare makes the task branch and the run folder, then dispatches code', (
   const dir = project();
   const base = git(dir, 'rev-parse', 'HEAD');
   const a = next(dir, '.orchestra/task.txt');
-  const runDir = 'docs/runs/task/add-a-discount';
+  const runDir = 'tmp/runs/task/add-a-discount';
+  const docs = 'docs/runs/task/add-a-discount';
   assert.equal(git(dir, 'branch', '--show-current'), 'task/add-a-discount');
-  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, runDir, 'run.json'), 'utf8')), { base, branch: 'task/add-a-discount', spec: `${runDir}/task.md` });
-  assert.match(fs.readFileSync(path.join(dir, runDir, 'task.md'), 'utf8'), /Orders over 100/);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, runDir, 'run.json'), 'utf8')), { base, branch: 'task/add-a-discount', spec: `${docs}/task.md`, docs });
+  assert.match(fs.readFileSync(path.join(dir, docs, 'task.md'), 'utf8'), /Orders over 100/);
   assert.deepEqual(a, {
     action: 'dispatch',
     skill: 'orc-standard-workflow:code',
-    inputs: { spec: `${runDir}/task.md`, base, build: '/p/st/mvnw -B verify' },
+    inputs: { spec: `${docs}/task.md`, base, build: '/p/st/mvnw -B verify', notes: docs },
     result: `${runDir}/code.result.json`,
     runDir,
   });
@@ -60,6 +61,7 @@ test('a second run of the same task gets its own branch', () => {
   git(dir, 'add', '-A');
   git(dir, 'commit', '-m', 'run files');
   git(dir, 'checkout', 'main');
+  fs.rmSync(path.join(dir, 'docs'), { recursive: true, force: true });
   next(dir, '.orchestra/task.txt');
   assert.equal(git(dir, 'branch', '--show-current'), 'task/add-a-discount-2');
 });
