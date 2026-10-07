@@ -85,7 +85,7 @@ test('a Decide ends the call with the questions and a report that says how to an
   const stop = drive(dir);
   assert.equal(stop.action, 'decide');
   assert.deepEqual(stop.questions, ['Half up or half even? — options: up | even']);
-  assert.match(fs.readFileSync(path.join(dir, stop.report), 'utf8'), /under the heading `## logic-review`/);
+  assert.match(fs.readFileSync(path.join(dir, stop.report), 'utf8'), /Add a new section `## logic-review`/);
 });
 
 test('drive throws when resolved.json is missing; the CLI prints that as failed', () => {
@@ -120,7 +120,9 @@ test('a plan-check Decide ends the call before any code, with how to answer', ()
   writeJson(path.join(dir, a.result), { stage: 'plan-check', status: 'decide', decide: ['business fact: the rate? — options: 5% | 10%'] });
   const stop = drive(dir);
   assert.equal(stop.action, 'decide');
-  assert.match(fs.readFileSync(path.join(dir, stop.report), 'utf8'), /under the heading `## plan-check`/);
+  const text = fs.readFileSync(path.join(dir, stop.report), 'utf8');
+  assert.match(text, /Add a new section `## plan-check` at the end of `docs\/runs\/task\/add-a-discount\/decisions\.md`/);
+  assert.match(text, /Text added to an old section is not read as an answer/);
 });
 
 test('chunked code steps keep run order in the report', () => {
@@ -135,4 +137,16 @@ test('chunked code steps keep run order in the report', () => {
   const report = fs.readFileSync(path.join(dir, drive(dir).report), 'utf8');
   const order = ['| spec |', '| plan |', '| plan-check |', '| code-1 |', '| code-3 |'].map(row => report.indexOf(row));
   assert.ok(order.every((pos, i) => pos >= 0 && (i === 0 || pos > order[i - 1])), `rows out of run order: ${order}`);
+});
+
+test('the report copies decisions.md, with its headings one level down', () => {
+  const dir = project();
+  const code = toCode(dir);
+  fs.writeFileSync(path.join(dir, 'docs/runs/task/add-a-discount/decisions.md'), '## business-facts\n\nThe VIP rate is 10%.\n');
+  writeJson(path.join(dir, code.result), { stage: 'code', status: 'ok' });
+  const review = drive(dir);
+  writeJson(path.join(dir, review.result), { stage: 'logic-review', status: 'ok' });
+  const report = fs.readFileSync(path.join(dir, drive(dir).report), 'utf8');
+  assert.match(report, /## Decisions\n\n### business-facts\n\nThe VIP rate is 10%\./);
+  assert.doesNotMatch(report, /^## business-facts$/m);
 });

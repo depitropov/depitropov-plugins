@@ -63,9 +63,15 @@ function writeReport(project, runDir, final, resolved) {
   lines.push('', '## Evaluate', '', ...list(evaluate));
   lines.push('', '## Skipped gates', '', ...list(skipped));
   const docs = run ? run.docs : runDir;
+  const decisionsFile = path.join(project, docs, 'decisions.md');
+  if (fs.existsSync(decisionsFile)) {
+    // One level down, so the answers' `## <gate>` headings stay inside this section.
+    lines.push('', '## Decisions', '', fs.readFileSync(decisionsFile, 'utf8').trim().replace(/^#/gm, '##'));
+  }
   if (final.action === 'decide') {
     lines.push('', '## Decide', '',
-      `Write your answers in \`${docs}/decisions.md\` under the heading \`## ${final.gate}\`, then run again.`, '',
+      `Add a new section \`## ${final.gate}\` at the end of \`${docs}/decisions.md\` with your answers, then run again. ` +
+      'Text added to an old section is not read as an answer.', '',
       ...list(final.questions || []));
   }
   fs.mkdirSync(path.join(project, docs), { recursive: true });
