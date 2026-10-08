@@ -2,7 +2,9 @@
 
 The forks in the design. `docs/PILLARS.md` describes the four source projects. `docs/CONTEXT.md`
 defines the module names. The research notes are in `docs/research/` (R1 file loading, R2
-orchestration, R3 write vs review time).
+orchestration, R3 write vs review time, R4 subagent nesting, R5 reviewer context). Each row here is
+the short index; a deliberate decision that weighed options has its full record in
+`docs/DECISIONS.md` under the same `S` number.
 
 ## Scope
 
@@ -80,6 +82,7 @@ orchestration, R3 write vs review time).
 | S63 | From the order-pricing run. A `business fact:` line in the brief stops the run right after the spec (a check in `next.js`); the answer is a `## business-facts` section, and the planner reads it, so no stage plans around a guessed value. Every workflow stage gets `decisions` once the file exists (gates still get it only after an answer for that gate). plan-check always reviews in full; its answer-only mode of S62 is removed. `drive.js --resume` stops on files changed outside `docs/runs`, and never commits them. The driver runs `drive.js` in the background or with the longest timeout. logic-review and the fixer never run the full build. An answer is a new section; the driver may write the user's chat answers into it word for word. `report.md` copies `decisions.md`. S60 stays: a limit before or after rounding is a technical choice. Rejected: finding plugin folders without the manifest skills (S50, S33). | Run feedback, user decision |
 | S64 | Triage is one skill, `orchestra:triage`, ported in full from be-coding-agent's `triage.md` (it was lost in the summaries): five axes, bucket rules (first match wins), the Decide test (half A and half B1 or B2; half A alone means you make the call), flags, check a Patch before applying it, the finding format with two calibration examples, the notes format that matches the result JSON, and the hard gate. Adapted: a Decide stops before any fix (S46); S60's business fact and technical choice replace the old B1 bound; S57, S59, S60 and S63 are its run rules. plan-check and logic-review invoke it and keep only their own checks. | User decision, port inventory |
 | S65 | From the port inventory. (1) No degraded run: when the driver cannot dispatch a subagent, the run stops; the driver never does a stage itself (as in be-coding-agent). This removes the fallback that plan 1 added with no decision. (2) The plan guide loses "no interface with one implementation": it was not from java-stack and reversed its "interfaces at layer boundaries". Plan 4 decides the interface rule when it ports `java-architecture` from the source. | User decision |
+| S66 | The logic reviewer sees the brief, `decisions.md`, the diff and the code; no plan and no implementation log. It works out the required behaviour and a likely wrong version first, then reads the code; it reads `code.md` last, only to drop repeats. Plan conformance is checked separately (how: open). Full record: `docs/DECISIONS.md`; research: R5. | User decision, R5 |
 
 ## Open (phase 1)
 
