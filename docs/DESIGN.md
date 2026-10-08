@@ -268,6 +268,8 @@ An agent gate that has a Decide finding writes its findings and stops **before**
 runner returns `decide`, and the run stops. An answer is a section `## <gate name>` in
 `decisions.md`. On resume the runner starts that gate again only when a new section for it exists.
 The gate reads `decisions.md` and then fixes. So a gate never re-reviews its own fixes (S55).
+Every agent gate gets `decisions` once the file exists; only a new section for that gate restarts
+it (S66).
 
 ## 7. The workflow contract
 
@@ -308,7 +310,8 @@ The workflow's own gates, in phase 1:
 
 | Gate | Phase | Kind | Job |
 |---|---|---|---|
-| `logic-review` | `implementation-check` | agent | Correctness and the mapping from acceptance criteria to tests (S25). Reads `brief.md` as the answer key |
+| `plan-conformance` | `implementation-check` | agent | Every plan task done, every named test present, no undeclared or out-of-scope change. Reads the plan and the implementation log. No correctness verdict (S66) |
+| `logic-review` | `implementation-check` | agent | Correctness, and a test for every criterion and behavioural assumption that fails on a wrong version (S25, S66). Reads the brief and `decisions` only, never the plan |
 
 A generic bug hunter and a generic architecture reviewer are candidates for later.
 
