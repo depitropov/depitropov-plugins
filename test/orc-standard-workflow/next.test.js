@@ -70,7 +70,7 @@ test('prepare makes the task branch and the run folder, then dispatches spec', (
   assert.deepEqual(a, {
     action: 'dispatch',
     skill: 'orc-standard-workflow:spec',
-    inputs: { task: `${docs}/task.md`, base, notes: docs },
+    inputs: { task: `${docs}/task.md`, notes: docs },
     result: `${runDir}/spec.result.json`,
     runDir,
   });

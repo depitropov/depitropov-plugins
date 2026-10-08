@@ -138,7 +138,9 @@ function agentStep(s, ctx, state, save) {
     state.seen[s.name] = answers;
     save();
     const inputs = { spec: ctx.run.spec, base: ctx.run.base, notes: ctx.run.docs };
-    if (answers > 0) inputs.decisions = `${ctx.run.docs}/decisions.md`;
+    // Every answer is part of the requirements, so every gate reads them (S66). Only a new answer for this gate restarts it.
+    const decisionsFile = `${ctx.run.docs}/decisions.md`;
+    if (fs.existsSync(path.join(ctx.project, decisionsFile))) inputs.decisions = decisionsFile;
     return { action: 'dispatch', skill: `${s.plugin}:${s.skill}`, inputs, result: resultRel, runDir: ctx.runDir };
   };
   if (!res) return send();

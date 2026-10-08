@@ -210,3 +210,14 @@ test('a phase result says how many gates ran', () => {
   const t = setup();
   assert.deepEqual(t.step('conventions-check'), { status: 'ok', skipped: [], gates: 0 });
 });
+
+test('an agent gate gets decisions.md once it exists, but only its own answer restarts it', () => {
+  const t = setup({ workflowGates: [logicReview] });
+  fs.writeFileSync(path.join(t.dir, t.docs, 'decisions.md'), '## business-facts\n\n- the rate? → 10%\n');
+  const a = t.step('implementation-check');
+  assert.equal(a.inputs.decisions, `${t.docs}/decisions.md`);
+  t.write(a.result, { stage: 'logic-review', status: 'decide', decide: ['a? — options: x | y'] });
+  assert.equal(t.step('implementation-check').status, 'decide');
+  fs.appendFileSync(path.join(t.dir, t.docs, 'decisions.md'), '\n## plan-check\n\n- b? → z\n');
+  assert.equal(t.step('implementation-check').status, 'decide');
+});

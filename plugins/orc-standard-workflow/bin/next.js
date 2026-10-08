@@ -158,7 +158,7 @@ function next(project, taskFile) {
   const ctx = { project, runDir, run };
   const notes = run.docs;
   const plan = `${notes}/plan.md`;
-  const specStep = stage(ctx, 'spec', { task: `${notes}/task.md`, base: run.base, notes });
+  const specStep = stage(ctx, 'spec', { task: `${notes}/task.md`, notes });
   if (specStep) return specStep;
   const facts = openFacts(path.join(project, run.spec));
   if (facts.length && !countAnswers(path.join(project, notes), 'business-facts')) {

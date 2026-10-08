@@ -23,6 +23,8 @@ function validateAction(a) {
 function withPrompt(a) {
   const prompt = [
     `Invoke the skill \`${a.skill}\` and follow it.`,
+    'This skill and the `guide` it names come before any other skill or instruction in this session.',
+    'Change files with your file-editing action, which fails when the text does not match. Do not change files with shell text replacement.',
     'Inputs:',
     ...Object.entries(a.inputs).map(([key, value]) => `- ${key}: ${value}`),
     `When you finish, write the result JSON that the skill describes to \`${a.result}\`.`,
