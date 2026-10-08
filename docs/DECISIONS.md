@@ -28,6 +28,37 @@ wording change needs no entry.
 
 ---
 
+## S67: plan-conformance checks direction, not detail
+
+- **Date:** 2026-10-08
+- **Status:** decided
+- **Question:** In the library-loans run, the coder added argument checks that the plan did not name.
+  It recorded them in `code.md`, as the code skill asks. plan-conformance raised them as an
+  undeclared deviation. Should the plan be followed line by line, and who checks the extra behaviour?
+- **Options:**
+  1. Keep it strict: every departure from the plan is declared. The plan must then name every check,
+     which it never aims to do. The findings cost work and add no value.
+  2. Soften it: check that no task is skipped or half done, that a change of direction is declared,
+     and that nothing falls outside the brief's scope. Detail inside a task is the coder's call.
+  3. Drop plan-conformance: logic-review already checks that each acceptance criterion has code and a
+     test. Then scope creep and half-done tasks have no check.
+  4. Also make the plan write its behaviour choices (such as a rounding mode) into the brief, so that
+     logic-review sees them.
+- **Evidence:** the library-loans run in `orchestra-sample-java` and an outside review of it: a false
+  Patch from plan-conformance for the argument checks, and no test for those checks.
+- **Decision:** Option 2. plan-conformance also reads `code.md`; a recorded choice is not a
+  deviation. Because the extra behaviour now passes plan-conformance, logic-review step 6 requires a
+  test that fails without a recorded choice that changes behaviour; a missing test is Patch. Option 4
+  is rejected: it blurs which stage writes the brief. If the next runs show that plan-conformance finds
+  nothing real, go to option 3.
+- **Cost and risk:** "direction" is a judgement, so the gate can now miss a real change that it calls
+  detail. logic-review still checks the behaviour against the brief. This changes one part of S66:
+  the conformance gate no longer checks the plan line by line.
+- **Where it lives:** `orc-standard-workflow/skills/plan-conformance`, step 6 of
+  `orc-standard-workflow/skills/logic-review`.
+
+---
+
 ## S66: What the logic reviewer sees
 
 - **Date:** 2026-10-08

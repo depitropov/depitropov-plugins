@@ -225,7 +225,9 @@ test('business facts in the brief stop the run after the spec', () => {
   assert.equal(JSON.parse(fs.readFileSync(factsFile, 'utf8')).status, 'decide');
   answer(dir, 'plan-check', 'not for business facts');
   assert.equal(next(dir).action, 'decide');
-  answer(dir, 'business-facts', 'The VIP rate is 10%. The fee is 4.99.');
+  answer(dir, 'business-facts', '- business fact: the VIP rate → 10%');
+  assert.equal(next(dir).action, 'decide', 'one answer for two questions is not enough');
+  answer(dir, 'business-facts', '- business fact: the fee → 4.99');
   const plan = next(dir);
   assert.equal(plan.skill, 'orc-standard-workflow:plan');
   assert.equal(plan.inputs.decisions, `${DOCS}/decisions.md`);

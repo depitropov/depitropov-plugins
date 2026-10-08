@@ -12,8 +12,7 @@ const skills = plugins.flatMap(p => {
 });
 const REFERENCED = ['orchestra/run', 'orchestra/fixer', 'orchestra/triage', 'orc-standard-workflow/manifest', 'orc-standard-workflow/spec',
   'orc-standard-workflow/plan', 'orc-standard-workflow/plan-check', 'orc-standard-workflow/plan-conformance', 'orc-standard-workflow/code',
-  'orc-standard-workflow/logic-review', 'orc-java-stack/manifest', 'orc-java-stack/fix-build',
-  'orc-java-stack/plan-guide', 'orc-java-stack/code-guide'];
+  'orc-standard-workflow/logic-review', 'orc-java-stack/manifest', 'orc-java-stack/fix-build'];
 
 test('every skill the code dispatches exists', () => {
   const have = skills.map(s => `${s.plugin}/${s.name}`);

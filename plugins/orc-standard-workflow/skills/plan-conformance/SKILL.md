@@ -1,12 +1,14 @@
 ---
 name: plan-conformance
-description: Checks that the code of one orchestra run does what its plan promised — every task done, every named test present, no undeclared or out-of-scope change — and fixes what it can. An orchestra gate; dispatched by orchestra.
+description: Checks that the code of one orchestra run does what its plan promised — every task done, every named test present, no undeclared change of direction, nothing outside the brief's scope — and fixes what it can. An orchestra gate; dispatched by orchestra.
 ---
 
 # Plan conformance
 
 You check the change against the plan. You give no verdict on whether the code is correct: logic-review
-does that, from the brief alone. You check only that the plan was carried out.
+does that, from the brief alone. You check only that the plan was carried out. The plan sets the
+tasks and the direction, not every line: detail that the coder adds inside a task is not yours to
+flag.
 
 ## Inputs
 
@@ -18,7 +20,8 @@ does that, from the brief alone. You check only that the plan was carried out.
 
 ## Procedure
 
-1. Read `<notes>/plan.md`, `<notes>/implementation-log.md` and `decisions` if given.
+1. Read `<notes>/plan.md`, `<notes>/implementation-log.md`, `<notes>/code.md` if it exists, and
+   `decisions` if given.
 2. Get the change: `git diff <base> HEAD -- . ':(exclude)docs/runs' ':(exclude)tmp'`. Read the
    changed files in full. If nothing in the change concerns code or tests, write the result with
    `"status": "skipped"` and stop.
@@ -27,9 +30,13 @@ does that, from the brief alone. You check only that the plan was carried out.
      placeholder, or skipped.
    - **Named tests:** every test that a task's Tests line names exists, with that class and method,
      and is not disabled. Whether it proves its criterion is logic-review's job, not yours.
-   - **Deviations:** every change in the diff that departs from the plan is declared, with its
-     reason, under Deviations in the implementation log. An undeclared deviation is a finding.
-   - **Scope:** every changed file belongs to a task. A change outside every task is a finding.
+   - **Direction:** a task done another way than the plan says (another approach, another class, a
+     part of the task dropped) is declared, with its reason, under Deviations in the implementation
+     log. An undeclared change of direction is a finding. Detail inside a task is not a deviation:
+     an extra argument check, a helper method, a private name, a choice recorded in `<notes>/code.md`.
+   - **Scope:** every change is inside the brief's scope. A change that the brief does not ask for
+     (a new feature, a change to an unrelated class) is a finding. A small change that a task needs,
+     such as a test helper or an import, is in scope.
 
    Commits that orchestra or its fixer made (`fix(<gate>): …`, `orchestra: …`) belong to no task and
    are not deviations: leave them out of these checks.

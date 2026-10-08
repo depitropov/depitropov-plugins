@@ -55,7 +55,8 @@ once, when the run starts. Act on its `action`:
 - `failed`: show the `reason`, the `branch`, and the `report` path, if there is one.
 - `decide`: show each line of `questions` and the `report` path. The user answers in
   `decisions.md` in the notes folder: a **new** section `## <gate>` at the end of the file, with
-  the answers. If the user gives the answers to you in the conversation, add that new section
+  one line per question: `- <question> → <answer>`. A `business-facts` stop counts these lines and
+  stops again until every question has one. If the user gives the answers to you in the conversation, add that new section
   yourself: one line per question, `- <question> → <their answer>`, with the question copied from
   `questions` and the answer in their words exactly. Then run `node <orchestra>/bin/drive.js --resume`.
   Otherwise tell the user to call orchestra run again after they write it.

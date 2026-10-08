@@ -310,7 +310,7 @@ The workflow's own gates, in phase 1:
 
 | Gate | Phase | Kind | Job |
 |---|---|---|---|
-| `plan-conformance` | `implementation-check` | agent | Every plan task done, every named test present, no undeclared or out-of-scope change. Reads the plan and the implementation log. No correctness verdict (S66) |
+| `plan-conformance` | `implementation-check` | agent | Every plan task done, every named test present, no undeclared change of direction, nothing outside the brief's scope; detail inside a task is not a deviation (S67). Reads the plan and the implementation log. No correctness verdict (S66) |
 | `logic-review` | `implementation-check` | agent | Correctness, and a test for every criterion and behavioural assumption that fails on a wrong version (S25, S66). Reads the brief and `decisions` only, never the plan |
 
 A generic bug hunter and a generic architecture reviewer are candidates for later.

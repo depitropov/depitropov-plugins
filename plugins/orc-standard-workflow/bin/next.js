@@ -107,6 +107,17 @@ function countAnswers(docsAbs, name) {
   return fs.readFileSync(file, 'utf8').split('\n').filter(line => line.trim() === `## ${name}`).length;
 }
 
+// The answer lines (`- <question> → <answer>`) in every `## <name>` section of decisions.md.
+function answerLines(docsAbs, name) {
+  const file = path.join(docsAbs, 'decisions.md');
+  if (!fs.existsSync(file)) return 0;
+  let inSection = false;
+  return fs.readFileSync(file, 'utf8').split('\n').filter(line => {
+    if (line.startsWith('## ')) inSection = line.trim() === `## ${name}`;
+    return inSection && line.startsWith('- ');
+  }).length;
+}
+
 // One step of the workflow: dispatch it, or stop on its result. Returns null when the step is done.
 // A Decide result records how many answers existed when it stopped (`seen`). Only a new answer starts the step again.
 function stage(ctx, name, inputs, skill = name) {
@@ -164,7 +175,8 @@ function next(project, taskFile) {
   if (facts.length) {
     // A result file gives the stop its own row in the report, in run order.
     const result = `${runDir}/business-facts.result.json`;
-    const answered = countAnswers(path.join(project, notes), 'business-facts') > 0;
+    // Every question needs its own answer line; a partial answer stops the run again.
+    const answered = answerLines(path.join(project, notes), 'business-facts') >= facts.length;
     writeJson(path.join(project, result), { stage: 'business-facts', status: answered ? 'ok' : 'decide', decide: facts });
     if (!answered) return { action: 'decide', gate: 'business-facts', questions: facts, result, runDir };
   }
