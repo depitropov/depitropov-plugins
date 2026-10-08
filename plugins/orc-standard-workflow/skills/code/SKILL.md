@@ -11,7 +11,7 @@ description: Implements a range of plan tasks of one orc-standard-workflow run, 
 - `plan`: the plan, with tasks `T1`, `T2`, ….
 - `from`, `to`: the plan tasks you implement, both included. Do no other task.
 - `base`: the commit before any work.
-- `build`: the command that builds the project and runs all tests. orchestra runs it after you.
+- `build`: for reference only: the command that builds the project and runs all tests. orchestra runs it after you.
 - `notes`: the run's notes folder.
 - `guide` (optional): a skill with short rules for writing code in this stack.
 - `decisions` (optional): the human's answers. The brief already holds them; read this only when
@@ -59,7 +59,10 @@ Write to the path given in the prompt:
 {
   "stage": "code",
   "status": "ok",
-  "assumptions": ["The 50.00 limit applies to the amount before rounding."],
+  "assumptions": [
+    "The loan limit counts loans that are not yet returned.",
+    "business fact: the daily late fee is a placeholder of 0.50."
+  ],
   "files": ["<changed file>"]
 }
 ```

@@ -22,7 +22,8 @@ do, and the flags carry the urgency.
 ## Check the finding first
 
 Before you bucket a finding, read the code or the document it names. A finding that is wrong gets no
-bucket: list it under Noise as `rejected: <the evidence>`, and leave it out of `counts`.
+bucket: list it under Noise as `rejected: <the evidence>`, and leave it out of `counts`. A check that
+passes is not a finding: list it under **Checked**, not in a bucket.
 
 ## The bucket: the first rule that matches wins
 
@@ -158,13 +159,14 @@ evidence prefers one, so the reviewer picks it and the finding is a Patch:
 The stage or gate names its notes file (for example `<notes>/logic-review.md`). Its sections, in
 order:
 
-1. **Found**: the tally first, for example `1 Decide · 4 Patch · 2 Evaluate · 1 Noise`. Then every
+1. **Checked**: each check you made, and its outcome.
+2. **Found**: the tally first, for example `1 Decide · 4 Patch · 2 Evaluate · 1 Noise`. Then every
    finding in the format above, in the order Decide, Patch, Evaluate, Noise; flagged ones first
    (🔴, then 🟡) inside each bucket.
-2. **Patched**: what you changed.
-3. **Evaluate**: each one with the axes that put it there.
-4. **Noise**: one line each.
-5. **Awaiting decision**: every Decide word for word, with its options.
+3. **Patched**: what you changed.
+4. **Evaluate**: each one with the axes that put it there.
+5. **Noise**: one line each.
+6. **Awaiting decision**: every Decide word for word, with its options.
 
 The run never reads this file to choose its next step. It reads the result JSON. So keep the two the
 same: `counts` match the tally, `decide` holds exactly the questions under "Awaiting decision" (one

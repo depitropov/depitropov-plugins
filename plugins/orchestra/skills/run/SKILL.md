@@ -56,7 +56,8 @@ once, when the run starts. Act on its `action`:
 - `decide`: show each line of `questions` and the `report` path. The user answers in
   `decisions.md` in the notes folder: a **new** section `## <gate>` at the end of the file, with
   the answers. If the user gives the answers to you in the conversation, add that new section
-  yourself, with their words exactly, and then run `node <orchestra>/bin/drive.js --resume`.
+  yourself: one line per question, `- <question> → <their answer>`, with the question copied from
+  `questions` and the answer in their words exactly. Then run `node <orchestra>/bin/drive.js --resume`.
   Otherwise tell the user to call orchestra run again after they write it.
 
 Stop after `done`, `failed` or `decide`.

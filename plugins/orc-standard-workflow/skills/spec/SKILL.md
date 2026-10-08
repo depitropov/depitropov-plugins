@@ -11,7 +11,6 @@ and you do not ask the user.
 ## Inputs
 
 - `task`: the task as the user wrote it.
-- `base`: the commit before any work.
 - `notes`: the run's notes folder. You write `brief.md` here.
 
 ## Procedure
@@ -62,7 +61,7 @@ Rules:
 - Restate criteria the task gives in the given-when-then form. When the task gives none, derive
   them from the goal. A criterion describes behaviour a test can see, never the implementation.
 - An acceptance criterion that depends on a missing business fact names the fact, for example
-  "then the price is reduced by the VIP rate".
+  "then the late fee is the daily fee times the days late".
 - Keep the brief short. No code.
 
 ## Result
@@ -73,7 +72,7 @@ Write to the path given in the prompt:
 {
   "stage": "spec",
   "status": "ok",
-  "assumptions": ["Rounding is half up to 2 decimals."],
+  "assumptions": ["A loan returned on the due date is not late."],
   "files": ["<notes>/brief.md"]
 }
 ```
@@ -84,4 +83,4 @@ all.
 
 ## Permitted actions
 
-Read the project. Write `<notes>/brief.md`. Do not change code. Do not commit. Do not ask the user.
+Read the project. Write `<notes>/brief.md` and the result JSON. Do not change code. Do not commit. Do not ask the user.

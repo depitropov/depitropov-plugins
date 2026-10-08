@@ -21,12 +21,16 @@ problems are still cheap. You fix what you can in the two files. You do not writ
 
 1. Read `spec` and `plan`. If `decisions` is given, read it first. If `guide` is given, invoke it
    and use its rules as the reference.
-2. If `decisions` is given, write each answer into the documents first: put the value into the
+2. If `decisions` has `## plan-check` sections, write each of their answers into the documents first
+   (the `## business-facts` answers are already in the brief: the plan stage wrote them). Put the
+   value into the
    acceptance criterion it belongs to in the brief, remove its `business fact:` line, and change
    the plan where the answer needs it. The coder and the reviewer read the brief, not
    `decisions`.
 3. Check against the real code. Read the code; do not trust the plan.
-   - **Coverage**: every acceptance criterion is in at least one task's Tests line, with a named test.
+   - **Coverage**: every acceptance criterion, and every assumption in the brief that sets behaviour
+     (null handling, where rounding happens, which limit is checked first), is in at least one
+     task's Tests line, with a named test.
    - **Code facts**: every file, signature and pattern the plan names exists as it says.
    - **Scope**: no task goes beyond the brief's scope.
    - **Size**: a task with more than about four files or two jobs is split.

@@ -20,7 +20,8 @@ ask the user.
 1. Read `spec`. If `guide` is given, invoke it and follow its rules.
 2. If `decisions` is given, read it. For each answered business fact, change the brief: remove the
    `business fact:` line from Assumptions and write the value into the acceptance criterion it
-   belongs to, as a fact. Plan with these values. Never plan around a value that the brief or
+   belongs to, as a fact. Write only the value: add no example inputs or outputs that the brief
+   and the answer do not give. Plan with these values. Never plan around a value that the brief or
    `decisions` does not give.
 3. Read the files the brief names under "Affected files" and "Patterns to reuse". Check that they
    exist as the brief says.
