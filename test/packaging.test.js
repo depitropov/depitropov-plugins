@@ -11,7 +11,7 @@ const skills = plugins.flatMap(p => {
   return fs.existsSync(dir) ? fs.readdirSync(dir).map(s => ({ plugin: p, name: s, file: path.join(dir, s, 'SKILL.md') })) : [];
 });
 const REFERENCED = ['orchestra/run', 'orchestra/fixer', 'orchestra/triage', 'orc-standard-workflow/manifest', 'orc-standard-workflow/spec',
-  'orc-standard-workflow/plan', 'orc-standard-workflow/plan-check', 'orc-standard-workflow/code',
+  'orc-standard-workflow/plan', 'orc-standard-workflow/plan-check', 'orc-standard-workflow/plan-conformance', 'orc-standard-workflow/code',
   'orc-standard-workflow/logic-review', 'orc-java-stack/manifest', 'orc-java-stack/fix-build',
   'orc-java-stack/plan-guide', 'orc-java-stack/code-guide'];
 
@@ -56,7 +56,7 @@ test('every guide a stack declares is a skill in that plugin', () => {
 });
 
 test('every judging skill takes its triage from orchestra:triage, not from its own copy', () => {
-  for (const name of ['plan-check', 'logic-review']) {
+  for (const name of ['plan-check', 'plan-conformance', 'logic-review']) {
     const text = fs.readFileSync(path.join(PLUGINS, 'orc-standard-workflow', 'skills', name, 'SKILL.md'), 'utf8');
     assert.match(text, /invoke the skill\s+`orchestra:triage`/i, name);
     assert.doesNotMatch(text, /\*\*Noise\*\*: not a real problem/, `${name} still has its own bucket list`);

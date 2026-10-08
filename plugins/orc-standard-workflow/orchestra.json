@@ -5,6 +5,7 @@
     "tasks-per-coder": { "type": "number", "default": 2 }
   },
   "gates": [
+    { "name": "plan-conformance", "phase": "implementation-check", "kind": "agent", "skill": "plan-conformance", "always": true },
     { "name": "logic-review", "phase": "implementation-check", "kind": "agent", "skill": "logic-review", "always": true }
   ]
 }

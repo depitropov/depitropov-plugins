@@ -250,11 +250,11 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 |---|---|---|---|
 | Fresh eyes, once, fixes in its own session | logic-review gate (S14, S25, S55) | ported | yes |
 | Loads review, testing, ops and build skills | stack-agnostic; ops and testing become stack gates | planned (plan 4) | yes |
-| Read brief, plan, implementation log, diff, changed files in full | spec, `code.md`, diff | partial (no plan, no log) | yes |
+| Read brief, plan, implementation log, diff, changed files in full | split (S66): `plan-conformance` reads the plan and the log; logic-review reads the brief, `decisions` and the diff | ported (S66, split on purpose) | yes |
 | Criterion-to-test mapping | logic-review step 3 | ported | yes |
 | Test quality: empty asserts, disabled tests, mocked unit under test, tests that pass without the change | — | lost | yes |
-| Completeness: every plan task done, nothing stubbed | criteria, not tasks | partial | yes |
-| Undeclared deviations from the plan | — | lost | yes |
+| Completeness: every plan task done, nothing stubbed | `plan-conformance` "Tasks done" | ported (S66) | yes |
+| Undeclared deviations from the plan | `plan-conformance` "Deviations", "Scope" | ported (S66) | yes |
 | Correctness: bugs, edges, races, transaction and error boundaries | step 4 (no races, no transactions) | partial | yes |
 | Error handling and security | ops gate | planned (plan 4) | yes |
 | Not yours: naming, structure, comments, logs, layout | — | lost (minor) | yes |

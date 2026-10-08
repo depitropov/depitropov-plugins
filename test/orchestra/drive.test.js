@@ -24,6 +24,14 @@ function project() {
   return dir;
 }
 
+// Passes plan-conformance and returns the logic-review dispatch.
+function toReview(dir) {
+  const pc = drive(dir);
+  assert.equal(pc.skill, 'orc-standard-workflow:plan-conformance');
+  writeJson(path.join(dir, pc.result), { stage: 'plan-conformance', status: 'ok' });
+  return drive(dir);
+}
+
 // Walks spec, plan and plan-check with ok results, and returns the first code dispatch.
 function toCode(dir, tasks = 1) {
   let a = drive(dir, ['--task-file', '.orchestra/task.txt']);
@@ -50,7 +58,7 @@ test('a run goes from task to done: code, logic-review, report, committed run fi
   git(dir, 'commit', '-m', 'feat: discount');
   writeJson(path.join(dir, code.result), { stage: 'code', status: 'ok', assumptions: ['The limit applies before rounding.'] });
 
-  const review = drive(dir);
+  const review = toReview(dir);
   assert.equal(review.skill, 'orc-standard-workflow:logic-review');
   writeJson(path.join(dir, review.result), { stage: 'logic-review', status: 'ok', counts: { patch: 1, evaluate: 1 }, evaluate: ['PriceCalculator.java:9 — null now throws; before it returned null'] });
 
@@ -71,7 +79,7 @@ test('a run goes from task to done: code, logic-review, report, committed run fi
   assert.match(report, /- implementation-check\.logic-review: PriceCalculator\.java:9 — null now throws/);
   assert.match(report, /## Assumptions\n\n- code-1: The limit applies before rounding\./);
   assert.match(report, /\| phase-conventions-check \| ok \(no gates\) \|/);
-  const order = ['| spec |', '| plan |', '| plan-check |', '| code-1 |', '| implementation-check.build |', '| implementation-check.logic-review |',
+  const order = ['| spec |', '| plan |', '| plan-check |', '| code-1 |', '| implementation-check.build |', '| implementation-check.plan-conformance |', '| implementation-check.logic-review |',
     '| phase-implementation-check |', '| phase-conventions-check |', '| finish.build |', '| phase-finish |'].map(row => report.indexOf(row));
   assert.ok(order.every((pos, i) => pos >= 0 && (i === 0 || pos > order[i - 1])), `rows out of run order: ${order}`);
 });
@@ -80,7 +88,7 @@ test('a Decide ends the call with the questions and a report that says how to an
   const dir = project();
   const code = toCode(dir);
   writeJson(path.join(dir, code.result), { stage: 'code', status: 'ok' });
-  const review = drive(dir);
+  const review = toReview(dir);
   writeJson(path.join(dir, review.result), { stage: 'logic-review', status: 'decide', decide: ['Half up or half even? — options: up | even'] });
   const stop = drive(dir);
   assert.equal(stop.action, 'decide');
@@ -132,7 +140,7 @@ test('chunked code steps keep run order in the report', () => {
   const c3 = drive(dir);
   assert.match(c3.result, /code-3\.result\.json$/);
   writeJson(path.join(dir, c3.result), { stage: 'code', status: 'ok' });
-  const review = drive(dir);
+  const review = toReview(dir);
   writeJson(path.join(dir, review.result), { stage: 'logic-review', status: 'ok' });
   const report = fs.readFileSync(path.join(dir, drive(dir).report), 'utf8');
   const order = ['| spec |', '| plan |', '| plan-check |', '| code-1 |', '| code-3 |'].map(row => report.indexOf(row));
@@ -144,7 +152,7 @@ test('the report copies decisions.md, with its headings one level down', () => {
   const code = toCode(dir);
   fs.writeFileSync(path.join(dir, 'docs/runs/task/add-a-discount/decisions.md'), '## business-facts\n\nThe VIP rate is 10%.\n');
   writeJson(path.join(dir, code.result), { stage: 'code', status: 'ok' });
-  const review = drive(dir);
+  const review = toReview(dir);
   writeJson(path.join(dir, review.result), { stage: 'logic-review', status: 'ok' });
   const report = fs.readFileSync(path.join(dir, drive(dir).report), 'utf8');
   assert.match(report, /## Decisions\n\n### business-facts\n\nThe VIP rate is 10%\./);
@@ -184,4 +192,15 @@ test('the business-facts stop has a row between spec and plan', () => {
   fs.writeFileSync(path.join(dir, 'docs/runs/task/add-a-discount/decisions.md'), '## business-facts\n\n- business fact: the rate — options: 5% | 10% → 10%\n');
   const plan = drive(dir, [], { resume: true });
   assert.equal(plan.skill, 'orc-standard-workflow:plan');
+});
+
+test('a plan-conformance Decide stops the phase before logic-review', () => {
+  const dir = project();
+  const code = toCode(dir);
+  writeJson(path.join(dir, code.result), { stage: 'code', status: 'ok' });
+  const pc = drive(dir);
+  writeJson(path.join(dir, pc.result), { stage: 'plan-conformance', status: 'decide', decide: ['Task 2 changed the API — options: keep | revert'] });
+  const stop = drive(dir);
+  assert.equal(stop.action, 'decide');
+  assert.equal(stop.gate, 'plan-conformance');
 });
