@@ -252,12 +252,12 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Loads review, testing, ops and build skills | stack-agnostic; ops and testing become stack gates | planned (plan 4) | yes |
 | Read brief, plan, implementation log, diff, changed files in full | split (S66): `plan-conformance` reads the plan and the log; logic-review reads the brief, `decisions` and the diff | ported (S66, split on purpose) | yes |
 | Criterion-to-test mapping | logic-review step 3 | ported | yes |
-| Test quality: empty asserts, disabled tests, mocked unit under test, tests that pass without the change | — | lost | yes |
+| Test quality: empty asserts, disabled tests, mocked unit under test, tests that pass without the change | logic-review step 3, plus "fails on a wrong version" (S66) | ported (S66) | yes |
 | Completeness: every plan task done, nothing stubbed | `plan-conformance` "Tasks done" | ported (S66) | yes |
 | Undeclared deviations from the plan | `plan-conformance` "Deviations", "Scope" | ported (S66) | yes |
-| Correctness: bugs, edges, races, transaction and error boundaries | step 4 (no races, no transactions) | partial | yes |
+| Correctness: bugs, edges, races, transaction and error boundaries | logic-review step 4 | ported | yes |
 | Error handling and security | ops gate | planned (plan 4) | yes |
-| Not yours: naming, structure, comments, logs, layout | — | lost (minor) | yes |
+| Not yours: naming, structure, comments, logs, layout | logic-review "Not yours" | ported | yes |
 | Patch: check it first, fix minimally | `orchestra:triage` action table | ported (S64) | yes |
 | Evaluate / Noise / Decide actions | steps 5, 7 | ported | yes |
 | Affected tests only; one commit | step 8 (S63) | ported | yes |
@@ -343,10 +343,10 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 1. ~~**Triage depth.**~~ Fixed: `orchestra:triage` (S64).
 2. ~~**Check a Patch before applying it.**~~ Fixed: `orchestra:triage` (S64).
 3. **A stage that writes no result is dispatched again with no limit.** A loop risk in code, not only lost text.
-4. **Test-quality checks in logic-review.** Fake tests can satisfy the criterion-to-test mapping.
+4. ~~**Test-quality checks in logic-review.**~~ Fixed: logic-review step 3 (S66).
 5. **The Decide hand-off lost its prose and the trade-offs per option.** The human decides from one line.
 6. **Escalation, integration points, risks, and the external-facts check.** Cross-service work is not caught.
-7. **Deviations.** logic-review does not read the plan or the implementation log, and the report shows no deviations.
+7. **Deviations in the report.** `plan-conformance` now checks them (S66); the report still shows no deviations list.
 8. **Coder blocker context.** A failed chunk runs again without knowing why it failed.
 9. **Spotless.** No `-Dspotless.check.skip` in the build, Spotless runs where it is not set up, and the layout rules are not in §10.
 10. **Report detail.** Files changed, test counts and Patch reasons are gone. (The degraded run is forbidden now, S65.)
