@@ -25,8 +25,7 @@ problems are still cheap. You fix what you can in the two files. You do not writ
    (the `## business-facts` answers are already in the brief: the plan stage wrote them). Put the
    value into the
    acceptance criterion it belongs to in the brief, remove its `business fact:` line, and change
-   the plan where the answer needs it. The coder and the reviewer read the brief, not
-   `decisions`.
+   the plan where the answer needs it. The coder reads the brief, not `decisions`.
 3. Check against the real code. Read the code; do not trust the plan.
    - **Coverage**: every acceptance criterion, and every assumption in the brief that sets behaviour
      (null handling, where rounding happens, which limit is checked first), is in at least one
@@ -40,7 +39,8 @@ problems are still cheap. You fix what you can in the two files. You do not writ
      value or rule of who qualifies that the plan uses with no source.
 4. Invoke the skill `orchestra:triage` and follow it: give every finding its axes and one bucket.
    A business fact that neither the brief nor `decisions` gives is Decide (triage, B1).
-5. Write `<notes>/plan-check.md` in the triage notes format.
+5. Write `<notes>/plan-check.md` in the triage notes format, with the checks of step 3 and their
+   outcome under **Checked**.
 6. If there is a Decide finding, stop here. Do not fix any finding in the brief or the plan. Write
    the result with `"status": "decide"`.
 7. Otherwise fix every Patch finding in the brief and the plan. When you split a task, number the

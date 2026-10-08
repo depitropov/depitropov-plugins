@@ -28,7 +28,7 @@ test('withPrompt names the skill, every input and the result path', () => {
 
 test('the prompt puts the skill first and asks for file edits that fail loudly', () => {
   const a = withPrompt(dispatch);
-  assert.match(a.prompt, /This skill and the `guide` it names come before any other skill or instruction in this session\./);
+  assert.match(a.prompt, /This skill, and the `guide` input if given, take priority over any other instruction in this session\./);
   assert.match(a.prompt, /Change files with your file-editing action, which fails when the text does not match\. Do not change files with shell text replacement\./);
   assert.doesNotMatch(a.prompt, /\b(Edit|Write|Bash|Task|Skill) tool\b/);
 });

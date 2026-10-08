@@ -68,3 +68,7 @@ test('the run skill stops when it cannot dispatch a subagent, and never does a s
   assert.match(text, /cannot dispatch a subagent, stop the run/);
   assert.doesNotMatch(text, /invoke the skill named in `skill` yourself/);
 });
+
+test('skill examples use no names from the sample task', () => {
+  for (const s of skills) assert.doesNotMatch(fs.readFileSync(s.file, 'utf8'), /PriceCalculator|VIP|50\.00|discount/i, s.file);
+});

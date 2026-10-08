@@ -26,10 +26,13 @@ does that, from the brief alone. You check only that the plan was carried out.
    - **Tasks done:** every task in the plan is in the code, complete. Nothing is stubbed, left as a
      placeholder, or skipped.
    - **Named tests:** every test that a task's Tests line names exists, with that class and method,
-     and asserts the criterion the plan says it covers.
+     and is not disabled. Whether it proves its criterion is logic-review's job, not yours.
    - **Deviations:** every change in the diff that departs from the plan is declared, with its
      reason, under Deviations in the implementation log. An undeclared deviation is a finding.
    - **Scope:** every changed file belongs to a task. A change outside every task is a finding.
+
+   Commits that orchestra or its fixer made (`fix(<gate>): …`, `orchestra: …`) belong to no task and
+   are not deviations: leave them out of these checks.
 4. Invoke the skill `orchestra:triage` and follow it: give every finding its axes and one bucket.
 5. Write `<notes>/plan-conformance.md` in the triage notes format, with the checks of step 3 under
    **Checked**.

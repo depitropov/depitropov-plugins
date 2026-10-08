@@ -256,7 +256,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Completeness: every plan task done, nothing stubbed | `plan-conformance` "Tasks done" | ported (S66) | yes |
 | Undeclared deviations from the plan | `plan-conformance` "Deviations", "Scope" | ported (S66) | yes |
 | Correctness: bugs, edges, races, transaction and error boundaries | logic-review step 4 | ported | yes |
-| Error handling and security | ops gate | planned (plan 4) | yes |
+| Error handling and security | logic-review step 4 names security holes (partial); the ops gate carries the rules | partial / planned (plan 4) | yes |
 | Not yours: naming, structure, comments, logs, layout | logic-review "Not yours" | ported | yes |
 | Patch: check it first, fix minimally | `orchestra:triage` action table | ported (S64) | yes |
 | Evaluate / Noise / Decide actions | steps 5, 7 | ported | yes |

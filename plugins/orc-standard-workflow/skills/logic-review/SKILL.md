@@ -40,7 +40,9 @@ them unread. `<notes>/code.md` is the one exception, and only in step 6.
    the full build: orchestra built and tested this commit and builds again later. Never pipe a test
    command: the pipe hides the exit code.
 6. Read `<notes>/code.md` now, and only to drop findings that repeat a recorded choice. A recorded
-   choice that breaks a point of step 1 or causes a bug stays a finding.
+   choice that breaks a point of step 1 or causes a bug stays a finding. A `business fact:` line in
+   `code.md` is not a repeat: it is a placeholder for a value nobody gave, so it is a Decide finding
+   (triage, B1).
 7. Invoke the skill `orchestra:triage` and follow it: give every finding its axes and one bucket.
 8. Write `<notes>/logic-review.md` in the triage notes format. Under **Checked**, put the list from
    step 1, and for each point the test you found and whether it fails on the wrong version.

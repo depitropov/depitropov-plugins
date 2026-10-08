@@ -29,7 +29,7 @@ The project's own code wins over a rule: when the project does it another way, f
 ## Tests
 
 9. Every acceptance criterion has a unit test with a name that says the behaviour, for example
-   `appliesDiscountAboveLimit`.
+   `chargesLateFeePerDayLate`.
 10. Plan a test for each edge the brief names: the limit value itself, zero, null when the input
     can be null.
 11. Test classes mirror the package of the class they test.
