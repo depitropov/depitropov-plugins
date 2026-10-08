@@ -31,7 +31,7 @@ wording change needs no entry.
 ## S66: What the logic reviewer sees
 
 - **Date:** 2026-10-08
-- **Status:** decided (inputs and order). Open: how the plan-conformance check is built.
+- **Status:** decided
 - **Question:** The logic-review gate checks the code against the acceptance criteria and judges
   whether each test would fail on a wrong version of the code. Should it also see the plan and the
   coder's implementation log, or only the requirements and the code?
@@ -55,11 +55,17 @@ wording change needs no entry.
     fails on the wrong version.
   - It reads `<notes>/code.md` (the coder's recorded choices) only after it has its findings, and only
     to drop repeats.
-  - Conformance to the plan is checked separately. Open: a check in code (a workflow tool gate: named
-    tests exist, changed files are listed in the plan; cheap and unbiased) or a second agent pass (can
-    also see a task that is only half done).
+  - Conformance to the plan is a second agent gate, `plan-conformance`, declared by the workflow before
+    logic-review in `implementation-check`. It sees the plan, the implementation log and the diff. It
+    checks that every task is done, every named test exists, and no change falls outside the plan or
+    goes undeclared. It gives no verdict on correctness. The two gates write separate results; the
+    report shows both.
+  - Rejected for conformance: a check in code. It is cheaper and cannot be biased, but it cannot see a
+    task that is only half done.
 - **Cost and risk:** A reviewer without the plan may flag a deliberate choice it cannot see a reason
-  for; the conformance check and the coder's recorded choices cover that. The cost of hiding the plan
+  for; the conformance gate and the coder's recorded choices cover that. One more subagent per run
+  (about 34k tokens of fixed start-up cost). The cost of hiding the plan
   is reasoned, not measured: watch the next runs for findings the plan would have prevented.
-- **Where it lives:** plan 3.3 (to be written): `orc-standard-workflow/skills/logic-review`, the gate
-  runner's inputs, the plan-conformance check.
+- **Where it lives:** plan 3.3: `orc-standard-workflow/skills/logic-review`, the new skill
+  `orc-standard-workflow/skills/plan-conformance`, the workflow's `orchestra.json`, the gate runner's
+  inputs.
