@@ -72,6 +72,7 @@ function writeReport(project, runDir, final, resolved) {
     lines.push('', '## Decide', '',
       `Add a new section \`## ${final.gate}\` at the end of \`${docs}/decisions.md\` with your answers, then run again. ` +
       'Text added to an old section is not read as an answer.', '',
+      'Write one line per question: `- <question> → <your answer>`.', '',
       ...list(final.questions || []));
   }
   fs.mkdirSync(path.join(project, docs), { recursive: true });

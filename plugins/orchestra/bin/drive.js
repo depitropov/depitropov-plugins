@@ -64,6 +64,7 @@ function step(project, extraArgs, resume) {
       remember(project, a);
       return withPrompt(a);
     }
+    if (a.action === 'decide' && a.result) remember(project, a);
     if (a.action !== 'phase') return finish(project, a, resolved);
     const r = runner.step({ project, runDir: a.runDir, phase: a.name, resolved, config });
     if (r.action === 'dispatch') return withPrompt(r);

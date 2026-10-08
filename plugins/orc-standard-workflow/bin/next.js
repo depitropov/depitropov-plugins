@@ -161,8 +161,12 @@ function next(project, taskFile) {
   const specStep = stage(ctx, 'spec', { task: `${notes}/task.md`, notes });
   if (specStep) return specStep;
   const facts = openFacts(path.join(project, run.spec));
-  if (facts.length && !countAnswers(path.join(project, notes), 'business-facts')) {
-    return { action: 'decide', gate: 'business-facts', questions: facts, runDir };
+  if (facts.length) {
+    // A result file gives the stop its own row in the report, in run order.
+    const result = `${runDir}/business-facts.result.json`;
+    const answered = countAnswers(path.join(project, notes), 'business-facts') > 0;
+    writeJson(path.join(project, result), { stage: 'business-facts', status: answered ? 'ok' : 'decide', decide: facts });
+    if (!answered) return { action: 'decide', gate: 'business-facts', questions: facts, result, runDir };
   }
   const steps = [
     ['plan', { spec: run.spec, notes, ...s.guide('plan') }],

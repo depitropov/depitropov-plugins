@@ -169,3 +169,19 @@ test('a resume with only notes changed goes on', () => {
   fs.writeFileSync(path.join(dir, 'docs/runs/task/add-a-discount/decisions.md'), '## plan-check\n\nok\n');
   assert.equal(drive(dir, [], { resume: true }).skill, code.skill);
 });
+
+test('the business-facts stop has a row between spec and plan', () => {
+  const dir = project();
+  const spec = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  fs.writeFileSync(path.join(dir, 'docs/runs/task/add-a-discount/brief.md'), '- business fact: the rate — options: 5% | 10%\n');
+  writeJson(path.join(dir, spec.result), { stage: 'spec', status: 'ok' });
+  const stop = drive(dir);
+  assert.equal(stop.action, 'decide');
+  const report = fs.readFileSync(path.join(dir, stop.report), 'utf8');
+  assert.match(report, /\| business-facts \| decide \|/);
+  assert.ok(report.indexOf('| spec |') < report.indexOf('| business-facts |'));
+  assert.match(report, /- <question> → <your answer>/);
+  fs.writeFileSync(path.join(dir, 'docs/runs/task/add-a-discount/decisions.md'), '## business-facts\n\n- business fact: the rate — options: 5% | 10% → 10%\n');
+  const plan = drive(dir, [], { resume: true });
+  assert.equal(plan.skill, 'orc-standard-workflow:plan');
+});

@@ -218,14 +218,18 @@ test('business facts in the brief stop the run after the spec', () => {
     action: 'decide',
     gate: 'business-facts',
     questions: ['business fact: the VIP rate — options: 5% | 10%', 'business fact: the fee — options: 4.99 | 5.99'],
+    result: `${spec.runDir}/business-facts.result.json`,
     runDir: spec.runDir,
   });
+  const factsFile = path.join(dir, spec.runDir, 'business-facts.result.json');
+  assert.equal(JSON.parse(fs.readFileSync(factsFile, 'utf8')).status, 'decide');
   answer(dir, 'plan-check', 'not for business facts');
   assert.equal(next(dir).action, 'decide');
   answer(dir, 'business-facts', 'The VIP rate is 10%. The fee is 4.99.');
   const plan = next(dir);
   assert.equal(plan.skill, 'orc-standard-workflow:plan');
   assert.equal(plan.inputs.decisions, `${DOCS}/decisions.md`);
+  assert.equal(JSON.parse(fs.readFileSync(factsFile, 'utf8')).status, 'ok');
 });
 
 test('a brief that only mentions business facts in prose does not stop the run', () => {
@@ -233,6 +237,7 @@ test('a brief that only mentions business facts in prose does not stop the run',
   const spec = next(dir, '.orchestra/task.txt');
   writeBrief(dir, '# Brief\n\nNo business fact: is open here.\n- Rounding is half up.\n');
   assert.equal(pass(dir, spec).skill, 'orc-standard-workflow:plan');
+  assert.equal(fs.existsSync(path.join(dir, spec.runDir, 'business-facts.result.json')), false);
 });
 
 test('a stage gets no decisions input while decisions.md does not exist', () => {
