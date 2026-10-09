@@ -151,6 +151,16 @@ test('a green tool gate commits its edits to task files and reverts its edits to
   assert.equal(git(t.dir, 'status', '--porcelain', '--', 'README.md'), '');
 });
 
+test('a green tool gate with no task edit leaves untracked files alone', () => {
+  const lint = { name: 'lint', phase: 'finish', kind: 'tool', run: OK, fix: 'fixer', guide: 'fix-lint', always: true };
+  const t = setup({ stackGates: [lint] });
+  fs.writeFileSync(path.join(t.dir, 'stray.txt'), 'x');
+  const before = git(t.dir, 'rev-parse', 'HEAD');
+  assert.equal(t.step('finish').status, 'ok');
+  assert.equal(git(t.dir, 'rev-parse', 'HEAD'), before);
+  assert.equal(git(t.dir, 'status', '--porcelain', '--', 'stray.txt'), '?? stray.txt');
+});
+
 test('a green tool gate that changed nothing makes no commit', () => {
   const lint = { name: 'lint', phase: 'finish', kind: 'tool', run: OK, fix: 'fixer', guide: 'fix-lint', always: true };
   const t = setup({ stackGates: [lint] });

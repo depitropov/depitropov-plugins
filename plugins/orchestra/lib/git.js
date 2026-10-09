@@ -38,7 +38,9 @@ function commitKeeping(cwd, message, keep) {
   const dirty = out ? out.split('\n') : [];
   const stray = dirty.filter(f => !keep.includes(f));
   if (stray.length) git(cwd, 'checkout', '--', ...stray);
-  return commitPaths(cwd, message, dirty.filter(f => keep.includes(f)));
+  const kept = dirty.filter(f => keep.includes(f));
+  // An empty pathspec would make `git add -A --` stage the whole tree.
+  return kept.length > 0 && commitPaths(cwd, message, kept);
 }
 
 const commitRunDir = (cwd, runDir, message) => commitPaths(cwd, message, [runDir]);
