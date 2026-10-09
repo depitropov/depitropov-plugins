@@ -26,6 +26,9 @@ test('globToRegExp matches paths like a shell glob with **', () => {
   assert.ok(!globToRegExp('**/*.java').test('A.sql'));
   assert.ok(globToRegExp('src/*.java').test('src/A.java'));
   assert.ok(!globToRegExp('src/*.java').test('src/x/A.java'));
+  assert.ok(globToRegExp('**/src/test/**/*.java').test('src/test/java/a/FooTests.java'));
+  assert.ok(globToRegExp('**/src/test/**/*.java').test('mod/src/test/java/a/Helper.java'));
+  assert.ok(!globToRegExp('**/src/test/**/*.java').test('src/main/java/a/Foo.java'));
   assert.ok(globToRegExp('**/db/migration/*.sql').test('app/db/migration/V1.sql'));
 });
 

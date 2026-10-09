@@ -28,7 +28,9 @@ description: Reviews exception handling, argument checks and database migrations
 8. Otherwise fix every Patch finding and every answered Decide. Run only the tests of the files you
    changed. Never pipe a test command: the pipe hides the exit code. Commit once:
    `fix(ops): <summary>`. orchestra commits `notes` itself: do not stage files under
-   `docs/runs/` or `tmp/`. Do not review your own fixes again.
+   `docs/runs/` or `tmp/`. Do not review your own fixes again. A fix that changes behaviour (a value now rejected, a different
+   exception type, a changed check) must not contradict the brief or `decisions`: when it would, the
+   brief wins and the finding is Evaluate. Otherwise the fix needs a test that fails without it.
 
 Not yours: log statements (the logging gate), whether the behaviour is right (logic-review), comments.
 
@@ -83,7 +85,7 @@ question goes into `decide`.
 8. **Null and empty checks use Commons Lang, by meaning.** For null-or-blank strings:
    `StringUtils.isBlank` / `isNotBlank`, not `s == null || s.isBlank()`. For null-or-empty strings,
    collections, maps and arrays: `ObjectUtils.isEmpty` / `isNotEmpty`, not `x == null || x.isEmpty()`.
-   `ObjectUtils.isEmpty("   ")` is false: never use it where blank is meant. Import them statically.
+   `ObjectUtils.isEmpty("   ")` is false: never use it where blank is meant. (Static imports are the layout gate's.)
 9. **One `CREATE INDEX CONCURRENTLY` per Flyway migration file, with `IF NOT EXISTS`.** PostgreSQL
    cannot run `CREATE INDEX CONCURRENTLY` in a transaction, so such a migration runs without one. If
    a later statement in the same file fails, the earlier ones stay applied, and the migration needs a

@@ -112,6 +112,6 @@ Empty lines (rules 1–5) apply to `log.*`, `return` and `throw` statements and 
 7. **Static imports for frequent static calls** (`assertThat`, `kv`, `Math.*`), unless the bare name
    loses its meaning (`of`, `min`, `EMPTY`): then keep the class name. Never a wildcard static import
    (`import static ….*`).
-8. **A class with only static members** uses Lombok's `@UtilityClass` (it makes the class `final`,
+8. **A class with only static members**, in a project that uses Lombok, uses `@UtilityClass` (it makes the class `final`,
    adds a private constructor that throws, and makes every member `static`), not a hand-written
    private constructor.

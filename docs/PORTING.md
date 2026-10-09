@@ -463,11 +463,11 @@ Short names: CG = `code-guide`, FB = `fix-build`, OJ = `orc-java-stack/orchestra
 | Describe state, never change | RC 2 | ported | yes |
 | No plan names in comments (Jira is fine) | RC 3, 4 | ported | yes |
 | Never invent a reason | RC 5 | ported | yes |
-| Examples | RC examples | ported | yes |
+| Examples | RC examples | partial (S68: the `retries++` restates-the-code example is dropped) | yes |
 | Test comments | RC 7 | ported | yes |
 | Delete-on-sight list | RC 6 | ported | yes |
 | Match the code next to it | RC 8 | ported | yes |
-| Common Mistakes table | — | dropped (S68: rules 6 and 8 cover it, as does the `retries++` example) | no |
+| Common Mistakes table | — | dropped (S68: rules 6 and 8 cover it) | no |
 | Self-check greps, tier 1 and tier 2 | RC "Sweeps"; `test/orc-java-stack/comments-grep.test.js` | ported | yes |
 
 #### skills/java-comments/evals/
@@ -572,7 +572,7 @@ only.
 | Add and check the plugin; `spotless-plugin-block.xml` | — | dropped (S68: the Spotless set-up) | no |
 | Client hooks, `install_client_hooks.sh`, revalidation | — | dropped (S68) | no |
 | Gotchas A–E | FS cases A–E | ported | yes |
-| `pre-commit` hook | — | dropped (S68) | no |
+| `pre-commit` hook | — | dropped (S68); its guard (re-stage only the files already staged) is ported in the runner: `commitKeeping` in `plugins/orchestra/lib/git.js`, called by `toolStep` | no |
 | `commit-msg` hook (needs a JIRA key) | `PORT-TO-SC.md` | dropped (S3) | no |
 
 #### Top losses (java-stack)

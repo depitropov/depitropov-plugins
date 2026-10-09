@@ -14,7 +14,7 @@ description: Reviews the style of the changed Java tests against the testing con
 
 ## Procedure
 
-1. Get the change: `git diff <base> HEAD -- '*Test.java' '*IT.java'`. Read each changed file in full. If the change
+1. Get the change: `git diff <base> HEAD -- '*src/test/*.java'`. Read each changed file in full. If the change
    has nothing in scope, write the result with `"status": "skipped"` and stop.
 2. Check the lines this change adds or edits against each rule below. Code the change does not touch
    is not in scope.
@@ -59,8 +59,8 @@ question goes into `decide`.
 
 1. **AssertJ.** When the project has AssertJ, assert with `assertThat(actual).isEqualTo(expected)`,
    not JUnit's `assertEquals`. For JSON, use `assertThatJson` (json-unit) when the project has it.
-2. **Business errors.** Assert a `BusinessRuleException` with `assertBusinessRuleException` from
-   `dev.depitropov.commons.test.DETestErrorHandlingUtils`, never with
+2. **Business errors.** When the project uses depitropov-commons, assert a `BusinessRuleException`
+   with `assertBusinessRuleException` from `dev.depitropov.commons.test.DETestErrorHandlingUtils`, never with
    `assertThrows(BusinessRuleException.class, …)`:
 
    ```java
@@ -71,7 +71,7 @@ question goes into `decide`.
        message -> assertThat(message).contains("partial text"));
    ```
 
-3. **Errors at the HTTP edge.** There the exception is already an `ErrorDto` body, so there is
+3. **Errors at the HTTP edge.** When the project uses depitropov-commons: there the exception is already an `ErrorDto` body, so there is
    nothing to catch. Assert the body string with
    `assertErrorDto(body, BAD_GATEWAY_GENERAL, "Upstream service unavailable")` from the same class;
    an empty message skips the details check. Assert the HTTP status apart, with the test client.

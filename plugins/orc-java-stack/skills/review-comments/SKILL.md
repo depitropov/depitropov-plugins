@@ -16,7 +16,8 @@ description: Reviews the comments and Javadoc of the changed Java code against t
 
 1. Get the change: `git diff <base> HEAD -- '*.java'`. Read each changed file in full. If the change
    has nothing in scope, write the result with `"status": "skipped"` and stop.
-   Run the tier-1 sweep below on the changed files. Each hit is a finding under rule 2, 3 or 4.
+   Run the tier-1 sweep below on the changed files. Each hit is a finding under rule 2, 3 or 4. A hit that is not a change description or a plan
+   reference is not a finding.
    Then run the tier-2 sweep. A tier-2 hit is only a hint: judge it against rule 4, because the
    same tokens name real things (a garbage collector, a chip).
 2. Check the lines this change adds or edits against each rule below. Code the change does not touch

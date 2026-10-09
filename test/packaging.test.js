@@ -35,6 +35,10 @@ test('shipped files use no harness-specific words', () => {
   for (const s of skills) assert.doesNotMatch(fs.readFileSync(s.file, 'utf8'), banned, s.file);
 });
 
+test('shipped skills carry no ship.cars names', () => {
+  for (const s of skills) assert.doesNotMatch(fs.readFileSync(s.file, 'utf8'), /cars\.ship|SC[A-Z]\w*Utils|scValue|LITE-/, s.file);
+});
+
 test('both manifests of each plugin parse and have the same version', () => {
   for (const p of plugins) {
     const a = JSON.parse(fs.readFileSync(path.join(PLUGINS, p, 'plugin.json'), 'utf8'));

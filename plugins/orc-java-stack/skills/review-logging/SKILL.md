@@ -58,7 +58,7 @@ question goes into `decide`.
 
 ## Rules
 
-1. **Logger.** Use Lombok's `@Slf4j` on the class; the field is `log`. Do not declare
+1. **Logger.** When the project uses Lombok, use `@Slf4j` on the class; the field is `log`. Do not declare
    `private static final Logger log = LoggerFactory.getLogger(...)` by hand.
 2. **Placeholders.** Use `{}` placeholders. No string concatenation, no `%s` or `String.format` in a
    log call: the message is built even when the level is off.
@@ -89,7 +89,7 @@ question goes into `decide`.
    ```
 
 6. **Log or rethrow, not both.** A catch that logs an exception and throws the same exception logs it
-   twice. No `printStackTrace()`, no `System.out` or `System.err`.
+   twice. No `System.out` or `System.err`.
 7. **Levels.**
    - ERROR: a system failure or data loss that needs attention now.
    - WARN: only a condition the system does not expect: an internal anomaly, an inconsistent state,
@@ -105,7 +105,7 @@ question goes into `decide`.
 8. **Sensitive data is never logged in plain text:** `password`, `secret`, `token`, `apiKey`,
    `accessToken`, `refreshToken`, `ssn`, `taxId`, card number, `cvv`, `pin`, bank account, routing
    number, and a full email address or phone number in production logs. When tracing really needs
-   the value, mask it with `DEStringUtils.hideString` from depitropov-commons
+   the value, and the project uses depitropov-commons, mask it with `DEStringUtils.hideString`
    (`import static dev.depitropov.commons.DEStringUtils.hideString;`). `hideString(value)` shows one
    character at each end, `hideString(value, n)` shows `n`; the output is
    `<first n>...<length>...<last n>`. Use it only when it is needed.
