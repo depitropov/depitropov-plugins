@@ -65,7 +65,8 @@ Empty lines (rules 1–5) apply to `log.*`, `return` and `throw` statements and 
 2. **Method body.** When a `log.*` or `return` is the first statement of a method, keep the empty
    line after the method's opening `{`.
 3. **Other blocks** (`if`, `for`, `while`, …): no empty line after the block's `{`, and no empty line
-   before any closing `}`.
+   before any closing `}`. Inside such a block, a `return` or `throw` right after a `log.*` needs no
+   empty line between them.
 4. **A method body of one statement** (only a `return` or a `throw`) has no empty lines.
 5. **`catch` and `finally`.** An empty line before `} catch` or `} finally`, and an empty line after
    its opening `{`. This wins over rule 3.

@@ -30,7 +30,8 @@ description: Reviews the log statements of the changed Java code against the log
    the exit code. Commit once: `fix(logging): <summary>`. orchestra commits `notes` itself: do not
    stage files under `docs/runs/` or `tmp/`. Do not review your own fixes again.
 
-Not yours: empty lines around log statements (the layout gate), exception handling (the ops gate), comments.
+Not yours: empty lines around log statements (the layout gate), exception handling other than
+rule 6 (the ops gate), comments.
 
 ## Result
 
@@ -74,6 +75,7 @@ question goes into `decide`.
    - a self-describing `toString()` (a `record`, Lombok `@ToString` or `@Data`, `ToStringBuilder`):
      use a bare `{}`. `log.debug("Loaded shipment {}", shipment);`, not `"…, shipment: {}"`.
    - a `{}` inside the sentence that names it: `log.info("Processing check-in for {} companies", count);`
+
    A scalar (`String`, a number, `boolean`, an `enum`, `Instant`) has no type or field name in its
    output, so outside a sentence it always needs `name: {}`, never `name={}` or a bare `{}`. Both
    forms may mix in one statement.
