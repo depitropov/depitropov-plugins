@@ -2,7 +2,7 @@
 
 The forks in the design. `docs/PILLARS.md` describes the four source projects. `docs/CONTEXT.md`
 defines the module names. The research notes are in `docs/research/` (R1 file loading, R2
-orchestration, R3 write vs review time, R4 subagent nesting, R5 reviewer context). Each row here is
+orchestration, R3 write vs review time, R4 subagent nesting, R5 reviewer context, R6 coder guidance). Each row here is
 the short index; a deliberate decision that weighed options has its full record in
 `docs/DECISIONS.md` under the same `S` number.
 
@@ -84,6 +84,7 @@ the short index; a deliberate decision that weighed options has its full record 
 | S65 | From the port inventory. (1) No degraded run: when the driver cannot dispatch a subagent, the run stops; the driver never does a stage itself (as in be-coding-agent). This removes the fallback that plan 1 added with no decision. (2) The plan guide loses "no interface with one implementation": it was not from java-stack and reversed its "interfaces at layer boundaries". Plan 4 decides the interface rule when it ports `java-architecture` from the source. | User decision |
 | S66 | The logic reviewer sees the brief, `decisions.md`, the diff and the code; no plan and no implementation log. It works out the required behaviour and a likely wrong version first, then reads the code; it reads `code.md` last, only to drop repeats. Plan conformance is a separate agent gate, `plan-conformance`, before logic-review: it sees the plan, the implementation log and the diff, and gives no correctness verdict. Full record: `docs/DECISIONS.md`; research: R5. | User decision, R5 |
 | S67 | From the library-loans run. (1) plan-conformance checks direction, not detail: a task done another way, or a part dropped, must be declared; detail inside a task (an extra check, a helper, a choice in `code.md`) is not a deviation; scope is the brief's, not the plan's tasks. (2) A recorded choice that changes behaviour needs a test that fails without it; logic-review raises a missing one as Patch. (3) The business-facts stop counts the `- <question> → <answer>` lines and stops again until every question has one. (4) The Java `plan-guide` and `code-guide` are removed: they were placeholders, not ports; plan 4 ports the real ones. Rejected: the plan writes its behaviour choices into the brief (it blurs which stage owns the brief). Full record: `docs/DECISIONS.md`. | Run feedback, user decision |
+| S68 | The Java port (plan 4), after R6. (1) Write time stays lean: `code-guide` holds only test-command facts; no `plan-guide`; no new lines in the orchestra `code` or `plan` skills. Generic principles (SOLID, Clean Architecture, patterns) and personas go nowhere. (2) Gates: ops (implementation-check), testing (conventions-check), comments, logging, layout, Spotless (finish). Each holds numbered rules; a finding cites the rule and `file:line`; the project's code wins. (3) No structure gate: clean-code comes later at workflow level. (4) The personal repo names depitropov-commons helpers where java-stack named ship.cars ones; this changes S3 for those rules. `PORT-TO-SC.md` (git-ignored) says how to swap them back. (5) `files` may be a list; a green tool gate commits its changes. Full record: `docs/DECISIONS.md`. | Grilling, R6, user decision |
 
 ## Open (phase 1)
 

@@ -391,19 +391,19 @@ It keeps the one-concern-per-skill shape of the current java-stack (pillar 2).
 | Part | Built from |
 |---|---|
 | `build` | The current `java-maven` rules: the wrapper, `-B`, the settings file, output to a log file, run once. Plus JaCoCo coverage |
-| `guides` | A short core drawn from the gate skills |
+| `guides` | `code-guide` only: test-command facts (S68). No plan guide. |
 | Fix guides | `fix-build`, and one per tool gate |
 
-Candidate gates, one skill each:
+Gates, one skill each (S68):
 
-| Phase | Candidates |
+| Phase | Gates |
 |---|---|
-| `implementation-check` | structure (layering and naming, from `java-architecture` and `java-style`, S25), ops |
-| `conventions-check` | testing conventions, entities, DTOs, converters |
-| `finish` | comments, logging, Spotless (tool, `fix: self`) |
+| `implementation-check` | ops (exceptions, argument checks, migrations) |
+| `conventions-check` | testing (test style) |
+| `finish` | comments, logging, layout (agents); Spotless (tool, skipped when the pom has no plugin) |
 
 crap4java and mutate4java come in phase 2 as tool gates in `implementation-check`. They are data
-only and need no change in the workflow. The final list is decided in the build plan.
+only and need no change in the workflow.
 
 ## 11. Packaging
 

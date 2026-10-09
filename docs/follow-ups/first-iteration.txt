@@ -18,3 +18,45 @@ Follow-ups from the first iteration (walking skeleton runs, October 2026)
      portable way, for example a setting the skill can name in plain words.
    - If a harness supports this, add it as an optional, harness-specific optimisation. The
      portable path stays the default.
+
+2. "Patterns to reuse" in the brief
+
+   What we have: the spec stage writes a "Patterns to reuse" section in the brief, with files
+   the plan must follow. The plan stage reads these files and checks that they exist.
+
+   Why we look at it again: the project moves to lean instructions (R6). This section steers
+   the planner and the coder toward chosen files. A wrong or weak pick spreads into the plan
+   and the code. The planner can read the repo itself.
+
+   What to do later:
+   - Check in the run notes whether the section changed the plan or the code.
+   - If it did not help, remove it from spec and plan. Otherwise make it smaller.
+
+3. What the plan holds: tasks or code instructions
+
+   What we have: the plan splits the work into tasks T1…Tn, with the files and the tests of
+   each task.
+
+   Why we look at it again: R6 says a bad plan hurts more than no plan, and that too much
+   process narrows the model. A plan that tells the coder how to write the code can become
+   one more layer of over-instruction.
+
+   What to do later:
+   - Decide if the plan should hold only the tasks (what to do, which criteria, which tests),
+     and leave the how to the coder.
+   - Compare the plans and the code of earlier runs for steps that the coder had to undo or
+     that plan-conformance enforced without need.
+
+4. Drop a gate whose findings are mostly noise
+
+   What we have: the Java port adds the gates comments, logging, layout, testing conventions,
+   ops and Spotless. Each agent gate costs a full subagent per run.
+
+   Why we look at it again: R3 says a reviewer is worth its cost only when most of its
+   findings are acted on. Google and ByteDance measure this as the share of findings that
+   lead to a code change.
+
+   What to do later:
+   - Over the next runs, count per gate the findings it fixed and the findings that were noise.
+   - Drop or shrink a gate when fewer than about 50% of its findings are acted on, or when its
+     cost per run is more than what it catches.

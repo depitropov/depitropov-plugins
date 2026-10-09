@@ -353,10 +353,13 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 
 ### java-stack
 
-Source: `~/Projects/claude-code-plugins/plugins/java-stack`. Target: `plugins/orc-java-stack`, the
-generic rewrite. ship.cars-only content (Lombok and Commons Lang house rules, `cars.ship.commons`,
-internal BOMs, JIRA hooks) is `dropped` by S3 and DESIGN §2: it belongs to the ship.cars version.
-Short names: PG = plan-guide, CG = code-guide, FB = fix-build, OJ = `orc-java-stack/orchestra.json`.
+Source: `~/Projects/claude-code-plugins/plugins/java-stack`. Target: `plugins/orc-java-stack`, ported by
+plan 4 (S68). ship.cars-only content (`cars.ship.commons`, internal BOMs, JIRA hooks) is `dropped` by
+S3 and DESIGN §2. The personal repo names depitropov-commons helpers where java-stack named
+ship.cars ones (S68); `PORT-TO-SC.md` (git-ignored) says how to swap them back.
+Short names: CG = `code-guide`, FB = `fix-build`, OJ = `orc-java-stack/orchestra.json`, RO =
+`review-ops`, RT = `review-testing`, RC = `review-comments`, RL = `review-logging`, RY =
+`review-layout`, FS = `fix-spotless`. Numbers are rule numbers in that skill.
 
 #### README.md
 
@@ -372,18 +375,18 @@ Short names: PG = plan-guide, CG = code-guide, FB = fix-build, OJ = `orc-java-st
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
 | Agent file (model, color, MCP tools) | — | dropped (S1, S33, DESIGN §11) | no |
-| Read the project's agent file first | spec step 1 reads `AGENTS.md` | partial (gates are not told to read it) | yes |
-| Conventions list | DESIGN §10 gates | planned (plan 4) | yes |
-| 8 review areas | logic-review + planned gates | partial ("Maven and dependencies" and "performance" have no gate) | yes |
+| Read the project's agent file first | each gate: "The project's code wins" (procedure 3) | ported | yes |
+| Conventions list | the six gates, DESIGN §10 (S68) | ported | yes |
+| 8 review areas | gates ops, testing, comments, logging, layout; logic-review | partial: the 8-area list, the persona and "Maven and dependencies" and "performance" are dropped (S68) | yes |
 | Output: Critical/Major/Minor/Positive | §8.4 buckets | dropped (S14, S44, §8.4) | no |
-| Review the changed code | runner diff (§6.4) | ported | yes |
+| Review the changed code | runner diff (§6.4); each gate "Get the change" | ported | yes |
 | Check library facts at the source | spec step 3 | partial (spec only) | yes |
 
 #### agents/sc-java-logging.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Logging fixer agent | gate "logging" (§10) | planned (plan 4) | yes |
+| Logging fixer agent | gate "logging": RL | ported | yes |
 | Fix directly by default | §6.1 (S14) | ported | yes |
 | "Review only" mode | agent gates always fix (§6.1) | dropped (§6.1) | unsure (hand use, §9) |
 | Build after fixing | finish build (§6.2) | ported | yes |
@@ -393,193 +396,197 @@ Short names: PG = plan-guide, CG = code-guide, FB = fix-build, OJ = `orc-java-st
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Skill index | OJ | dropped (S53) | no |
-| Readability first | CG 5–6, loosely | lost | yes |
-| Match the codebase | PG, CG intro "The project's own code wins" | ported | yes |
-| Business logic has tests | PG 9, logic-review | ported | yes |
-| SOLID | CG 6 | partial / planned (structure gate) | yes |
+| Skill index | OJ | dropped (S53, S68) | no |
+| Readability first | — | dropped (S68: clean-code comes later at workflow level) | yes |
+| Match the codebase | each gate "The project's code wins"; CG intro | ported | yes |
+| Business logic has tests | logic-review | ported | yes |
+| SOLID | — | dropped (S68, R6: no gain from generic principles) | no |
 
 #### skills/java-architecture/SKILL.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Layers, dependencies point inward | PG 2 | partial ("point inward" missing) | yes |
-| Interfaces at layer boundaries | — (the reversing PG rule is removed) | planned (plan 4 ports java-architecture, S65) | yes |
-| SOLID | CG 6 (one job only) | partial / planned (structure) | yes |
-| Package by feature | PG 1 | ported | yes |
-| Consistent modules, Maven layout | PG 11 + "project wins" | partial | yes |
+| Layers, dependencies point inward | — | dropped (S68: no structure gate; Clean Architecture left out) | no |
+| Interfaces at layer boundaries | — | dropped (S68) | no |
+| SOLID | — | dropped (S68) | no |
+| Package by feature | — | dropped (S68) | no |
+| Consistent modules, Maven layout | — | dropped (S68) | no |
 | Microservice size | — | n/a (not a code rule) | no |
-| Composition, program to interfaces, DI | — | planned (structure) | yes |
-| Records for data holders | PG 6, CG 9 | ported | yes |
-| Builder, Factory, Strategy, Template | PG 5 limits them | partial / planned (structure) | unsure |
-| `ObjectUtils`, Lombok `@UtilityClass` | — | dropped (S3, ship.cars) | no |
-| REST DTO annotations | — | planned (DTOs gate); R3 §5.2 calls DTO shape a write-time rule | partial (Jackson part generic) |
-| DRY, encapsulate what varies | — | planned (structure) | yes |
-| Side effects apart from pure logic | PG 3 | ported | yes |
-| Immutability, `final` | CG 9 (fields only) | partial | yes |
-| Small classes and methods | CG 6 | ported | yes |
-| Performance (7 points) | — | lost (no gate in §10) | unsure |
+| Composition, program to interfaces, DI | — | dropped (S68) | no |
+| Records for data holders | — | dropped (S68) | no |
+| Builder, Factory, Strategy, Template | — | dropped (S68: the pattern list) | no |
+| `ObjectUtils` line | — | dropped (S68) | no |
+| Lombok `@UtilityClass` | RY 8 | ported | yes |
+| REST DTO annotations | — | dropped (S68: DTOs gate) | no |
+| DRY, encapsulate what varies | — | dropped (S68) | no |
+| Side effects apart from pure logic | — | dropped (S68) | no |
+| Immutability, `final` | — | dropped (S68) | no |
+| Small classes and methods | — | dropped (S68: clean-code later) | no |
+| Performance (7 points) | — | dropped (S68) | no |
 
 #### skills/java-style/SKILL.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Descriptive names, nouns and verbs | CG 5 | ported | yes |
-| Case conventions, `DefaultX` names | — | planned (structure: "naming") | yes |
-| Commons Lang `isBlank` / `isEmpty` | — | dropped (S3); the generic "blank is not empty" point is lost | partial |
-| Member order | — | planned (weak: §10 names only layering and naming) | yes |
-| Methods under 30 lines, parameter objects | CG 6 | partial (the number is gone) | yes |
+| Descriptive names, nouns and verbs | — | dropped (S68: clean-code later) | no |
+| Case conventions, `DefaultX` names | — | dropped (S68: clean-code later) | no |
+| Commons Lang `isBlank` / `isEmpty` | RO 8 | ported | yes |
+| Member order | — | dropped (S68) | no |
+| Methods under 30 lines, parameter objects | — | dropped (S68: clean-code later) | no |
 
 #### skills/java-review/SKILL.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Reviewer principles | guides intro, §9 | partial | yes |
-| Follows project patterns, reuse utilities | spec "Patterns to reuse", PG 4 | ported | yes |
-| Comment contract | code skill bans plan names; comments gate | partial / planned | yes |
-| Error handling, security, `isNotBlank` + trim | CG 8; ops gate | partial / planned | yes |
-| Test coverage | logic-review; JaCoCo planned | partial | yes |
-| SOLID, WARN vs INFO, assertion helpers | structure, logging, testing gates | planned (plan 4) | yes |
-| One `CREATE INDEX CONCURRENTLY` per file | ops gate; R3 says migrations are write-time | planned (not in PG/CG) | yes |
-| No magic numbers | — | lost | yes |
-| Static-import enums | — | lost | unsure (house style) |
-| Performance, scalability, smells, tech debt | — | lost (DESIGN §8.1 "later candidate") | unsure |
-| Prefer changing files over new ones | PG 1 | partial | yes |
+| Reviewer principles | — | dropped (S68) | no |
+| Follows project patterns, reuse utilities | each gate "The project's code wins"; spec "Patterns to reuse" | ported | yes |
+| Comment contract | RC 1–8 | ported | yes |
+| Error handling, `isNotBlank` + trim | RO 1–8 | ported | yes |
+| Security | — | dropped (S68: the security list) | no |
+| Test coverage | logic-review | ported | yes |
+| SOLID | — | dropped (S68) | no |
+| WARN vs INFO | RL 7 | ported | yes |
+| Assertion helpers | RT 2, 3, 6 | ported | yes |
+| One `CREATE INDEX CONCURRENTLY` per file | RO 9 | ported | yes |
+| No magic numbers | — | dropped (S68) | no |
+| Static-import enums | RY 6 | ported | yes |
+| Performance, scalability, smells, tech debt | — | dropped (S68) | no |
+| Prefer changing files over new ones | — | dropped (S68) | no |
 
 #### skills/java-comments/SKILL.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Accuracy over volume | — | planned (comments gate) | yes |
-| Five kinds of comment that earn their place | — | planned (comments) | yes |
-| Describe state, never change | — | planned (comments) | yes |
-| No plan names in comments (Jira is fine) | code skill 3.4 | partial (Jira nuance missing) | yes |
-| Never invent a reason | — | planned (comments) | yes |
-| Examples, test comments, delete-on-sight list, common mistakes | — | planned (comments) | yes |
-| Self-check greps, tier 1 and tier 2 | — | partial: §10 plans an agent gate only; R3 §5.1 says tool checks first | yes (a tool gate fits) |
+| Accuracy over volume | RC rules intro | ported | yes |
+| Five kinds of comment that earn their place | RC 1 | ported | yes |
+| Describe state, never change | RC 2 | ported | yes |
+| No plan names in comments (Jira is fine) | RC 3, 4 | ported | yes |
+| Never invent a reason | RC 5 | ported | yes |
+| Examples | RC examples | ported | yes |
+| Test comments | RC 7 | ported | yes |
+| Delete-on-sight list | RC 6 | ported | yes |
+| Match the code next to it | RC 8 | ported | yes |
+| Common Mistakes table | — | dropped (S68: rules 6 and 8 cover it, as does the `retries++` example) | no |
+| Self-check greps, tier 1 and tier 2 | RC "Sweeps"; `test/orc-java-stack/comments-grep.test.js` | ported | yes |
 
 #### skills/java-comments/evals/
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Layer 1: `run.sh` grep eval | — | lost | yes, if the grep becomes a tool gate |
-| Fixtures | — | lost | unsure: they hold real ship.cars code lines; check before copying |
-| Keep the pattern in sync with the skill | — | lost | yes |
-| Layer 2: judgement cases C1–C10 | — | lost | yes (a test set for the comments gate) |
-| Backtest numbers and known limits | — | lost | yes |
+| Layer 1: `run.sh` grep eval | `test/orc-java-stack/comments-grep.test.js` | ported | yes |
+| Fixtures | `test/orc-java-stack/fixtures/comments/` (the real ship.cars lines are in `PORT-TO-SC.md`) | ported | yes |
+| Keep the pattern in sync with the skill | `comments-grep.test.js` | ported | yes |
+| Layer 2: judgement cases C1–C10 | — | dropped (S68: judgment cases, run by hand; ship.cars text) | no |
+| Backtest numbers and known limits | — | dropped (S68) | no |
 
-No DESIGN or TENSIONS row gives skills or gates an eval or regression test. `orchestra check`
-(§5.3) checks structure only.
+No gate except comments has an eval or a regression test. `orchestra check` (§5.3) checks structure
+only.
 
 #### skills/java-formatting/SKILL.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Google style, imports | Spotless gate (§10) | planned (plan 4) | yes |
-| Static imports, enum constants static | — | lost (google-java-format does not enforce it) | unsure (house style) |
-| Comments section | comments gate | planned | yes |
-| Spotless commands | §4.2 example | planned | yes |
-| Empty-line rules and 12 examples | — | lost (no gate; google-java-format adds no blank lines) | no for generic; yes for ship.cars |
+| Google style, imports, indentation, line length | Spotless gate (OJ `spotless`) | ported | yes |
+| Static imports, enum constants static | RY 6, 7 | ported | yes |
+| Comments section | RC | ported | yes |
+| Spotless commands | OJ `spotless.run` | ported | yes |
+| Empty-line rules and 12 examples | RY 1–5 and its example | ported | yes |
 
 #### skills/java-logging/SKILL.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Lombok `@Slf4j` | — | dropped (S3) | no (the generic "one SLF4J logger" goes to the logging gate) |
-| Levels; WARN vs INFO by who controls the data | logging gate | planned (plan 4) | yes |
-| Empty lines | — | lost (see formatting) | no for generic |
-| Message format, content rules, labels | logging gate | planned | yes |
-| Parameterized logging, debug guard | logging gate | planned | yes |
-| Exceptions: cause last; never log and rethrow | logging gate | planned | yes |
-| Sensitive fields | logging gate | planned | yes |
-| `hideString()`, `scValue()` | — | dropped (S3, ship.cars libraries) | no |
-| Quarkus `kv()`, detect Quarkus vs Spring | — | planned / unsure | unsure |
-| 16 anti-patterns | logging gate | planned (ship.cars items dropped) | yes |
+| Lombok `@Slf4j` | RL 1 | ported | yes |
+| Levels; WARN vs INFO by who controls the data | RL 7 (the WARN "deprecated usage, approaching limits" is dropped, S68) | partial | yes |
+| Empty lines | RY 1–5 | ported (moved to the layout gate) | yes |
+| Message format, content rules, labels | RL 3, 4 | ported | yes |
+| Parameterized logging, debug guard | RL 2, 9 | ported | yes |
+| Exceptions: cause last; never log and rethrow | RL 5, 6 | ported | yes |
+| Sensitive fields | RL 8 | ported | yes |
+| `hideString()` | RL 8 (depitropov-commons, S68) | ported | yes |
+| `scValue()` | — | dropped (S3, S68: ship.cars port, `PORT-TO-SC.md`) | no |
+| Quarkus `kv()`, detect Quarkus vs Spring | RL 10 | ported | yes |
+| 16 anti-patterns | RL 1–10 | ported (ship.cars items dropped, S3) | yes |
 
 #### skills/java-maven/SKILL.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
 | "Invoke before any mvn" trigger | OJ `build` (S48), CG | dropped (S48, S53) | no |
-| Wrapper, `-B` | CG 1, OJ | ported | yes |
-| `-s .mvn/settings.xml` | CG 1 (conditional); OJ `build.run` lacks it | partial / planned (§10) | yes |
-| Check the module exists before `-pl`; check mvnw and settings exist | CG 1–2 | partial | yes |
-| Log to a file once; no pipes | CG 3, code skill, fixer (S60) | ported | yes |
+| Wrapper, `-B` | CG 1, OJ `build` | ported | yes |
+| `-s .mvn/settings.xml` | CG 1 (conditional) | ported; OJ `build.run` still lacks it (`PORT-TO-SC.md`) | yes |
+| Check the module exists before `-pl`; check mvnw and settings exist | CG 1, 3 | ported | yes |
+| Log to a file once; no pipes | code skill, fixer (S60) | ported | yes |
 | Single class or method | CG 2, FB 2 | ported | yes |
-| Several classes in `-Dtest`; `-Dsurefire.failIfNoSpecifiedTests=false` | — | lost | yes (multi-module repos) |
+| Several classes in `-Dtest`; `-Dsurefire.failIfNoSpecifiedTests=false` | CG 2, 3 | ported | yes |
 | `-DskipTests` only to compile | FB 3 | partial | yes |
-| Stale SNAPSHOT: always `-am`; suspect the classpath before your diff | CG 2 (`-am`) | partial (the diagnosis rule belongs in FB) | yes |
-| An interrupted run leaves `target/` broken | — | lost (belongs in FB) | yes |
+| Stale SNAPSHOT: always `-am` | CG 3 | ported | yes |
+| An interrupted run leaves `target/` broken | CG 4 | ported | yes |
 | Shell gotchas (noclobber, SIGPIPE) | S60 no-pipe rule | partial | unsure |
-| Dependency management | PG 8 | partial | unsure |
-| JaCoCo in the build | OJ has none | planned (§10) | yes |
+| Dependency management | — | dropped (S68) | no |
+| JaCoCo in the build | — | dropped here; the CRAP gate comes in phase 2 (DESIGN §10) | yes |
 
 #### skills/java-ops/SKILL.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Error handling | CG 8 | partial / planned (ops gate) | yes |
-| Wrap exceptions with the cause | — | planned (ops) | yes |
-| Strings: one trimming strategy | CG 8 | partial / planned (ops) | yes |
-| Flyway: one `CONCURRENTLY` per file, `IF NOT EXISTS` | — | planned (ops); R3 §5.2 says migrations are write-time | yes |
-| Security, concurrency | — | planned (ops) | yes |
-| Javadoc with all params; README per module | — | planned (comments); conflicts with java-comments | unsure: conflict in the source |
+| Error handling | RO 2–6 | ported | yes |
+| Wrap exceptions with the cause | RO 1 | ported | yes |
+| Strings: one trimming strategy | RO 7 | ported | yes |
+| Flyway: one `CONCURRENTLY` per file, `IF NOT EXISTS` | RO 9 | ported (at review time, S68) | yes |
+| Custom exception hierarchies | — | dropped (S68) | no |
+| Security | — | dropped (S68: the security list) | no |
+| Concurrency | — | dropped (S68: the concurrency list) | no |
+| Javadoc with all params; README per module | — | dropped (S68: the documentation list; conflicts with RC) | no |
 
 #### skills/java-testing/SKILL.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Positive and negative cases; independent tests | PG 10, logic-review | partial | yes |
-| Integration and end-to-end for critical paths | — | planned (testing gate) | unsure |
-| Mocks for external dependencies | PG 3 | partial | yes |
-| Edges, names, AAA, AssertJ, JUnit 5, FAILURE vs ERROR, mirror structure | PG 9–11, CG 4, 10–11 | ported | yes |
-| JsonUnit, SoftAssertions rules, assertion helpers | — | planned (testing gate) | yes |
-| `assertBusinessRuleException`, `assertErrorDto` | — | dropped (S3) | no |
-| Static-import enums in tests | — | lost | unsure |
-| Parameterized sources (`@NullAndEmptySource`) | CG 12 | partial | yes |
-| Builders and helpers | CG 11 | partial | yes |
+| Positive and negative cases; independent tests | logic-review | ported | yes |
+| Integration and end-to-end for critical paths | — | dropped (S68) | no |
+| Mocks for external dependencies | — | dropped (S68: the "Unit Testing" list) | no |
+| Edges, names, AAA, AssertJ, JUnit 5 | RT 1, 8 | ported | yes |
+| FAILURE vs ERROR in Surefire | CG 4 | ported | yes |
+| Mirror the production structure; builders for setup; structure by behaviour | — | dropped (S68: the "Test Structure" bullets) | no |
+| "A test class per service", coverage | — | dropped (S68: logic-review owns coverage) | no |
+| JsonUnit, SoftAssertions rules, assertion helpers | RT 1, 4, 5, 6 | ported | yes |
+| `assertBusinessRuleException`, `assertErrorDto` | RT 2, 3 (depitropov-commons, S68) | ported | yes |
+| Static-import enums in tests | RY 6 | ported | yes |
+| Parameterized sources (`@NullAndEmptySource`) | RT 7 | ported | yes |
+| Builders and helpers | RT 6 | partial | yes |
+| Overload the helper, nullable expected values | — | dropped (S68) | no |
 
 #### skills/java-maven-upgrade/ (SKILL.md and 3 sub-files)
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| An upgrade task procedure | — | lost (no design slot for task-type procedures; guides are plan and code only) | unsure |
-| Internal deps, BOMs, release process, sibling repos, JIRA PR flow | — | dropped (S3, S17, §14) | no |
-| Comments in the POM are version ceilings | — | lost | yes |
-| Stable versions only; stay on Maven 3.9 | — | lost | yes |
-| BOM-managed versions win | — | lost | yes |
-| Check before done; compare with the pre-upgrade log | — | lost (belongs in FB) | yes |
-| "`[ERROR]` lines can be test noise; trust BUILD SUCCESS" | — | lost (belongs in FB) | yes |
-| Version discovery on Central (`maven-metadata.xml`), wrapper upgrade steps | — | lost | yes (upgrade tasks only) |
-| Parent-less BOM duplication gotcha | — | lost | yes |
-| Quarkus migration lessons (jpamodelgen, Testcontainers mode B, Flyway CONCURRENTLY hang) | — | lost | yes (generic Quarkus) |
-| Other Quarkus traps, native build, property migrations | — | lost | unsure |
-
-Note: FB's "do not change dependencies" rule blocks a dependency-bump task.
+| All parts: the upgrade procedure, internal BOMs, version rules, Maven wrapper steps, Quarkus migration lessons | — | dropped (S68: not part of a task run) | no |
 
 #### skills/spotless-maven-setup/ (SKILL.md and assets)
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| `spotless:apply` works from root; `verify` runs `check` | Spotless gate (§4.2) | partial (the gate assumes the plugin is set up) | yes |
-| Add and check the plugin; `spotless-plugin-block.xml` | — | lost (`orchestra:init` does no repo set-up) | yes |
-| Client hooks, `install_client_hooks.sh`, revalidation | — | lost | no for runs |
-| Gotchas A–E | — | lost (a `fix: self` gate has no fix guide) | yes (as a fix guide) |
-| `pre-commit` hook | — | lost | unsure (would run Maven on every orchestra commit) |
-| `commit-msg` hook (needs a JIRA key) | — | dropped (S3) | no. In ship.cars repos it rejects orchestra's `feat:` commits |
+| `spotless:apply` works from root; `verify` runs `check` | OJ `spotless` gate | ported (skipped when the pom has no plugin) | yes |
+| Add and check the plugin; `spotless-plugin-block.xml` | — | dropped (S68: the Spotless set-up) | no |
+| Client hooks, `install_client_hooks.sh`, revalidation | — | dropped (S68) | no |
+| Gotchas A–E | FS cases A–E | ported | yes |
+| `pre-commit` hook | — | dropped (S68) | no |
+| `commit-msg` hook (needs a JIRA key) | `PORT-TO-SC.md` | dropped (S3) | no |
 
 #### Top losses (java-stack)
 
-1. **Skill evals have no home.** The java-comments evals are not carried, and no gate has a regression test.
-2. **Multi-module test-selection gotchas** are missing from CG and FB. The coder and the fixer burn rounds on them.
+1. **Skill evals.** The comments evals now run (`test/orc-java-stack/comments-grep.test.js`). The
+   other gates have none.
+2. **Multi-module test-selection gotchas.** Closed by S68: CG 2–4.
 3. **The build lacks the settings file and JaCoCo.** A repo with private settings fails; the CRAP gate will have no data.
-4. **Flyway migration rules are only planned at review time.** R3 says migrations belong in the write-time guides.
-5. **The DTO shape rule is missing at write time,** though R3 uses it as its own example.
-6. **The comments grep is not a tool gate.** Its tuned patterns are not carried.
-7. **Spotless has no set-up and no fix guide.** The finish phase fails on a repo without the plugin.
-8. **Empty-line and static-import rules have no gate.** This matters most for the ship.cars version.
+4. **Flyway migration rules** are at review time by S68 (RO 9); R3 puts migrations at write time.
+5. **The DTO shape rule.** Closed by S68: the DTO rule is dropped.
+6. **The comments grep.** Closed by S68: RC "Sweeps".
+7. **Spotless set-up and fix guide.** Closed by S68: the gate skips a pom with no plugin, and FS holds the fix guide.
+8. **Empty-line and static-import rules.** Closed by S68: RY 1–7.
 9. **Generic upgrade lessons have no slot,** and FB blocks dependency changes.
-10. **Silent conflicts:** Javadoc `@param` in the source itself; the ship.cars `commit-msg` hook against orchestra's commit messages. (PG 5 against "interfaces at layer boundaries" is settled by S65.)
+10. **Silent conflicts:** the ship.cars `commit-msg` hook against orchestra's commit messages (`PORT-TO-SC.md`). The Javadoc `@param` conflict is gone: S68 drops the documentation list.
 
 ### minions
 

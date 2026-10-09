@@ -100,3 +100,37 @@ wording change needs no entry.
 - **Where it lives:** plan 3.3: `orc-standard-workflow/skills/logic-review`, the new skill
   `orc-standard-workflow/skills/plan-conformance`, the workflow's `orchestra.json`, the gate runner's
   inputs.
+
+## S68: The Java port keeps the coder lean and puts the stack rules in reviewers
+
+- **Date:** 2026-10-09
+- **Status:** decided
+- **Question:** java-stack gives the coder and the reviewer the same long skills: SOLID, Clean
+  Architecture, patterns, style, logging, tests. What do we port, where does it go (write time or
+  review time), and what do we leave behind as debt?
+- **Options:**
+  1. Port 1:1, as write-time skills and one broad reviewer. Rejected: R6 finds no gain from generic
+     principles or personas and some cost (more code, more abstraction), and broad reviewers
+     over-report (R3).
+  2. A thin write-time layer of 5–15 rules plus reviewers (R3's recommendation). Rejected for now:
+     R6 finds no measured gain from the general rules that would fill it, and the user wants the
+     stage skills lean.
+  3. Write time holds only facts the model cannot guess (test commands); every convention goes to a
+     focused reviewer with numbered rules. Chosen.
+- **Evidence:** `docs/research/R6-coder-guidance.md` (personas: no gain on code; quality prompts:
+  cleaner start, same decay, higher cost; a bad plan is worse than none; vendors: models are literal
+  and over-build). `docs/research/R3-write-vs-review-time.md` (named-rule reviewers reach 75–80%
+  precision). The grilling of 2026-10-09, Q1–Q18.
+- **Decision:** `code-guide` = test-command facts; no `plan-guide`; gates ops, testing, comments,
+  logging, layout and Spotless; no structure gate (clean-code later, at workflow level); dropped:
+  SOLID, Clean Architecture, the pattern list, the performance, security, concurrency and
+  documentation lists, member order, the entities, converters and DTOs gates,
+  `java-maven-upgrade`, the `java` index, the Spotless set-up and hooks, Spring `scValue`. The
+  personal repo names depitropov-commons helpers (`DEStringUtils.hideString`,
+  `DETestErrorHandlingUtils`, `ErrorUtils.isValidArgument`).
+- **Cost and risk:** each agent gate costs a subagent per run (follow-up 4 measures whether each one
+  earns it). With no structure gate until clean-code arrives, over-engineering is caught only by
+  logic-review and plan-conformance. A rule from a house style may not fit another project: the
+  "project's code wins" line is the guard. The ship.cars port must swap the helper names back.
+- **Where it lives:** `plugins/orc-java-stack/orchestra.json`, `plugins/orc-java-stack/skills/`,
+  `plugins/orchestra/lib/gates.js`, `plugins/orchestra/lib/runner.js`, `PORT-TO-SC.md`.
