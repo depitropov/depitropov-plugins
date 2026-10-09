@@ -6,6 +6,7 @@
   "guides": { "code": "code-guide" },
   "gates": [
     { "name": "comments", "phase": "finish", "kind": "agent", "skill": "review-comments", "files": "**/*.java" },
-    { "name": "logging", "phase": "finish", "kind": "agent", "skill": "review-logging", "files": "**/*.java" }
+    { "name": "logging", "phase": "finish", "kind": "agent", "skill": "review-logging", "files": "**/*.java" },
+    { "name": "layout", "phase": "finish", "kind": "agent", "skill": "review-layout", "files": "**/*.java" }
   ]
 }
