@@ -2,9 +2,9 @@
 
 The forks in the design. `docs/PILLARS.md` describes the four source projects. `docs/CONTEXT.md`
 defines the module names. The research notes are in `docs/research/` (R1 file loading, R2
-orchestration, R3 write vs review time, R4 subagent nesting, R5 reviewer context, R6 coder guidance). Each row here is
-the short index; a deliberate decision that weighed options has its full record in
-`docs/DECISIONS.md` under the same `S` number.
+orchestration, R3 write vs review time, R4 subagent nesting, R5 reviewer context, R6 coder
+guidance). Each row here is the short index; a deliberate decision that weighed options has its full
+record in `docs/DECISIONS.md` under the same `S` number.
 
 ## Scope
 

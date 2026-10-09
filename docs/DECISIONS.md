@@ -120,7 +120,8 @@ wording change needs no entry.
 - **Evidence:** `docs/research/R6-coder-guidance.md` (personas: no gain on code; quality prompts:
   cleaner start, same decay, higher cost; a bad plan is worse than none; vendors: models are literal
   and over-build). `docs/research/R3-write-vs-review-time.md` (named-rule reviewers reach 75–80%
-  precision). The grilling of 2026-10-09, Q1–Q18.
+  precision). The grilling of 2026-10-09 has no file; its
+  record is the Scope table of `docs/superpowers/plans/2026-10-09-java-stack-port.md`.
 - **Decision:** `code-guide` = test-command facts; no `plan-guide`; gates ops, testing, comments,
   logging, layout and Spotless; no structure gate (clean-code later, at workflow level); dropped:
   SOLID, Clean Architecture, the pattern list, the performance, security, concurrency and

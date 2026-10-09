@@ -53,8 +53,9 @@ A port is any plan, skill or design text that takes content from a source file.
 The inventory is filled from a full read of each source file on 2026-10-08.
 
 General notes:
-- No plan 4 document exists yet. `planned (plan 4)` rests on DESIGN §10 and S61. §10 names the
-  gates, not what is inside them. Plan 4 must port their content from the source files below.
+- Plan 4 is `docs/superpowers/plans/2026-10-09-java-stack-port.md`, decided by S68. Rows that say
+  RL, RO, RT, RC, RY or CG point at its skills (`review-logging`, `review-ops`, `review-testing`,
+  `review-comments`, `review-layout`, `code-guide`); the number is the rule number.
 - DESIGN §8.4 says every agent gate triages. be-coding-agent let its mechanical passes (structure,
   logging, comments, layout) only fix and record "Left" items, with no triage.
 
@@ -111,7 +112,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Verify failed = build or test counts | exit code | ported (simpler) | yes |
 | One fix-verify, then verify again | build fixer, `max_rounds` 3 | ported (S47, S48) | yes |
 | Final verify red: deviation, run "completed" | red final build = `failed` | dropped (S45, S48) | no |
-| Text passes, each failure a deviation | finish gates | planned (plan 4) | yes |
+| Text passes, each failure a deviation | finish gates (S68); the deviations list is still lost (next row) | partial | yes |
 | `deviations[]` in the result | — | lost | yes |
 | `commits[]` | report `git log base..HEAD` | ported | yes |
 | Summary text | report Status and Reason | partial | yes |
@@ -249,14 +250,14 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
 | Fresh eyes, once, fixes in its own session | logic-review gate (S14, S25, S55) | ported | yes |
-| Loads review, testing, ops and build skills | stack-agnostic; ops and testing become stack gates | planned (plan 4) | yes |
+| Loads review, testing, ops and build skills | stack-agnostic; ops and testing are stack gates: RO, RT | ported (S68) | yes |
 | Read brief, plan, implementation log, diff, changed files in full | split (S66): `plan-conformance` reads the plan and the log; logic-review reads the brief, `decisions` and the diff | ported (S66, split on purpose) | yes |
 | Criterion-to-test mapping | logic-review step 3 | ported | yes |
 | Test quality: empty asserts, disabled tests, mocked unit under test, tests that pass without the change | logic-review step 3, plus "fails on a wrong version" (S66) | ported (S66) | yes |
 | Completeness: every plan task done, nothing stubbed | `plan-conformance` "Tasks done" | ported (S66) | yes |
 | Undeclared deviations from the plan | `plan-conformance` "Deviations", "Scope" | ported (S66) | yes |
 | Correctness: bugs, edges, races, transaction and error boundaries | logic-review step 4 | ported | yes |
-| Error handling and security | logic-review step 4 names security holes (partial); the ops gate carries the rules | partial / planned (plan 4) | yes |
+| Error handling and security | logic-review step 4 names security holes (partial); RO carries the error rules; the security list is dropped (S68) | partial | yes |
 | Not yours: naming, structure, comments, logs, layout | logic-review "Not yours" | ported | yes |
 | Patch: check it first, fix minimally | `orchestra:triage` action table | ported (S64) | yes |
 | Evaluate / Noise / Decide actions | steps 5, 7 | ported | yes |
@@ -268,12 +269,12 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Structure reviewer | §10 implementation-check "structure" (S25) | planned (plan 4) | yes |
-| Runs before the build that verifies, because it may rewrite code | implementation-check (§6.2) | planned | yes |
-| Scope = the diff | §6.4 | planned | yes |
-| Checklist: layering, SOLID, records, DI, immutability, DTO annotations, naming, null checks, member order | parts in the plan and code guides | partial / planned (plan 4) | yes (stack) |
-| Leave cross-file moves and new or deleted classes | buckets (§8.4) | lost (the "leave cross-file" rule) | yes |
-| Notes: Fixed / Left | gate result | planned (format not set) | yes |
+| Structure reviewer | — | dropped (S68: no structure gate; clean-code comes later at workflow level) | no |
+| Runs before the build that verifies, because it may rewrite code | — | dropped (S68: no structure gate; clean-code comes later at workflow level) | no |
+| Scope = the diff | — | dropped (S68: no structure gate; clean-code comes later at workflow level) | no |
+| Checklist: layering, SOLID, records, DI, immutability, DTO annotations, naming, null checks, member order | null checks RO 7, 8; `@UtilityClass` RY 8; member order, SOLID, DTO annotations, naming dropped (S68) | partial | yes (stack) |
+| Leave cross-file moves and new or deleted classes | — | dropped (S68: no structure gate) | no |
+| Notes: Fixed / Left | triage notes format | dropped (S68: each gate writes the triage notes format) | no |
 
 #### stages/verify.md
 
@@ -285,7 +286,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Pass/fail from the build line; test totals summed | exit code | partial (no test counts) | yes |
 | Never change files; never skip tests | fix-build | ported | yes |
 | Pass the last ~200 lines, compile errors first | raw log path to the fixer | dropped (S47) | no |
-| JaCoCo coverage | §10 | planned (plan 4) | yes |
+| JaCoCo coverage | §10 | planned (phase 2, CRAP gate, DESIGN §10) | yes |
 
 #### stages/fix-verify.md
 
@@ -305,23 +306,23 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Logging pass, never changes behaviour | §10 finish "logging", §6.2 | planned (plan 4) | yes (stack) |
-| Skip when no log line changed | §6.4 selection | planned | yes |
-| Scope: declaration, level, format, exceptions, structured values, masking | — | planned (plan 4, content not set) | yes (stack) |
-| Blank lines around logs belong to layout | — | lost (layout is not in §10) | yes |
-| Leave a fix that changes behaviour, or a message a test outside the diff asserts | — | lost | yes |
+| Logging pass, never changes behaviour | RL (finish "logging", §6.2) | ported (S68) | yes (stack) |
+| Skip when no log line changed | §6.4 selection by `files` | partial (the gate runs for any changed `*.java`, not for a changed log line) | yes |
+| Scope: declaration, level, format, exceptions, structured values, masking | RL 1–10 | ported | yes (stack) |
+| Blank lines around logs belong to layout | RY 1–5 | ported | yes |
+| Leave a fix that changes behaviour, or a message a test outside the diff asserts | triage buckets (Decide, Evaluate) keep a risky fix open; step 8 runs the tests of the changed files only | partial (a test outside the diff is not run, S68) | yes |
 | Compile and test touched modules; one commit | final build, S14 | ported | yes |
 
 #### stages/comments.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Comments pass, never changes code | §10 finish "comments" | planned (plan 4) | yes (stack) |
-| Skip when no comment changed | §6.4 | planned | yes |
-| A comment earns its place: constraint, reason, external fact, contract, expiry | — | planned (plan 4, content not set) | yes |
-| Delete restating and narrating comments, plan names, invented reasons | code 3.4 bans plan names | partial | yes |
-| Run the skill's self-check greps | — | planned (plan 4) | yes |
-| Leave a comment only when its truth is unknown | — | lost | yes |
+| Comments pass, never changes code | RC (finish "comments") | ported (S68) | yes (stack) |
+| Skip when no comment changed | §6.4 selection by `files` | partial (the gate runs for any changed `*.java`, not for a changed comment) | yes |
+| A comment earns its place: constraint, reason, external fact, contract, expiry | RC 1 | ported | yes |
+| Delete restating and narrating comments, plan names, invented reasons | RC 3, 4, 5, 6; code 3.4 | ported | yes |
+| Run the skill's self-check greps | RC sweeps; `test/orc-java-stack/comments-grep.test.js` | ported | yes |
+| Leave a comment only when its truth is unknown | RC 5 (delete a reason nothing backs, keep the fact) | ported | yes |
 | Compile (Javadoc can break the build) | finish build | ported | yes |
 
 #### stages/layout.md
@@ -329,13 +330,13 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
 | Runs last; formats once | finish: agents → tools → build (§6.2) | ported | yes |
-| Skip when no Java file changed | §6.4 | planned | yes |
-| Empty-line rules | — (§10 lists only Spotless) | lost | yes (stack) |
-| Import rules | — | lost | yes (stack) |
-| Spotless apply | §10 Spotless, `fix: self` | planned (plan 4) | yes |
-| Run Spotless only where the repo has it, else record it | — | lost | yes |
+| Skip when no Java file changed | §6.4 selection by `files` | partial (the gate runs for any changed `*.java`) | yes |
+| Empty-line rules | RY 1–5 | ported | yes (stack) |
+| Import rules | RY 6–7 | ported | yes (stack) |
+| Spotless apply | Spotless gate (S68) | ported | yes |
+| Run Spotless only where the repo has it, else record it | Spotless gate skips a pom with no plugin | ported (S68) | yes |
 | No formatter: follow the code around it, and say so | guides "The project's own code wins" | partial | yes |
-| Commit only the touched files | `fix: self` commits all outside `docs/runs` | partial | yes |
+| Commit only the touched files | the runner commits the changes of a green tool gate (S68) | ported (S68) | yes |
 | Compile after | finish build | ported | yes |
 
 #### Top losses (be-coding-agent)
@@ -348,7 +349,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 6. **Escalation, integration points, risks, and the external-facts check.** Cross-service work is not caught.
 7. **Deviations in the report.** `plan-conformance` now checks them (S66); the report still shows no deviations list.
 8. **Coder blocker context.** A failed chunk runs again without knowing why it failed.
-9. **Spotless.** No `-Dspotless.check.skip` in the build, Spotless runs where it is not set up, and the layout rules are not in §10.
+9. **Spotless.** No `-Dspotless.check.skip` in the build, ~~Spotless runs where it is not set up~~ (closed by S68: the gate skips a pom with no plugin), and ~~the layout rules are not in §10~~ (closed by S68: RY 1–7).
 10. **Report detail.** Files changed, test counts and Patch reasons are gone. (The degraded run is forbidden now, S65.)
 
 ### java-stack
