@@ -1,0 +1,11 @@
+# Comment lines that MUST be flagged by tier 1. Ported from real comments, names made neutral.
+ * flight silently loses the correlated skip-all (T4.4 / R-6).
+// no vehicles array at all - the load-level clause used to demand dates for every shipping
+// R5 (T4.4): a 4xx-class create error is now terminal — surfaced as NonRetryableException so
+// T4.2: the real archive activity is now invoked (not the Phase-3 NOOP default branch).
+// P21 (T4.5): the create/update-failure skip-all flips every still-unapplied
+// Step 10 (T4.1): a DISPATCH_LEG op must route to dispatchLegActivity, not the
+// Reconciled with T4.5/M1/B2: the same failure ALSO fires skip-all (intended behavior, covered
+ * <h3>PARITY ENVELOPE (WS2 Step 1)</h3>
+ * WS2 — cross-engine parity proof (ABC-8008, rollout-gating before the Phase 6 flip).
+ * R-8: continue-as-new when the SDK suggests it (history/replay-cost heuristics) OR an explicit

@@ -1,0 +1,5 @@
+# Real-world tokens that tier 2 also flags. Expected; the reason tier 2 gives hints, not findings.
+// switched to G1 because the CMS pause times were unacceptable on this heap
+// benchmarked on an Apple M1; the numbers do not transfer to x86 CI
+// the D3 force layout needs the nodes mutated in place, so this copy is deliberate
+// uploads go to R2 rather than S3 — egress on this bucket is free

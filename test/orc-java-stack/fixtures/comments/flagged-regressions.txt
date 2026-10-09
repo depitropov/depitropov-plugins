@@ -1,0 +1,4 @@
+# Pattern bugs found in an external review. Each was missed by an earlier tier-1 pattern.
+// AC3: a low-priority group never waits longer than the deferral window
+// Phase 3 leaves this branch as a NOOP default
+// R5: a 4xx create error is terminal

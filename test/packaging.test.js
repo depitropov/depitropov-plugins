@@ -61,8 +61,12 @@ test('every skill and guide a declaration names is a skill in that plugin', () =
 });
 
 test('every judging skill takes its triage from orchestra:triage, not from its own copy', () => {
-  for (const name of ['plan-check', 'plan-conformance', 'logic-review']) {
-    const text = fs.readFileSync(path.join(PLUGINS, 'orc-standard-workflow', 'skills', name, 'SKILL.md'), 'utf8');
+  const judging = [
+    ...['plan-check', 'plan-conformance', 'logic-review'].map(n => ['orc-standard-workflow', n]),
+    ...skills.filter(s => s.plugin === 'orc-java-stack' && s.name.startsWith('review-')).map(s => [s.plugin, s.name]),
+  ];
+  for (const [plugin, name] of judging) {
+    const text = fs.readFileSync(path.join(PLUGINS, plugin, 'skills', name, 'SKILL.md'), 'utf8');
     assert.match(text, /invoke the skill\s+`orchestra:triage`/i, name);
     assert.doesNotMatch(text, /\*\*Noise\*\*: not a real problem/, `${name} still has its own bucket list`);
   }

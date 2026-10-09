@@ -1,0 +1,10 @@
+# Bare letter-digit plan shorthand. Tier 1 misses all of these; tier 2 flags them.
+ * match the registration or the workflow start fails with INVALID_ARGUMENT (REVIEW-FIX R-12 /
+ *   <li><b>D3/D4/R7 — consumer gates</b>: the {@code ListingActivityImpl}
+ * {@code signalRetryFailedOp} (G1) swallow {@code WorkflowNotFoundException}
+ * status-guarded (R-4) to prevent clobbering rows that advanced past the expected state between the
+ * A terminal-failure record for a single dispatch operation (G1).
+ * surface a {@code dispatch_event} row — D5 physical separation).
+ * Parity-test harness for ABC-8008 (WS2 — the cross-engine parity proof).
+ // Assert: the dispatch_event row is back to PENDING (NOT outbox_message — M2/A2).
+ * task-brief E1 class of bug).
