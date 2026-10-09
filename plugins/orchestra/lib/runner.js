@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { readJson } = require('./resolved');
-const { git, changedFiles, isClean, commitAll } = require('./git');
+const { git, changedFiles, isClean, commitKeeping } = require('./git');
 const { collect, select, buildStep, plan } = require('./gates');
 
 function writeJson(file, data) {
@@ -100,8 +100,8 @@ function toolStep(s, ctx, state, save) {
   const logRel = `${ctx.runDir}/${ctx.phase}.${s.name}.run${rounds}.log`;
   const code = runCommand(s.run, ctx.project, path.join(ctx.project, logRel));
   if (code === 0) {
-    // A tool that formats the code (Spotless) leaves changes, whatever its fix. commitAll makes no empty commit.
-    if (!s.build) commitAll(ctx.project, `orchestra: ${s.name} (${ctx.phase})`);
+    // A tool that formats the code (Spotless) leaves changes, whatever its fix. Keep those in files the task changed; revert the rest.
+    if (!s.build) commitKeeping(ctx.project, `orchestra: ${s.name} (${ctx.phase})`, changedFiles(ctx.project, ctx.run.base));
     if (s.build && isClean(ctx.project)) writeJson(greenFile, { head: git(ctx.project, 'rev-parse', 'HEAD') });
     writeJson(resultFile, { stage: `${ctx.phase}.${s.name}`, status: 'ok', log: logRel, rounds });
     return null;

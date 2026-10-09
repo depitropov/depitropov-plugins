@@ -31,6 +31,16 @@ function dirtyFiles(cwd) {
 const isClean = cwd => dirtyFiles(cwd).length === 0;
 
 const commitAll = (cwd, message) => commitPaths(cwd, message, ['.', ...ADD_EXCLUDE]);
+// Commit the tool's edits to the files in `keep`; revert its edits to every other modified tracked file.
+// Untracked files are left alone, and the excluded folders are never listed.
+function commitKeeping(cwd, message, keep) {
+  const out = git(cwd, 'diff', '--name-only', 'HEAD', '--', '.', ...EXCLUDE);
+  const dirty = out ? out.split('\n') : [];
+  const stray = dirty.filter(f => !keep.includes(f));
+  if (stray.length) git(cwd, 'checkout', '--', ...stray);
+  return commitPaths(cwd, message, dirty.filter(f => keep.includes(f)));
+}
+
 const commitRunDir = (cwd, runDir, message) => commitPaths(cwd, message, [runDir]);
 
-module.exports = { git, changedFiles, dirtyFiles, isClean, commitAll, commitRunDir };
+module.exports = { git, changedFiles, dirtyFiles, isClean, commitAll, commitKeeping, commitRunDir };

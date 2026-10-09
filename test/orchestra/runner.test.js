@@ -141,6 +141,16 @@ test('a fixer tool gate that passes commits what it changed', () => {
   assert.equal(git(t.dir, 'log', '-1', '--format=%s'), 'orchestra: spotless (finish)');
 });
 
+test('a green tool gate commits its edits to task files and reverts its edits to other tracked files', () => {
+  const fmt = { name: 'fmt', phase: 'finish', kind: 'tool', run: `node -e "const fs=require('fs');fs.appendFileSync('src/Car.java','// f');fs.appendFileSync('README.md','// f')"`, fix: 'fixer', guide: 'fix-fmt', always: true };
+  const t = setup({ stackGates: [fmt] });
+  assert.equal(t.step('finish').status, 'ok');
+  assert.equal(git(t.dir, 'log', '-1', '--format=%s'), 'orchestra: fmt (finish)');
+  assert.equal(git(t.dir, 'show', '--name-only', '--format=', 'HEAD'), 'src/Car.java');
+  assert.equal(fs.readFileSync(path.join(t.dir, 'README.md'), 'utf8'), 'sample\n');
+  assert.equal(git(t.dir, 'status', '--porcelain', '--', 'README.md'), '');
+});
+
 test('a green tool gate that changed nothing makes no commit', () => {
   const lint = { name: 'lint', phase: 'finish', kind: 'tool', run: OK, fix: 'fixer', guide: 'fix-lint', always: true };
   const t = setup({ stackGates: [lint] });

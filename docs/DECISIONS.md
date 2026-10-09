@@ -128,10 +128,12 @@ wording change needs no entry.
   documentation lists, member order, the entities, converters and DTOs gates,
   `java-maven-upgrade`, the `java` index, the Spotless set-up and hooks, Spring `scValue`. The
   personal repo names depitropov-commons helpers (`DEStringUtils.hideString`,
-  `DETestErrorHandlingUtils`, `ErrorUtils.isValidArgument`).
+  `DETestErrorHandlingUtils`, `ErrorUtils.isValidArgument`). A green tool gate (Spotless) commits its changes to the files the
+  task changed, and reverts its edits to other files, so a format run never sweeps untouched files
+  into the task branch.
 - **Cost and risk:** each agent gate costs a subagent per run (follow-up 4 measures whether each one
-  earns it). With no structure gate until clean-code arrives, over-engineering is caught only by
-  logic-review and plan-conformance. A rule from a house style may not fit another project: the
+  earns it). With no structure gate until clean-code arrives, no gate covers
+  structure or naming. A rule from a house style may not fit another project: the
   "project's code wins" line is the guard. The ship.cars port must swap the helper names back.
 - **Where it lives:** `plugins/orc-java-stack/orchestra.json`, `plugins/orc-java-stack/skills/`,
-  `plugins/orchestra/lib/gates.js`, `plugins/orchestra/lib/runner.js`, `PORT-TO-SC.md`.
+  `plugins/orchestra/lib/gates.js`, `plugins/orchestra/lib/runner.js`, `plugins/orchestra/lib/git.js` (`commitKeeping`), `PORT-TO-SC.md`.
