@@ -5,6 +5,7 @@
   "build": { "run": "./mvnw -B verify", "guide": "fix-build", "max_rounds": 3 },
   "guides": { "code": "code-guide" },
   "gates": [
+    { "name": "ops", "phase": "implementation-check", "kind": "agent", "skill": "review-ops", "files": ["**/*.java", "**/*.sql"] },
     { "name": "testing", "phase": "conventions-check", "kind": "agent", "skill": "review-testing", "files": ["**/*Test.java", "**/*IT.java"] },
     { "name": "comments", "phase": "finish", "kind": "agent", "skill": "review-comments", "files": "**/*.java" },
     { "name": "logging", "phase": "finish", "kind": "agent", "skill": "review-logging", "files": "**/*.java" },
