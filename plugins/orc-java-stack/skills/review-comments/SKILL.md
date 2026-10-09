@@ -16,7 +16,9 @@ description: Reviews the comments and Javadoc of the changed Java code against t
 
 1. Get the change: `git diff <base> HEAD -- '*.java'`. Read each changed file in full. If the change
    has nothing in scope, write the result with `"status": "skipped"` and stop.
-   Run the tier-1 sweep below on the changed files. Each hit is a finding under rule 3 or 4. Then run the tier-2 sweep. A tier-2 hit is only a hint: judge it against rule 4, because the same tokens name real things (a garbage collector, a chip).
+   Run the tier-1 sweep below on the changed files. Each hit is a finding under rule 2, 3 or 4.
+   Then run the tier-2 sweep. A tier-2 hit is only a hint: judge it against rule 4, because the
+   same tokens name real things (a garbage collector, a chip).
 2. Check the lines this change adds or edits against each rule below. Code the change does not touch
    is not in scope.
 3. The project's code wins. When the untouched code of the same kind in this project does it another
@@ -26,8 +28,8 @@ description: Reviews the comments and Javadoc of the changed Java code against t
 6. Write `<notes>/comments.md` in the triage notes format.
 7. If there is an open Decide finding (one that `decisions` does not answer), stop here. Do not fix
    anything. Write the result with `"status": "decide"`.
-8. Otherwise fix every Patch finding and every answered Decide. Your fixes must not change behaviour. Run only the tests of the
-   files you changed. Never pipe a test command: the pipe hides the exit code. Commit once:
+8. Otherwise fix every Patch finding and every answered Decide. Your fixes must not change
+   behaviour. Run only the tests of the files you changed. Never pipe a test command: the pipe hides the exit code. Commit once:
    `fix(comments): <summary>`. orchestra commits `notes` itself: do not stage files under `docs/runs/`
    or `tmp/`. Do not review your own fixes again.
 
@@ -158,6 +160,8 @@ Sweeps. Run them on the changed files only:
 ```sh
 TIER1='(\b(AC[0-9]+|T[0-9]+\.[0-9]+|P[0-9]+|Step [0-9]+|Phase ?-?[0-9]+|is now|no longer|was previously|used to)\b|\bR-?[0-9]+:)'
 TIER2='\b([GMBEDRT]-?[0-9]+|WS[0-9]+|concept [0-9]+)\b'
-git diff --name-only <base> HEAD -- '*.java' | xargs grep -nE "^\s*(//|\*).*${TIER1}"
-git diff --name-only <base> HEAD -- '*.java' | xargs grep -nE "^\s*(//|\*).*${TIER2}"
+git diff --name-only --diff-filter=d <base> HEAD -- '*.java' | xargs -r grep -nE "^\s*(//|\*).*${TIER1}"
+git diff --name-only --diff-filter=d <base> HEAD -- '*.java' | xargs -r grep -nE "^\s*(//|\*).*${TIER2}"
 ```
+
+A hit on a line this change did not add or edit is out of scope.
