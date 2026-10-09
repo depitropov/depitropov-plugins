@@ -9,6 +9,9 @@
     { "name": "testing", "phase": "conventions-check", "kind": "agent", "skill": "review-testing", "files": ["**/*Test.java", "**/*IT.java"] },
     { "name": "comments", "phase": "finish", "kind": "agent", "skill": "review-comments", "files": "**/*.java" },
     { "name": "logging", "phase": "finish", "kind": "agent", "skill": "review-logging", "files": "**/*.java" },
-    { "name": "layout", "phase": "finish", "kind": "agent", "skill": "review-layout", "files": "**/*.java" }
+    { "name": "layout", "phase": "finish", "kind": "agent", "skill": "review-layout", "files": "**/*.java" },
+    { "name": "spotless", "phase": "finish", "kind": "tool", "files": "**/*.java",
+      "run": "if grep -q spotless-maven-plugin pom.xml 2>/dev/null; then ./mvnw -B spotless:apply; fi",
+      "fix": "fixer", "guide": "fix-spotless", "max_rounds": 1 }
   ]
 }
