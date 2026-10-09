@@ -44,12 +44,18 @@ test('both manifests of each plugin parse and have the same version', () => {
   }
 });
 
-test('every guide a stack declares is a skill in that plugin', () => {
+test('every skill and guide a declaration names is a skill in that plugin', () => {
   for (const p of plugins) {
     const file = path.join(PLUGINS, p, 'orchestra.json');
     if (!fs.existsSync(file)) continue;
-    for (const name of Object.values(JSON.parse(fs.readFileSync(file, 'utf8')).guides || {})) {
-      assert.ok(fs.existsSync(path.join(PLUGINS, p, 'skills', name, 'SKILL.md')), `${p}: guide ${name} has no skill`);
+    const d = JSON.parse(fs.readFileSync(file, 'utf8'));
+    const names = [
+      ...Object.values(d.guides || {}),
+      ...(d.build && d.build.guide ? [d.build.guide] : []),
+      ...(d.gates || []).flatMap(g => [g.skill, g.guide].filter(Boolean)),
+    ];
+    for (const name of names) {
+      assert.ok(fs.existsSync(path.join(PLUGINS, p, 'skills', name, 'SKILL.md')), `${p}: ${name} has no skill`);
     }
   }
 });
