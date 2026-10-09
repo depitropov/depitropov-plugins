@@ -80,9 +80,10 @@ function select(gates, changed, readFile) {
     if (!g.files && !g.grep && !g.when) return { name: g.name, selected: false, why: 'no selection rule' };
     let files = changed;
     if (g.files) {
-      const re = globToRegExp(g.files);
-      files = files.filter(f => re.test(f));
-      if (!files.length) return { name: g.name, selected: false, why: `no changed file matches ${g.files}` };
+      const globs = [].concat(g.files);
+      const res = globs.map(globToRegExp);
+      files = files.filter(f => res.some(re => re.test(f)));
+      if (!files.length) return { name: g.name, selected: false, why: `no changed file matches ${globs.join(' or ')}` };
     }
     if (g.grep) {
       const re = new RegExp(g.grep);

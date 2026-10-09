@@ -100,7 +100,8 @@ function toolStep(s, ctx, state, save) {
   const logRel = `${ctx.runDir}/${ctx.phase}.${s.name}.run${rounds}.log`;
   const code = runCommand(s.run, ctx.project, path.join(ctx.project, logRel));
   if (code === 0) {
-    if (s.fix === 'self') commitAll(ctx.project, `orchestra: ${s.name} (${ctx.phase})`);
+    // A tool that formats the code (Spotless) leaves changes, whatever its fix. commitAll makes no empty commit.
+    if (!s.build) commitAll(ctx.project, `orchestra: ${s.name} (${ctx.phase})`);
     if (s.build && isClean(ctx.project)) writeJson(greenFile, { head: git(ctx.project, 'rev-parse', 'HEAD') });
     writeJson(resultFile, { stage: `${ctx.phase}.${s.name}`, status: 'ok', log: logRel, rounds });
     return null;

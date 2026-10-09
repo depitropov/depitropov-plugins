@@ -134,6 +134,21 @@ test('a self-fixing tool commits its changes', () => {
   assert.equal(git(t.dir, 'log', '-1', '--format=%s'), 'orchestra: spotless (finish)');
 });
 
+test('a fixer tool gate that passes commits what it changed', () => {
+  const spotless = { name: 'spotless', phase: 'finish', kind: 'tool', run: `node -e "require('fs').appendFileSync('src/Car.java', '// formatted')"`, fix: 'fixer', guide: 'fix-spotless', always: true };
+  const t = setup({ stackGates: [spotless] });
+  assert.equal(t.step('finish').status, 'ok');
+  assert.equal(git(t.dir, 'log', '-1', '--format=%s'), 'orchestra: spotless (finish)');
+});
+
+test('a green tool gate that changed nothing makes no commit', () => {
+  const lint = { name: 'lint', phase: 'finish', kind: 'tool', run: OK, fix: 'fixer', guide: 'fix-lint', always: true };
+  const t = setup({ stackGates: [lint] });
+  const before = git(t.dir, 'rev-parse', 'HEAD');
+  assert.equal(t.step('finish').status, 'ok');
+  assert.equal(git(t.dir, 'rev-parse', 'HEAD'), before);
+});
+
 test('a Decide stops the phase until decisions.md answers that gate', () => {
   const t = setup({ workflowGates: [logicReview] });
   const a = t.step('implementation-check');

@@ -73,6 +73,13 @@ test('select applies files and grep, and records why a gate is skipped', () => {
   assert.match(v[3].why, /no changed file contains/);
 });
 
+test('select takes a list of globs in files', () => {
+  const gates = [{ name: 'ops', files: ['**/*.java', '**/*.sql'] }, { name: 'none', files: ['**/*.kt'] }];
+  const v = select(gates, ['db/migration/V2__idx.sql'], () => null);
+  assert.deepEqual(v.map(x => [x.name, x.selected]), [['ops', true], ['none', false]]);
+  assert.match(v[1].why, /no changed file matches \*\*\/\*\.kt/);
+});
+
 test('plan orders each phase: build, tools and agents in the fixed order', () => {
   const build = buildStep(resolved);
   assert.equal(build.run, '/p/st/build.sh');
