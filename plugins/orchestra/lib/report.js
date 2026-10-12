@@ -37,6 +37,18 @@ function status(r) {
   return r.step.startsWith('phase-') && r.status === 'ok' && r.gates === 0 ? 'ok (no gates)' : r.status;
 }
 
+// The `- Deviations:` lines of the coders' log that say something, each with its `## T<n>` heading.
+function deviations(file) {
+  if (!fs.existsSync(file)) return [];
+  let task = '';
+  return fs.readFileSync(file, 'utf8').split('\n').flatMap(line => {
+    const h = line.match(/^## (T\d+)/);
+    if (h) task = h[1];
+    const d = line.match(/^- Deviations:\s*(.*)$/);
+    return d && d[1].trim() && d[1].trim().toLowerCase() !== 'none' ? [`${task}: ${d[1].trim()}`] : [];
+  });
+}
+
 function writeReport(project, runDir, final, resolved) {
   const abs = path.join(project, runDir);
   const files = fs.readdirSync(abs).sort();
@@ -57,9 +69,12 @@ function writeReport(project, runDir, final, resolved) {
   if (run) lines.push(`- Branch: ${run.branch}`, `- Base: ${run.base}`);
   lines.push('', '## Plugins', '', ...list(Object.entries(resolved.slots).map(([slot, s]) => `${slot}: ${s.plugin} ${s.version}`)));
   lines.push('', '## Commits', '', ...list(commits ? commits.split('\n') : []));
+  const stat = run ? git(project, 'diff', '--stat', `${run.base}..HEAD`) : '';
+  if (stat) lines.push('', '```', stat, '```');
   lines.push('', '## Results', '', '| Step | Status | Counts |', '|---|---|---|');
   for (const r of results) lines.push(`| ${r.step} | ${status(r)} | ${counts(r)} |`);
   lines.push('', '## Assumptions', '', ...list(assumptions));
+  lines.push('', '## Deviations', '', ...list(deviations(path.join(project, run ? run.docs : runDir, 'implementation-log.md'))));
   lines.push('', '## Evaluate', '', ...list(evaluate));
   lines.push('', '## Skipped gates', '', ...list(skipped));
   const docs = run ? run.docs : runDir;

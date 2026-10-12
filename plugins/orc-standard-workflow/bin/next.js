@@ -141,6 +141,12 @@ function stage(ctx, name, inputs, skill = name) {
   let res = readResult(file);
   const retry = res && ((res.status === 'failed' && !reportOnce(file, res)) || (res.status === 'decide' && res.seen !== undefined && answers > res.seen));
   if (retry) {
+    // A coder that runs again reads its last failure from the log (the code skill reads this file).
+    if (res.status === 'failed' && name.startsWith('code-')) {
+      const log = path.join(ctx.project, ctx.run.docs, 'implementation-log.md');
+      fs.mkdirSync(path.dirname(log), { recursive: true });
+      fs.appendFileSync(log, `\n## T${inputs.from} — failed\n- Blockers: ${res.reason}\n`);
+    }
     fs.rmSync(file);
     fs.rmSync(`${file}.sent`, { force: true });
     res = null;

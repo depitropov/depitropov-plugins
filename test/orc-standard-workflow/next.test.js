@@ -315,3 +315,14 @@ test('a stage with no result is dispatched twice, then fails; a resume dispatche
   assert.equal(next(dir).action, 'dispatch');
   assert.equal(next(dir).action, 'failed');
 });
+
+test('a failed coder that runs again leaves its blocker in the implementation log', () => {
+  const dir = project();
+  const check = pass(dir, pass(dir, next(dir, '.orchestra/task.txt')));
+  const code = checked(dir, check, 1);
+  writeJson(path.join(dir, code.result), { stage: 'code', status: 'failed', reason: 'build broke' });
+  assert.equal(next(dir).action, 'failed');
+  assert.equal(next(dir).skill, 'orc-standard-workflow:code');
+  const log = fs.readFileSync(path.join(dir, DOCS, 'implementation-log.md'), 'utf8');
+  assert.match(log, /## T1 — failed\n- Blockers: build broke\n/);
+});

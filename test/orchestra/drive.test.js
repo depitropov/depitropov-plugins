@@ -204,3 +204,19 @@ test('a plan-conformance Decide stops the phase before logic-review', () => {
   assert.equal(stop.action, 'decide');
   assert.equal(stop.gate, 'plan-conformance');
 });
+
+test('the report lists real deviations, not "none", and the files changed', () => {
+  const dir = project();
+  const code = toCode(dir);
+  fs.writeFileSync(path.join(dir, 'Price.java'), 'class Price {}\n');
+  fs.writeFileSync(path.join(dir, 'docs/runs/task/add-a-discount/implementation-log.md'),
+    '## T1 — a task\n- Deviations: none\n\n## T2 — a task\n- Deviations: used BigDecimal, not double\n');
+  writeJson(path.join(dir, code.result), { stage: 'code', status: 'ok' });
+  const review = toReview(dir);
+  writeJson(path.join(dir, review.result), { stage: 'logic-review', status: 'ok' });
+  const report = fs.readFileSync(path.join(dir, drive(dir).report), 'utf8');
+  assert.match(report, /## Deviations\n\n- T2: used BigDecimal, not double\n/);
+  assert.doesNotMatch(report, /T1: none/);
+  assert.ok(report.indexOf('## Assumptions') < report.indexOf('## Deviations'));
+  assert.match(report, /## Commits[\s\S]*```\n[\s\S]*Price\.java \|/);
+});
