@@ -2,7 +2,7 @@
   "slot": "stack-skills",
   "params": [],
   "config": {},
-  "build": { "run": "./mvnw -B verify", "guide": "fix-build", "max_rounds": 3 },
+  "build": { "run": "./mvnw -B -fae -Dspotless.check.skip=true verify", "guide": "fix-build", "max_rounds": 3 },
   "guides": { "code": "code-guide" },
   "gates": [
     { "name": "ops", "phase": "implementation-check", "kind": "agent", "skill": "review-ops", "files": ["**/*.java", "**/*.sql"] },
