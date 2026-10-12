@@ -137,3 +137,51 @@ wording change needs no entry.
   "project's code wins" line is the guard. The ship.cars port must swap the helper names back.
 - **Where it lives:** `plugins/orc-java-stack/orchestra.json`, `plugins/orc-java-stack/skills/`,
   `plugins/orchestra/lib/gates.js`, `plugins/orchestra/lib/runner.js`, `plugins/orchestra/lib/git.js` (`commitKeeping`), `PORT-TO-SC.md`.
+
+---
+
+## S69: The lost rows of the port inventory
+
+- **Date:** 2026-10-12
+- **Status:** decided
+- **Question:** `docs/PORTING.md` had 18 rows with status `lost`: be-coding-agent content that no
+  target carries and nobody decided. Two of them are bugs in code, not only lost text: a stage that
+  writes no result is dispatched again with no limit, and a mid-run `verify` can fail on
+  `spotless:check` before the Spotless gate runs. What do we port, and what do we drop?
+- **Options:**
+  1. Port each row 1:1. Rejected: escalation would need a new status and a new code path, and the
+     brief's Risks and the constraints input add text that changes nothing that runs.
+  2. Decide each row on its own, reuse what orchestra has (Decide, the implementation log, the
+     report), prefer a check by a later stage over a new instruction to the writer. Chosen.
+  3. Decide only the "Top losses". Rejected: the minor rows stay `lost`, which `docs/PORTING.md`
+     does not allow.
+- **Evidence:** the inventory rows in `docs/PORTING.md`; the code facts checked on 2026-10-12
+  (`orc-standard-workflow/bin/next.js` `stage()`, `orchestra/lib/runner.js` `agentStep` and
+  `toolStep`, `orc-java-stack/orchestra.json`, `orchestra/lib/report.js`). The grilling of
+  2026-10-12 has no file; its record is the Scope table of
+  `docs/superpowers/plans/2026-10-12-lost-rows.md`.
+- **Decision:**
+  - No-result limit: a step is dispatched at most twice with no result, then it fails with "wrote
+    no result". The source halted on the first miss; one extra try covers a crashed subagent.
+  - Escalation reuses Decide. The spec lists the needs of other repos under a new brief section,
+    "Integration points". plan-check raises such a need as Decide, unless the task names the repo.
+    A named repo is read only: the run reads it as a sibling checkout and lists its changes as
+    follow-ups in the report. The run never changes another repo. No `escalated` status.
+  - External facts: plan-check checks that each one has a source or is an assumption with its cost.
+    The spec's step 3 names the places to look that exist in any stack. The local Maven repo is
+    dropped.
+  - Blocker context: before a failed code chunk runs again, `next.js` writes the reason into
+    `implementation-log.md`, which the coder already reads.
+  - The Java build is `./mvnw -B -fae -Dspotless.check.skip=true verify`. The skip is safe because
+    the Spotless gate applies the format before the final build.
+  - The report lists the deviations from the implementation log and the `git diff --stat` of the run.
+  - The fixer's commit body says the failure, the root cause, and which side was wrong.
+  - Dropped: the brief's Risks (the triage risk axis covers risk), the constraints input (it rides
+    in the task text), `deviations[]` in the result (the log holds them). "A missing required input"
+    is `n/a`: the task text is the only input.
+- **Cost and risk:** a cross-repo need that the spec misses goes unnoticed; plan-check's fact check
+  is the only guard. The format skip means a mid-run build never reports formatting, so the Spotless
+  gate must stay in the finish phase. Several runs on one repo for multi-repo work stay a human job.
+- **Where it lives:** `orc-standard-workflow/bin/next.js`, `orchestra/lib/runner.js`,
+  `orchestra/lib/report.js`, `orc-java-stack/orchestra.json`, the skills `spec`, `plan-check` and
+  `orchestra:fixer`, `docs/PORTING.md`.

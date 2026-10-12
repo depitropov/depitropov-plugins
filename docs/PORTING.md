@@ -56,6 +56,8 @@ General notes:
 - Plan 4 is `docs/superpowers/plans/2026-10-09-java-stack-port.md`, decided by S68. Rows that say
   RL, RO, RT, RC, RY or CG point at its skills (`review-logging`, `review-ops`, `review-testing`,
   `review-comments`, `review-layout`, `code-guide`); the number is the rule number.
+- Plan 5a is `docs/superpowers/plans/2026-10-12-lost-rows.md`, decided by S69. It carries the rows
+  that were `lost`.
 - DESIGN §8.4 says every agent gate triages. be-coding-agent let its mechanical passes (structure,
   logging, comments, layout) only fix and record "Left" items, with no triage.
 
@@ -76,7 +78,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Inputs: idea and acceptance criteria | task text or file (S13); spec derives the criteria | partial (no separate criteria input) | yes |
 | Input: branch name | `task/<slug>` | dropped (S22) | no |
 | Input: output folder | notes and run folders from the branch | dropped (S15, S58) | no |
-| Input: constraints, respected word for word by every stage | — | lost | unsure (can ride in the task text) |
+| Input: constraints, respected word for word by every stage | the task text, copied into the brief | dropped (S69) | no |
 | Input: tasks per coder | config key `tasks-per-coder` | ported (S62) | yes |
 | Never push, PR or ticket | §8.3 (S17) | ported | yes |
 | Group order: rewriting agents before verify, cosmetic after | phases §6.2 (S45) | ported | yes |
@@ -96,11 +98,11 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Argument checks; bare slash command blocked | — | dropped (S4, S52) | no |
 | Tasks per coder, fallback 2 | `next.js` `settings()` | ported (stricter) | yes |
 | Dispatch prompt with parameters | `protocol.js` `withPrompt` | ported | yes |
-| `-Dspotless.check.skip=true` on every Maven call | — | lost | yes (stack) |
+| `-Dspotless.check.skip=true` on every Maven call | OJ `build.run` | planned (plan 5a, S69) | yes (stack) |
 | Output schema per stage | result JSON in each skill; only bad JSON is caught | partial (no schema check of results) | yes |
-| A stage with no result halts the run as blocked | `next.js` `stage()` and runner `agentStep` dispatch again, with no limit | lost (loop risk) | yes |
-| Spec escalation cross-repo: halt as escalated | — | lost | yes |
-| Peripheral escalation: report it, go on | — | lost | yes |
+| A stage with no result halts the run as blocked | `next.js` `stage()`, runner `agentStep` and the fixer: two dispatches, then `failed` | planned (plan 5a, S69) | yes |
+| Spec escalation cross-repo: halt as escalated | brief Integration points; plan-check Decide unless the task names the repo | planned (plan 5a, S69) | yes |
+| Peripheral escalation: report it, go on | report `## Integration points` | planned (plan 5a, S69) | yes |
 | spec-check Decide halts before code | plan-check returns `decide` | ported | yes |
 | Task total from the counts | `planTasks()` counts the `### T<n>` headings | ported (S62) | yes |
 | Coder chunk loop | `code-<from>` with `from`/`to` | ported | yes |
@@ -113,7 +115,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | One fix-verify, then verify again | build fixer, `max_rounds` 3 | ported (S47, S48) | yes |
 | Final verify red: deviation, run "completed" | red final build = `failed` | dropped (S45, S48) | no |
 | Text passes, each failure a deviation | finish gates (S68); the deviations list is still lost (next row) | partial | yes |
-| `deviations[]` in the result | — | lost | yes |
+| `deviations[]` in the result | `implementation-log.md` Deviations lines | dropped (S69) | no |
 | `commits[]` | report `git log base..HEAD` | ported | yes |
 | Summary text | report Status and Reason | partial | yes |
 
@@ -127,22 +129,22 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Preflight: harness tools | — | dropped (S4) | no |
 | Preflight: clean tree | `prepare` (S23, S57) | ported | yes |
 | Branch name rules | `task/<slug>` | dropped (S22) | no |
-| A missing required input: blocked | — | lost (minor) | unsure |
+| A missing required input: blocked | — | n/a (S69: the task text is the only input) | no |
 | Workspace path and git exclude | notes and run folders | dropped (S58) | no |
 | Base = remote ref after fetch | default branch + `pull --rebase`, base = HEAD (§8.3) | ported (other mechanism) | yes |
 | Absolute paths to the plugin | `resolved.json`, `{plugin}` (S50) | ported | yes |
 | Arguments as an object | — | dropped (S4) | no |
-| Report: files changed | — (commits only) | lost | yes |
+| Report: files changed | report `git diff --stat` | planned (plan 5a, S69) | yes |
 | Report: test counts, build | step status only | partial | yes |
 | Report: assumptions | report Assumptions (S59) | ported | yes |
 | Report: findings ledger with reasons and Left items | counts, Evaluate lines | partial (Patch findings and reasons not listed) | yes |
 | Report: Decide with prose and options with trade-offs | one line `<question> — options: <a> \| <b>` | partial | yes |
-| Report: deviations | — | lost | yes |
-| Report: escalation | — | lost | yes |
+| Report: deviations | report `## Deviations` from the implementation log | planned (plan 5a, S69) | yes |
+| Report: escalation | report `## Integration points` | planned (plan 5a, S69) | yes |
 | Report: artifacts, branch, commits | report | ported | yes |
 | An unreached field stays empty | `list()` gives "- none" | ported | yes |
 | Write and print the report | `report.js`, run skill (S55) | ported | yes |
-| Statuses completed / needs-decision / blocked / escalated | done / decide / failed (S15) | partial (`escalated` lost) | yes |
+| Statuses completed / needs-decision / blocked / escalated | done / decide / failed (S15) | partial (`escalated` dropped, S69) | yes |
 | A spec-check Decide leaves no branch | `prepare` makes the branch first (S23) | dropped (S23) | no |
 | The entry only relays, never classifies | orchestra reads result files only | ported | yes |
 
@@ -168,15 +170,15 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Cite external facts; unreachable ones go to Assumptions with the cost of being wrong | spec step 3 | partial (no citation, no cost) | yes |
 | Boring minimal default, logged | spec step 4 (+ S60) | ported | yes |
 | Brief: goal, criteria, scope, affected files, patterns | spec brief template | ported | yes |
-| Brief: integration points | — | lost | yes |
-| Brief: risks | — | lost | yes |
+| Brief: integration points | spec brief `## Integration points` | planned (plan 5a, S69) | yes |
+| Brief: risks | triage risk axis | dropped (S69) | no |
 | Brief: assumptions log | Assumptions, `business fact:` (S60, S63) | ported | yes |
-| Brief: escalation (none / cross-repo / peripheral) | — | lost | yes |
+| Brief: escalation (none / cross-repo / peripheral) | brief Integration points | planned (plan 5a, S69) | yes |
 | Plan format | plan skill | ported (S37) | yes |
 | Plan rules | plan skill Rules | ported | yes |
 | Every named test is a real class and method the coder creates | plan "with a named test" | partial | yes |
 | Return counts | heading count (S62) | dropped (S62) | no |
-| Return escalation | — | lost | yes |
+| Return escalation | plan-check Decide | planned (plan 5a, S69) | yes |
 
 #### stages/spec-check.md
 
@@ -186,7 +188,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Read triage.md first | plan-check step 4 invokes `orchestra:triage` | ported (S64) | yes |
 | Load the architecture skill | plan guide (S53) | ported | yes |
 | Coverage, code facts, scope, over-building, size, no code | plan-check step 3 | ported | yes |
-| External facts: grounded and cited, else to Assumptions | — | lost | yes |
+| External facts: grounded and cited, else to Assumptions | plan-check step 3 "External facts" | planned (plan 5a, S69) | yes |
 | A new dependency is at least Evaluate; apply the Decide test | plan guide rule 8 | partial (no bucket rule) | yes |
 | Patch in place, renumber, keep AC numbers | plan-check step 7 | ported | yes |
 | Evaluate with its axes | `orchestra:triage` notes format | ported (S64) | yes |
@@ -208,7 +210,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Never skip or disable a named test | code skill | ported | yes |
 | Branch checkout | `prepare` (S23) | dropped (S23) | no |
 | Read the task, its criteria, the log, the code | code steps 2, 3.1 | ported | yes |
-| Blocker context: fix why the last coder stopped | — | lost | yes |
+| Blocker context: fix why the last coder stopped | `next.js` writes the reason into `implementation-log.md` | planned (plan 5a, S69) | yes |
 | Tests check the criterion's behaviour | code 3.2 | ported | yes |
 | Run the affected tests to a log file | code 3.3, code guide (S59) | ported | yes |
 | One commit in the repo's message style | "like `feat: <summary>`" | partial (repo style dropped) | yes |
@@ -282,7 +284,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 |---|---|---|---|
 | Measure only | runner build step (S48) | ported | yes |
 | Wrapper, flags, settings file, log to file | `build.run`, code guide | partial (settings file only in DESIGN §4.2) | yes (stack) |
-| Do not stop at the first failure | — | lost | yes (stack) |
+| Do not stop at the first failure | OJ `build.run` `-fae` | planned (plan 5a, S69) | yes (stack) |
 | Pass/fail from the build line; test totals summed | exit code | partial (no test counts) | yes |
 | Never change files; never skip tests | fix-build | ported | yes |
 | Pass the last ~200 lines, compile errors first | raw log path to the fixer | dropped (S47) | no |
@@ -299,7 +301,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Reproduce first | fix-build 2 | ported | yes |
 | Root cause: read every caller, fix once where all paths meet | fix-build 1 | partial | yes |
 | Fix, rerun, one commit | fixer 5 | ported | yes |
-| Notes: failures, root cause, fixed, not fixed | — (result JSON only) | lost | yes |
+| Notes: failures, root cause, fixed, not fixed | fixer commit body | planned (plan 5a, S69) | yes |
 | One attempt | `max_rounds` 3 (S47) | ported | yes |
 
 #### stages/logging.md
