@@ -210,7 +210,7 @@ test('the report lists real deviations, not "none", and the files changed', () =
   const code = toCode(dir);
   fs.writeFileSync(path.join(dir, 'Price.java'), 'class Price {}\n');
   fs.writeFileSync(path.join(dir, 'docs/runs/task/add-a-discount/implementation-log.md'),
-    '## T1 — a task\n- Deviations: none\n\n## T2 — a task\n- Deviations: used BigDecimal, not double\n');
+    '## T1 — a task\n- Deviations: None. Used the plan as written.\n\n## T2 — a task\n- Deviations: used BigDecimal, not double\n');
   writeJson(path.join(dir, code.result), { stage: 'code', status: 'ok' });
   const review = toReview(dir);
   writeJson(path.join(dir, review.result), { stage: 'logic-review', status: 'ok' });
@@ -219,7 +219,7 @@ test('the report lists real deviations, not "none", and the files changed', () =
   assert.doesNotMatch(report, /T1: none/);
   assert.match(report, /## Integration points\n\n- none\n/);
   assert.ok(report.indexOf('## Assumptions') < report.indexOf('## Deviations'));
-  assert.match(report, /## Commits[\s\S]*```\n[\s\S]*Price\.java \|/);
+  assert.match(report, /## Commits\n(?:(?!## Results)[\s\S])*```\n Price\.java \|/);
 });
 
 test('the report copies the brief\'s Integration points, or says none', () => {

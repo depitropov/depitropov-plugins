@@ -45,4 +45,4 @@ function commitKeeping(cwd, message, keep) {
 
 const commitRunDir = (cwd, runDir, message) => commitPaths(cwd, message, [runDir]);
 
-module.exports = { git, changedFiles, dirtyFiles, isClean, commitAll, commitKeeping, commitRunDir };
+module.exports = { EXCLUDE, git, changedFiles, dirtyFiles, isClean, commitAll, commitKeeping, commitRunDir };

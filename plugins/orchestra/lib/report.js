@@ -1,7 +1,8 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
-const { git } = require('./git');
+const { execFileSync } = require('node:child_process');
+const { git, EXCLUDE } = require('./git');
 const { PHASES } = require('./protocol');
 
 function readJson(file) {
@@ -45,7 +46,7 @@ function deviations(file) {
     const h = line.match(/^## (T\d+)/);
     if (h) task = h[1];
     const d = line.match(/^- Deviations:\s*(.*)$/);
-    return d && d[1].trim() && d[1].trim().toLowerCase() !== 'none' ? [`${task}: ${d[1].trim()}`] : [];
+    return d && d[1].trim() && !/^none\b/i.test(d[1].trim()) ? [`${task}: ${d[1].trim()}`] : [];
   });
 }
 
@@ -79,7 +80,8 @@ function writeReport(project, runDir, final, resolved) {
   if (run) lines.push(`- Branch: ${run.branch}`, `- Base: ${run.base}`);
   lines.push('', '## Plugins', '', ...list(Object.entries(resolved.slots).map(([slot, s]) => `${slot}: ${s.plugin} ${s.version}`)));
   lines.push('', '## Commits', '', ...list(commits ? commits.split('\n') : []));
-  const stat = run ? git(project, 'diff', '--stat', `${run.base}..HEAD`) : '';
+  // Not git(): its trim would drop the leading space of the first stat line.
+  const stat = run ? execFileSync('git', ['diff', '--stat', `${run.base}..HEAD`, '--', '.', ...EXCLUDE], { cwd: project, encoding: 'utf8' }).trimEnd() : '';
   if (stat) lines.push('', '```', stat, '```');
   lines.push('', '## Results', '', '| Step | Status | Counts |', '|---|---|---|');
   for (const r of results) lines.push(`| ${r.step} | ${status(r)} | ${counts(r)} |`);

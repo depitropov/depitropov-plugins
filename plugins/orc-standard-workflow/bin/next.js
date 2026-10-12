@@ -145,7 +145,7 @@ function stage(ctx, name, inputs, skill = name) {
     if (res.status === 'failed' && name.startsWith('code-')) {
       const log = path.join(ctx.project, ctx.run.docs, 'implementation-log.md');
       fs.mkdirSync(path.dirname(log), { recursive: true });
-      fs.appendFileSync(log, `\n## T${inputs.from} — failed\n- Blockers: ${res.reason}\n`);
+      fs.appendFileSync(log, `\n## T${inputs.from} — failed\n- Blockers: ${(res.reason || 'no reason given').replace(/\s*\n\s*/g, ' ')}\n`);
     }
     fs.rmSync(file);
     fs.rmSync(`${file}.sent`, { force: true });

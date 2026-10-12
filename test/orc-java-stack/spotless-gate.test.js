@@ -30,3 +30,12 @@ test('spotless passes and does nothing without the plugin, or without a pom', ()
     assert.ok(!fs.existsSync(path.join(dir, 'ran')));
   }
 });
+
+test('the build skips the format check only when the pom has the plugin', () => {
+  const build = JSON.parse(fs.readFileSync(DECL, 'utf8')).build.run;
+  for (const [pom, skips] of [['<artifactId>spotless-maven-plugin</artifactId>', true], ['<project></project>', false]]) {
+    const dir = project(pom);
+    assert.equal(spawnSync(build, { cwd: dir, shell: true }).status, 0);
+    assert.equal(/-Dspotless\.check\.skip=true/.test(fs.readFileSync(path.join(dir, 'ran'), 'utf8')), skips);
+  }
+});

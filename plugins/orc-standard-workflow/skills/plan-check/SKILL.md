@@ -31,7 +31,7 @@ problems are still cheap. You fix what you can in the two files. You do not writ
      (null handling, where rounding happens, which limit is checked first), is in at least one
      task's Tests line, with a named test.
    - **Code facts**: every file, signature and pattern the plan names exists as it says.
-   - **Scope**: no task goes beyond the brief's scope.
+   - **Scope**: no task goes beyond the brief's scope, or edits a repo other than this one.
    - **Size**: a task with more than about four files or two jobs is split.
    - **No code**: Notes hold at most a signature or ten lines of pseudo-code.
    - **Over-building**: no abstraction, layer or new library the goal does not need.
@@ -41,7 +41,7 @@ problems are still cheap. You fix what you can in the two files. You do not writ
    - **Other repos**: a change that another repo must make, in a repo the task does not name.
 4. Invoke the skill `orchestra:triage` and follow it: give every finding its axes and one bucket.
    A business fact that neither the brief nor `decisions` gives is Decide (triage, B1).
-   A change in a repo the task does not name is Decide (triage, B2).
+   A change in a repo the task does not name is Decide: the call is not ours (S69).
 5. Write `<notes>/plan-check.md` in the triage notes format, with the checks of step 3 and their
    outcome under **Checked**.
 6. If there is a Decide finding, stop here. Do not fix any finding in the brief or the plan. Write

@@ -173,7 +173,8 @@ wording change needs no entry.
   - Blocker context: before a failed code chunk runs again, `next.js` writes the reason into
     `implementation-log.md`, which the coder already reads.
   - The Java build is `./mvnw -B -fae -Dspotless.check.skip=true verify`. The skip is safe because
-    the Spotless gate applies the format before the final build.
+    the Spotless gate applies the format before the final build. The skip applies only when the root
+    `pom.xml` names the Spotless plugin, the same guard as the gate.
   - The report lists the deviations from the implementation log and the `git diff --stat` of the run.
   - The fixer's commit body says the failure, the root cause, and which side was wrong.
   - Dropped: the brief's Risks (the triage risk axis covers risk), the constraints input (it rides

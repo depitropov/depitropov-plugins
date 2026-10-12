@@ -54,7 +54,7 @@ Out: <…>
 - `<path>` — <the pattern the plan must follow>
 
 ## Integration points
-- <service, API, schema or topic outside this change> — <what this change needs from it> — <source: path or URL, or "assumption">
+- <service, API, schema or topic outside this change> — <what this change needs from it> — <source: path or URL, or "assumption — cost if wrong: <…>">
 
 ## Assumptions
 - <question> — <the default you took, and why>
