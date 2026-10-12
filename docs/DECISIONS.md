@@ -167,7 +167,8 @@ wording change needs no entry.
     "Integration points". plan-check raises such a need as Decide, unless the task names the repo.
     A named repo is read only: the run reads it as a sibling checkout and lists its changes as
     follow-ups in the report. The run never changes another repo. No `escalated` status.
-  - External facts: plan-check checks that each one has a source or is an assumption with its cost.
+  - External facts: plan-check checks that each one has a source or is an assumption with its cost,
+    and that each claim in the plan about another service, library or contract has a line there.
     The spec's step 3 names the places to look that exist in any stack. The local Maven repo is
     dropped.
   - Blocker context: before a failed code chunk runs again, `next.js` writes the reason into

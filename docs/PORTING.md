@@ -188,7 +188,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Read triage.md first | plan-check step 4 invokes `orchestra:triage` | ported (S64) | yes |
 | Load the architecture skill | plan guide (S53) | ported | yes |
 | Coverage, code facts, scope, over-building, size, no code | plan-check step 3 | ported | yes |
-| External facts: grounded and cited, else to Assumptions | plan-check step 3 "External facts" | partial (S69: missing: a check that each external claim in the plan has an Integration points line) | yes |
+| External facts: grounded and cited, else to Assumptions | plan-check step 3 "External facts" | ported (S69) | yes |
 | A new dependency is at least Evaluate; apply the Decide test | plan guide rule 8 | partial (no bucket rule) | yes |
 | Patch in place, renumber, keep AC numbers | plan-check step 7 | ported | yes |
 | Evaluate with its axes | `orchestra:triage` notes format | ported (S64) | yes |
@@ -348,7 +348,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 3. ~~**A stage that writes no result is dispatched again with no limit.**~~ Fixed: two dispatches, then `failed` (S69).
 4. ~~**Test-quality checks in logic-review.**~~ Fixed: logic-review step 3 (S66).
 5. **The Decide hand-off lost its prose and the trade-offs per option.** The human decides from one line.
-6. ~~**Escalation, integration points, risks, and the external-facts check.**~~ Fixed (S69): brief Integration points, plan-check Decide for an unnamed repo. Two rows stay `partial`: the places to look (local Maven repo dropped) and the check that each external claim has an Integration points line.
+6. ~~**Escalation, integration points, risks, and the external-facts check.**~~ Fixed (S69): brief Integration points, plan-check Decide for an unnamed repo. One row stays `partial`: the places to look (local Maven repo dropped).
 7. ~~**Deviations in the report.**~~ Fixed: `plan-conformance` checks them (S66); the report has `## Deviations` (S69).
 8. ~~**Coder blocker context.**~~ Fixed: `next.js` writes the reason into the log before the rerun (S69).
 9. **Spotless.** ~~No `-Dspotless.check.skip` in the build~~ (closed by S69), ~~Spotless runs where it is not set up~~ (closed by S68: the gate skips a pom with no plugin), and ~~the layout rules are not in §10~~ (closed by S68: RY 1–7).
