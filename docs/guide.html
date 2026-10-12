@@ -1,0 +1,1509 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Orchestra Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a fixed left rail with the five depth levels, a 70ch reading column; each level is a band you can stop at. */
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --sunk: #e8edf2;
+  --fg: #17202b;
+  --muted: #566475;
+  --line: #d3dbe4;
+  --accent: #1f5fbf;
+  --accent-soft: #dce8fa;
+  --gate: #b45d09;
+  --gate-soft: #fbebd8;
+  --ok: #1d7a4c;
+  --ok-soft: #d9f0e3;
+  --stop: #b0302f;
+  --stop-soft: #f8dfde;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --step--1: 0.86rem;
+  --step-0: 1.02rem;
+  --step-1: 1.25rem;
+  --step-2: 1.6rem;
+  --step-3: 2.2rem;
+  --step-4: 3.1rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161d; --surface: #18202a; --sunk: #0d1218; --fg: #e3e9f0; --muted: #98a6b7; --line: #2c3746;
+    --accent: #7eb0ff; --accent-soft: #1b2c47; --gate: #f0a453; --gate-soft: #3a2914;
+    --ok: #63c993; --ok-soft: #15301f; --stop: #f08a88; --stop-soft: #3b1a1a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11161d; --surface: #18202a; --sunk: #0d1218; --fg: #e3e9f0; --muted: #98a6b7; --line: #2c3746;
+  --accent: #7eb0ff; --accent-soft: #1b2c47; --gate: #f0a453; --gate-soft: #3a2914;
+  --ok: #63c993; --ok-soft: #15301f; --stop: #f08a88; --stop-soft: #3b1a1a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: var(--step-0); line-height: 1.6;
+}
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+code, pre, .mono { font-family: var(--font-mono); font-size: 0.88em; }
+code { background: var(--sunk); padding: 0.08em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+pre { background: var(--sunk); border: 1px solid var(--line); border-radius: 8px; padding: 0.9rem 1rem; overflow-x: auto; line-height: 1.5; }
+pre code { background: none; padding: 0; overflow-wrap: normal; }
+h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; text-wrap: balance; margin: 0; }
+h2 { font-size: var(--step-3); }
+h3 { font-size: var(--step-2); margin-top: 2.6rem; }
+h4 { font-size: var(--step-1); margin-top: 1.8rem; }
+p, ul, ol { margin: 0.8rem 0 0; }
+li + li { margin-top: 0.3rem; }
+strong { font-weight: 700; }
+
+.shell { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 3rem; max-width: 76rem; margin: 0 auto; padding-inline: 1.5rem; padding-block: 0 4rem; }
+.rail { position: sticky; top: env(safe-area-inset-top, 0px); align-self: start; max-height: 100vh; overflow-y: auto; padding-block: 2rem; font-size: var(--step--1); }
+.rail .brand { font-family: var(--font-display); font-weight: 700; font-size: var(--step-1); }
+.rail .ver { color: var(--muted); }
+.rail ol { list-style: none; padding: 0; margin: 1.4rem 0 0; display: grid; gap: 1rem; }
+.rail .lvl { font-weight: 700; color: var(--fg); text-decoration: none; display: flex; gap: 0.5rem; align-items: baseline; }
+.rail .lvl span.n { font-family: var(--font-mono); color: var(--accent); }
+.rail ul { list-style: none; padding: 0 0 0 1.4rem; margin: 0.3rem 0 0; }
+.rail ul a { color: var(--muted); text-decoration: none; }
+.rail ul a:hover, .rail .lvl:hover { color: var(--accent); }
+main { min-width: 0; max-width: 46rem; padding-block: 2rem 0; }
+
+.hero { padding-block: 1.5rem 2rem; border-bottom: 1px solid var(--line); }
+.eyebrow { font-size: var(--step--1); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.hero h1 { font-size: var(--step-4); margin-top: 0.4rem; }
+.hero .lede { font-size: var(--step-1); line-height: 1.5; color: var(--fg); margin-top: 1rem; }
+
+.depthmap { display: grid; gap: 0.5rem; margin-top: 1.6rem; }
+.depthmap a { display: grid; grid-template-columns: 2.4rem minmax(0, 1fr) auto; gap: 0.8rem; align-items: center; text-decoration: none; color: var(--fg); padding: 0.6rem 0.8rem; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); }
+.depthmap a:hover { border-color: var(--accent); }
+.depthmap .bar { height: 0.5rem; border-radius: 99px; background: var(--accent); }
+.depthmap .t { font-weight: 700; }
+.depthmap .d { color: var(--muted); font-size: var(--step--1); display: block; font-weight: 400; }
+.depthmap .time { color: var(--muted); font-size: var(--step--1); font-family: var(--font-mono); white-space: nowrap; }
+
+.level { padding-top: 3.5rem; }
+.level-head { display: flex; gap: 1rem; align-items: baseline; flex-wrap: wrap; border-bottom: 2px solid var(--fg); padding-bottom: 0.6rem; }
+.level-head .n { font-family: var(--font-mono); color: var(--accent); font-size: var(--step-1); }
+.level-head .stop { margin-left: auto; color: var(--muted); font-size: var(--step--1); }
+.level-intro { color: var(--muted); }
+
+.note { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 0.9rem 1.1rem; margin-top: 1.2rem; }
+.note > :first-child { margin-top: 0; }
+.note.gate { background: var(--gate-soft); border-color: transparent; }
+.note.accent { background: var(--accent-soft); border-color: transparent; }
+.note.stopnote { background: var(--stop-soft); border-color: transparent; }
+.note .label { font-size: var(--step--1); letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; color: var(--muted); }
+
+.tablewrap { overflow-x: auto; margin-top: 1rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: var(--step--1); }
+th, td { text-align: left; vertical-align: top; padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--line); }
+th { background: var(--sunk); font-weight: 700; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+
+/* Diagrams are plain HTML so they render offline and in the viewer. */
+.stack { display: grid; gap: 0.5rem; margin-top: 1.2rem; }
+.stack .layer { border-radius: 8px; padding: 0.8rem 1rem; border: 1px solid var(--line); background: var(--surface); display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 1rem; }
+.stack .layer .who { font-family: var(--font-display); font-weight: 700; }
+.stack .layer .who small { display: block; font-family: var(--font-mono); font-weight: 400; color: var(--muted); font-size: 0.78rem; }
+.stack .layer.orc { border-left: 6px solid var(--accent); }
+.stack .layer.wf { border-left: 6px solid var(--ok); }
+.stack .layer.st { border-left: 6px solid var(--gate); }
+.stack .layer.pr { border-left: 6px dashed var(--muted); }
+.stack .layer.later { opacity: 0.75; border-style: dashed; }
+
+/* Diagrams: inline SVG, colored only through the theme tokens. */
+figure.dg-fig { margin: 1.4rem 0 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 1rem; min-width: 0; }
+.dg-scroll { overflow-x: auto; }
+svg.dg { display: block; width: 100%; height: auto; min-width: 620px; color: var(--fg); font-family: var(--font-body); font-size: 12px; }
+figure.dg-fig figcaption { font-size: var(--step--1); color: var(--muted); margin-top: 0.7rem; }
+.dg text { fill: currentColor; }
+.dg .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.2; }
+.dg .sunk { fill: var(--sunk); stroke: var(--line); stroke-width: 1; }
+.dg .acc { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.2; }
+.dg .okb { fill: var(--ok-soft); stroke: var(--ok); stroke-width: 1.2; }
+.dg .gateb { fill: var(--gate-soft); stroke: var(--gate); stroke-width: 1.2; }
+.dg .stopb { fill: var(--stop-soft); stroke: var(--stop); stroke-width: 1.2; }
+.dg .lane { fill: var(--sunk); stroke: none; }
+.dg .ln { stroke: currentColor; fill: none; stroke-width: 1.3; }
+.dg .mute { stroke: var(--muted); }
+.dg .red { stroke: var(--stop); }
+.dg .blue { stroke: var(--accent); }
+.dg .dash { stroke-dasharray: 4 3; }
+.dg .m { fill: var(--muted); }
+.dg .b { font-weight: 700; }
+.dg .c { font-family: var(--font-mono); font-size: 11px; }
+.dg .sm { font-size: 10.5px; }
+.dg .tr { fill: var(--stop); }
+.dg .ta { fill: var(--accent); }
+.dg .dot-done { fill: var(--ok); stroke: var(--ok); }
+.dg .dot-next { fill: var(--surface); stroke: var(--accent); stroke-width: 2; }
+.dg .dot-later { fill: var(--surface); stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 2; }
+
+.buckets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6rem; margin-top: 1.2rem; }
+.buckets div { border-radius: 8px; padding: 0.8rem; min-width: 0; background: var(--surface); border: 1px solid var(--line); }
+.buckets b { display: block; font-family: var(--font-display); font-size: var(--step-1); }
+.buckets .dec { border-top: 4px solid var(--stop); }
+.buckets .pat { border-top: 4px solid var(--ok); }
+.buckets .eva { border-top: 4px solid var(--gate); }
+.buckets .noi { border-top: 4px solid var(--muted); }
+.buckets span { font-size: var(--step--1); color: var(--muted); }
+
+.pill { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 0.05rem 0.5rem; border-radius: 99px; letter-spacing: 0.02em; white-space: nowrap; }
+.pill.built { background: var(--ok-soft); color: var(--ok); }
+.pill.designed { background: var(--accent-soft); color: var(--accent); }
+.pill.later { background: var(--sunk); color: var(--muted); }
+.pill.gap { background: var(--stop-soft); color: var(--stop); }
+
+.chain { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; font-family: var(--font-mono); font-size: 0.8rem; }
+.chain .x { text-decoration: line-through; color: var(--muted); }
+
+dl.gloss { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 0.5rem 1rem; margin-top: 1rem; font-size: var(--step--1); }
+dl.gloss dt { font-weight: 700; }
+dl.gloss dd { margin: 0; }
+
+footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--muted); font-size: var(--step--1); }
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; padding-inline: 1rem; }
+  .rail { position: static; max-height: none; padding-block: 1.2rem 0; border-bottom: 1px solid var(--line); }
+  .rail ul { display: none; }
+  .rail ol { grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 0.4rem; }
+  .buckets { grid-template-columns: minmax(0, 1fr); }
+  .stack .layer { grid-template-columns: minmax(0, 1fr); gap: 0.3rem; }
+  figure.dg-fig { padding: 0.7rem; }
+  dl.gloss { grid-template-columns: minmax(0, 1fr); }
+  dl.gloss dd { margin-bottom: 0.6rem; }
+  .hero h1 { font-size: var(--step-3); }
+}
+/* Outcome cards: what a user gets back from one run. */
+.outcomes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.7rem; margin-top: 1.2rem; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0.9rem 1rem; min-width: 0; font-size: var(--step--1); }
+.card h4 { margin: 0; font-size: var(--step-0); }
+.card .sub { color: var(--muted); margin-top: 0.2rem; }
+.card .sample { margin-top: 0.7rem; background: var(--sunk); border-radius: 6px; padding: 0.6rem 0.7rem; font-family: var(--font-mono); font-size: 0.74rem; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.card.q { border-color: var(--stop); }
+.card.q .sample { background: var(--stop-soft); white-space: normal; }
+.example { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; margin-top: 0.7rem; }
+
+/* The run explorer: pick a step, pick a depth. */
+.xp { margin-top: 1.4rem; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.xp-steps { display: flex; gap: 0.4rem; padding: 0.9rem; overflow-x: auto; border-bottom: 1px solid var(--line); background: var(--sunk); }
+.xp-step { --k: var(--muted); flex: 0 0 auto; display: grid; gap: 0.1rem; padding: 0.45rem 0.7rem 0.5rem; border-radius: 8px; border: 1px solid var(--line); border-top: 4px solid var(--k); background: var(--surface); color: var(--fg); font: inherit; font-size: var(--step--1); text-align: left; cursor: pointer; }
+.xp-step .n { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); }
+.xp-step[aria-selected="true"] { background: var(--accent-soft); border-color: var(--accent); border-top-color: var(--k); }
+.xp-step:focus-visible, .xp-d:focus-visible, .xp-nav button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.k-code { --k: var(--muted) !important; } .k-agent { --k: var(--ok) !important; } .k-you { --k: var(--stop) !important; } .k-gate { --k: var(--gate) !important; } .k-out { --k: var(--accent) !important; }
+.xp-bar { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: center; justify-content: space-between; padding: 0.8rem 1.1rem 0; }
+.xp-depth { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.xp-d { font: inherit; font-size: var(--step--1); padding: 0.35rem 0.8rem; background: var(--surface); color: var(--fg); border: 0; border-right: 1px solid var(--line); cursor: pointer; }
+.xp-d:last-child { border-right: 0; }
+.xp-d[aria-pressed="true"] { background: var(--fg); color: var(--bg); font-weight: 700; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.7rem; font-size: 0.75rem; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 0.7rem; height: 0.3rem; border-radius: 2px; margin-right: 0.3rem; vertical-align: middle; background: var(--k); }
+.xp-body { padding: 0.6rem 1.1rem 1.1rem; }
+.xp-panel h4 { margin-top: 0.4rem; font-size: var(--step-2); }
+.xp-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+.chip { font-size: 0.75rem; padding: 0.1rem 0.55rem; border-radius: 99px; background: var(--sunk); color: var(--fg); }
+.chip.stopc { background: var(--stop-soft); color: var(--stop); }
+.xp-panel [data-depth] > p:first-child { margin-top: 0.8rem; }
+.xp-flow { list-style: none; padding: 0; margin: 0.9rem 0 0; display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+.xp-flow li { margin: 0; background: var(--sunk); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: var(--step--1); }
+.xp-flow li + li { margin-top: 0; }
+.xp-flow li.s { background: var(--stop-soft); color: var(--fg); }
+.xp-flow li.arrow { background: none; padding: 0 0.1rem; color: var(--muted); }
+.xp-nav { display: flex; justify-content: space-between; gap: 0.6rem; margin-top: 1.2rem; }
+.xp-nav button { font: inherit; font-size: var(--step--1); padding: 0.4rem 0.8rem; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.xp-nav button:disabled { opacity: 0.4; cursor: default; }
+@media (max-width: 900px) { .outcomes { grid-template-columns: minmax(0, 1fr); } }
+</style>
+
+<div class="shell">
+<nav class="rail" aria-label="Guide sections">
+  <div class="brand">Orchestra</div>
+  <div class="ver">Field guide · plugins 0.9.0 · decisions to S69</div>
+  <ol>
+    <li><a class="lvl" href="#l1"><span class="n">1</span> What it does</a>
+      <ul><li><a href="#delivers">What it delivers</a></li><li><a href="#what">The result</a></li><li><a href="#why">Why use it</a></li><li><a href="#philosophy">Many gates, one workflow</a></li><li><a href="#explore">Explore a run</a></li></ul></li>
+    <li><a class="lvl" href="#l2"><span class="n">2</span> Use it</a>
+      <ul><li><a href="#setup">Set up and start</a></li><li><a href="#answer">Answer a question</a></li><li><a href="#readreport">Read the report</a></li><li><a href="#customise">Change what runs</a></li></ul></li>
+    <li><a class="lvl" href="#l3"><span class="n">3</span> How it works</a>
+      <ul><li><a href="#lanes">Who does what</a></li><li><a href="#gates">Gates and phases</a></li><li><a href="#reviewers">The two reviewers</a></li><li><a href="#triage">Triage</a></li><li><a href="#guards">Guardrails</a></li><li><a href="#files">Files</a></li></ul></li>
+    <li><a class="lvl" href="#l4"><span class="n">4</span> Why it works this way</a>
+      <ul><li><a href="#how-decided">How decisions are made</a></li><li><a href="#research">The research</a></li><li><a href="#key-decisions">Key decisions</a></li></ul></li>
+    <li><a class="lvl" href="#l5"><span class="n">5</span> Under the hood</a>
+      <ul><li><a href="#ctrl-map">Code map</a></li><li><a href="#sequence">One call</a></li><li><a href="#lifecycle">Step lifecycle</a></li><li><a href="#plugins">Plugin contracts</a></li></ul></li>
+    <li><a class="lvl" href="#l6"><span class="n">6</span> Status and words</a>
+      <ul><li><a href="#status">Built and not built</a></li><li><a href="#glossary">Glossary</a></li></ul></li>
+  </ol>
+</nav>
+
+<main>
+<header class="hero">
+  <div class="eyebrow">A framework for AI coding runs</div>
+  <h1>Orchestra</h1>
+  <p class="lede">Many tools can run AI agents that write a spec, a plan and code. Orchestra adds the two things that make the result trustworthy and reusable: <strong>swappable parts</strong> and <strong>quality gates that cannot be skipped</strong>.</p>
+
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 720 230" role="img" aria-label="A task goes into orchestra. Out come a task branch with one commit per task, a report, and, only when a fact is missing, a question for you.">
+    <defs><marker id="a0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <rect x="20" y="60" width="170" height="96" rx="10" class="box"/>
+    <text x="36" y="84" class="b">your task</text>
+    <text x="36" y="106" class="sm m">"Add a VIP discount</text>
+    <text x="36" y="121" class="sm m">to the order total"</text>
+    <text x="36" y="143" class="sm">text, or a file path</text>
+    <rect x="250" y="40" width="220" height="136" rx="12" class="acc"/>
+    <text x="360" y="66" text-anchor="middle" class="b">orchestra</text>
+    <rect x="266" y="80" width="38" height="22" rx="4" class="okb"/><text x="285" y="95" text-anchor="middle" class="sm">spec</text>
+    <rect x="308" y="80" width="38" height="22" rx="4" class="okb"/><text x="327" y="95" text-anchor="middle" class="sm">plan</text>
+    <rect x="350" y="80" width="42" height="22" rx="4" class="okb"/><text x="371" y="95" text-anchor="middle" class="sm">check</text>
+    <rect x="396" y="80" width="58" height="22" rx="4" class="okb"/><text x="425" y="95" text-anchor="middle" class="sm">code</text>
+    <rect x="266" y="108" width="188" height="22" rx="4" class="gateb"/><text x="360" y="123" text-anchor="middle" class="sm">build · review · fix · build</text>
+    <text x="360" y="152" text-anchor="middle" class="sm m">a fresh AI agent per step</text>
+    <text x="360" y="166" text-anchor="middle" class="sm m">code decides the order</text>
+    <rect x="530" y="20" width="170" height="48" rx="8" class="okb"/><text x="546" y="40" class="b">a task branch</text><text x="546" y="57" class="sm">one commit per task, green</text>
+    <rect x="530" y="86" width="170" height="48" rx="8" class="box"/><text x="546" y="106" class="b">report.md</text><text x="546" y="123" class="sm">done, assumed, to check</text>
+    <rect x="530" y="152" width="170" height="48" rx="8" class="stopb dash"/><text x="546" y="172" class="b">a question</text><text x="546" y="189" class="sm">only when a fact is missing</text>
+    <g class="ln">
+      <line x1="190" y1="108" x2="248" y2="108" marker-end="url(#a0)"/>
+      <line x1="470" y1="96" x2="528" y2="44" marker-end="url(#a0)"/>
+      <line x1="470" y1="108" x2="528" y2="110" marker-end="url(#a0)"/>
+      <line x1="470" y1="120" x2="528" y2="176" class="ln dash" marker-end="url(#a0)"/>
+    </g>
+    <text x="615" y="222" text-anchor="middle" class="sm m">you review, push and open the PR</text>
+  </svg></div>
+  <figcaption>What a run does: task in, tested branch and report out. What makes orchestra different is inside the middle box, and the next section shows it.</figcaption>
+  </figure>
+
+  <div class="depthmap" aria-label="Reading depth">
+    <a href="#l1"><span class="bar" style="width:17%"></span><span class="t">1 · What it does<span class="d">Swappable parts and gates, the result of a run, and an interactive tour.</span></span><span class="time">5 min</span></a>
+    <a href="#l2"><span class="bar" style="width:34%"></span><span class="t">2 · Use it<span class="d">Start a run, answer a question, read the report, change what runs.</span></span><span class="time">8 min</span></a>
+    <a href="#l3"><span class="bar" style="width:51%"></span><span class="t">3 · How it works<span class="d">The flow: lanes, gates, reviewers, triage, guardrails, files.</span></span><span class="time">15 min</span></a>
+    <a href="#l4"><span class="bar" style="width:68%"></span><span class="t">4 · Why it works this way<span class="d">How each decision is made, and the evidence behind it.</span></span><span class="time">10 min</span></a>
+    <a href="#l5"><span class="bar" style="width:85%"></span><span class="t">5 · Under the hood<span class="d">The code, briefly. For plugin authors and the curious.</span></span><span class="time">10 min</span></a>
+  </div>
+</header>
+
+<!-- ============================== LEVEL 1 ============================== -->
+<section class="level" id="l1">
+  <div class="level-head"><span class="n">1</span><h2>What it does</h2><span class="stop">Enough to decide if you want it.</span></div>
+
+  <h3 id="delivers">What orchestra delivers</h3>
+  <p>Agents that write specs and code are common. Orchestra is about how those agents are put together and checked.</p>
+
+  <h4>1 · Swap any part, keep the rest</h4>
+  <p>The steps of a run, the knowledge of your language stack, and your project's rules are three separate plugins. They connect through fixed contracts in the orchestra core. Change one and the others do not notice.</p>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 720 270" role="img" aria-label="The orchestra core has a workflow slot, a stack slot and a project config. The standard workflow and the Java stack are plugged in today. Your own workflow, an adapter for another framework, or another language stack can take the same slots.">
+    <defs><marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <text x="110" y="24" text-anchor="middle" class="b">workflow slot</text>
+    <text x="110" y="39" text-anchor="middle" class="sm m">the steps and their order</text>
+    <rect x="20" y="52" width="180" height="40" rx="8" class="okb"/><text x="110" y="76" text-anchor="middle" class="c">orc-standard-workflow</text>
+    <rect x="20" y="104" width="180" height="40" rx="8" class="box dash"/><text x="110" y="128" text-anchor="middle" class="sm m">your own workflow</text>
+    <rect x="20" y="156" width="180" height="40" rx="8" class="box dash"/><text x="110" y="180" text-anchor="middle" class="sm m">adapter for another framework</text>
+
+    <text x="610" y="24" text-anchor="middle" class="b">stack slot</text>
+    <text x="610" y="39" text-anchor="middle" class="sm m">build, rules, stack gates</text>
+    <rect x="520" y="52" width="180" height="40" rx="8" class="gateb"/><text x="610" y="76" text-anchor="middle" class="c">orc-java-stack</text>
+    <rect x="520" y="104" width="180" height="40" rx="8" class="box dash"/><text x="610" y="128" text-anchor="middle" class="sm m">a Kotlin stack</text>
+    <rect x="520" y="156" width="180" height="40" rx="8" class="box dash"/><text x="610" y="180" text-anchor="middle" class="sm m">a TypeScript stack</text>
+
+    <rect x="260" y="88" width="200" height="76" rx="12" class="acc"/>
+    <text x="360" y="116" text-anchor="middle" class="b">orchestra core</text>
+    <text x="360" y="134" text-anchor="middle" class="sm">the loop · the gates · the report</text>
+    <text x="360" y="150" text-anchor="middle" class="sm m">same for every combination</text>
+
+    <rect x="260" y="212" width="200" height="46" rx="8" class="box"/>
+    <text x="360" y="232" text-anchor="middle" class="b">your project config</text>
+    <text x="360" y="249" text-anchor="middle" class="sm m">pick plugins · turn off · tune</text>
+
+    <g class="ln">
+      <path d="M200,72 H232 V112 H258" marker-end="url(#m1)"/>
+      <path d="M520,72 H488 V112 H462" marker-end="url(#m1)"/>
+      <line x1="360" y1="212" x2="360" y2="166" marker-end="url(#m1)"/>
+    </g>
+    <g class="ln mute dash">
+      <path d="M200,124 H232"/><path d="M200,176 H232 V124"/>
+      <path d="M520,124 H488"/><path d="M520,176 H488 V124"/>
+    </g>
+    <text x="226" y="208" text-anchor="middle" class="sm m">or</text>
+    <text x="494" y="208" text-anchor="middle" class="sm m">or</text>
+  </svg></div>
+  <figcaption>Solid parts exist today. Dashed parts fit the same slot without a change to the core or to the other side. A new language is a new stack plugin. A new process is a new workflow plugin.</figcaption>
+  </figure>
+
+  <h4>2 · Gates that always run</h4>
+  <p>After the code is written, orchestra runs a fixed series of checks called <strong>gates</strong>. The workflow brings its gates, the stack brings its own, and orchestra runs all of them in one fixed order, with the full build first and last. A gate fixes what it finds and commits the fix. The AI cannot skip a gate, reorder the gates, or call the work done while the build is red.</p>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 720 270" role="img" aria-label="A grid of three phases against three providers. Orchestra adds the build at the start of implementation-check and at the end of finish. The workflow adds plan-conformance and logic-review. The stack adds ops in implementation-check, testing in conventions-check, and comments, logging, layout and Spotless in finish. Your config can turn gates off and tune fix rounds.">
+    <defs><marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <line x1="170" y1="14" x2="706" y2="14" class="ln mute" marker-end="url(#m2)"/>
+    <text x="170" y="10" class="sm m">runs in this order</text>
+    <rect x="164" y="24" width="176" height="196" rx="8" class="sunk"/>
+    <rect x="350" y="24" width="176" height="196" rx="8" class="sunk"/>
+    <rect x="536" y="24" width="176" height="196" rx="8" class="sunk"/>
+    <text x="252" y="44" text-anchor="middle" class="c b">implementation-check</text>
+    <text x="438" y="44" text-anchor="middle" class="c b">conventions-check</text>
+    <text x="624" y="44" text-anchor="middle" class="c b">finish</text>
+
+    <text x="14" y="80" class="b">orchestra</text><text x="14" y="94" class="sm m">always</text>
+    <text x="14" y="130" class="b">workflow</text><text x="14" y="144" class="sm m">its own gates</text>
+    <text x="14" y="182" class="b">stack</text><text x="14" y="196" class="sm m">its own gates</text>
+
+    <rect x="174" y="70" width="80" height="26" rx="5" class="acc"/><text x="214" y="87" text-anchor="middle" class="sm b">build</text>
+    <rect x="622" y="70" width="80" height="26" rx="5" class="acc"/><text x="662" y="87" text-anchor="middle" class="sm b">final build</text>
+
+    <rect x="174" y="120" width="76" height="26" rx="5" class="okb"/><text x="212" y="137" text-anchor="middle" class="sm">conformance</text>
+    <rect x="256" y="120" width="76" height="26" rx="5" class="okb"/><text x="294" y="137" text-anchor="middle" class="sm">logic review</text>
+
+    <rect x="213" y="172" width="76" height="26" rx="5" class="gateb"/><text x="251" y="189" text-anchor="middle" class="sm">ops</text>
+    <rect x="401" y="172" width="76" height="26" rx="5" class="gateb"/><text x="439" y="189" text-anchor="middle" class="sm">testing</text>
+    <rect x="544" y="168" width="76" height="22" rx="5" class="gateb"/><text x="582" y="183" text-anchor="middle" class="sm">comments</text>
+    <rect x="626" y="168" width="76" height="22" rx="5" class="gateb"/><text x="664" y="183" text-anchor="middle" class="sm">logging</text>
+    <rect x="544" y="194" width="76" height="22" rx="5" class="gateb"/><text x="582" y="209" text-anchor="middle" class="sm">layout</text>
+    <rect x="626" y="194" width="76" height="22" rx="5" class="gateb"/><text x="664" y="209" text-anchor="middle" class="sm">spotless</text>
+
+    <rect x="164" y="232" width="548" height="30" rx="6" class="box"/>
+    <text x="14" y="252" class="b">your config</text>
+    <text x="438" y="252" text-anchor="middle" class="sm">turn a gate off · more or fewer fix rounds · your own naming patterns</text>
+  </svg></div>
+  <figcaption>Each gate is declared by the plugin that owns its knowledge, but orchestra runs all of them, in one order, the same way. Dashed stack gates are planned for the Java stack. Only the gates that concern the changed files run.</figcaption>
+  </figure>
+
+  <h4>And on top of that</h4>
+  <div class="outcomes">
+    <div class="card"><h4>Order in code</h4><div class="sub">Plain code decides each next step from files on disk. The AI only does the step it is given, so a run cannot drift.</div></div>
+    <div class="card"><h4>Stops only when it must</h4><div class="sub">Missing business facts and real product decisions come to you, before work is built on a guess. Everything else is decided and recorded.</div></div>
+    <div class="card"><h4>Every run explained</h4><div class="sub">A committed report: what ran, what was assumed, what was fixed, and what a human should check. Same files on Claude Code and Codex.</div></div>
+  </div>
+
+  <h3 id="what">The result of one run</h3>
+  <p>One run takes one task. It ends with one of three results. Here is what each looks like.</p>
+  <div class="outcomes">
+    <div class="card">
+      <h4>A branch, done</h4>
+      <div class="sub">Commits on a new branch. The full build is green. Nothing is pushed.</div>
+      <div class="example">Example</div>
+      <div class="sample">task/add-a-vip-discount-to-the-order
+feat: add a VIP flag to the customer
+feat: apply the VIP discount to the total
+fix(logic-review): test rounding at 0.005
+orchestra: run notes (done)</div>
+    </div>
+    <div class="card">
+      <h4>A report</h4>
+      <div class="sub">What ran, what the agents assumed, and what a human should look at.</div>
+      <div class="example">Example</div>
+      <div class="sample">Status: done
+Results
+  spec ............ ok
+  plan-check ...... ok  patch 2
+  code-1 .......... ok
+  logic-review .... ok  patch 1, evaluate 1
+Assumptions
+  rounded HALF_UP to 2 decimals
+Evaluate
+  OrderService.java:42 a null
+  customer now throws</div>
+    </div>
+    <div class="card q">
+      <h4>Or a question</h4>
+      <div class="sub">The run stops before it builds on a guess. You answer, run again, and it goes on.</div>
+      <div class="example">Example</div>
+      <div class="sample">business fact: the VIP discount rate — options: 5% | 10%<br><br>Answer in decisions.md:<br>## business-facts<br>- the VIP discount rate → 10%</div>
+    </div>
+  </div>
+
+  <h3 id="why">Why use it</h3>
+  <p>One AI agent in one long chat can write code. But it forgets rules as the chat grows, it reviews its own work kindly, and it fills gaps with guesses. Orchestra changes the shape of the work:</p>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 740 300" role="img" aria-label="Left: one long session where the task, rules, code, logs and self-review pile up in one context. Right: orchestra, where code decides the order, each step is a fresh agent with a small context, and agents hand work over through files.">
+    <defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <text x="175" y="22" text-anchor="middle" class="b">One long session</text>
+    <rect x="30" y="40" width="290" height="210" rx="8" class="box"/>
+    <rect x="45" y="52" width="260" height="26" rx="4" class="sunk"/><text x="175" y="69" text-anchor="middle">task</text>
+    <rect x="45" y="84" width="260" height="26" rx="4" class="sunk"/><text x="175" y="101" text-anchor="middle">spec</text>
+    <rect x="45" y="116" width="260" height="26" rx="4" class="stopb"/><text x="175" y="133" text-anchor="middle">stack rules, 300 lines</text>
+    <rect x="45" y="148" width="260" height="26" rx="4" class="sunk"/><text x="175" y="165" text-anchor="middle">plan + code</text>
+    <rect x="45" y="180" width="260" height="26" rx="4" class="sunk"/><text x="175" y="197" text-anchor="middle">build logs</text>
+    <rect x="45" y="212" width="260" height="26" rx="4" class="sunk"/><text x="175" y="229" text-anchor="middle">review of its own code</text>
+    <text x="175" y="272" text-anchor="middle" class="m sm">the context grows · rules sink to the middle</text>
+    <text x="175" y="288" text-anchor="middle" class="m sm">the reviewer is the author</text>
+
+    <text x="545" y="22" text-anchor="middle" class="b">Orchestra</text>
+    <rect x="390" y="40" width="310" height="34" rx="6" class="acc"/>
+    <text x="545" y="62" text-anchor="middle" class="b">code decides the order</text>
+    <g>
+      <rect x="390" y="110" width="54" height="64" rx="6" class="okb"/><text x="417" y="138" text-anchor="middle" class="sm b">spec</text><text x="417" y="156" text-anchor="middle" class="sm m">fresh</text>
+      <rect x="454" y="110" width="54" height="64" rx="6" class="okb"/><text x="481" y="138" text-anchor="middle" class="sm b">plan</text><text x="481" y="156" text-anchor="middle" class="sm m">fresh</text>
+      <rect x="518" y="110" width="54" height="64" rx="6" class="okb"/><text x="545" y="138" text-anchor="middle" class="sm b">check</text><text x="545" y="156" text-anchor="middle" class="sm m">fresh</text>
+      <rect x="582" y="110" width="54" height="64" rx="6" class="okb"/><text x="609" y="138" text-anchor="middle" class="sm b">code</text><text x="609" y="156" text-anchor="middle" class="sm m">fresh</text>
+      <rect x="646" y="110" width="54" height="64" rx="6" class="gateb"/><text x="673" y="138" text-anchor="middle" class="sm b">review</text><text x="673" y="156" text-anchor="middle" class="sm m">fresh</text>
+    </g>
+    <g class="ln">
+      <line x1="417" y1="74" x2="417" y2="108" marker-end="url(#a1)"/><line x1="481" y1="74" x2="481" y2="108" marker-end="url(#a1)"/><line x1="545" y1="74" x2="545" y2="108" marker-end="url(#a1)"/><line x1="609" y1="74" x2="609" y2="108" marker-end="url(#a1)"/><line x1="673" y1="74" x2="673" y2="108" marker-end="url(#a1)"/>
+      <line x1="417" y1="174" x2="417" y2="208" marker-end="url(#a1)"/><line x1="481" y1="174" x2="481" y2="208" marker-end="url(#a1)"/><line x1="545" y1="174" x2="545" y2="208" marker-end="url(#a1)"/><line x1="609" y1="174" x2="609" y2="208" marker-end="url(#a1)"/><line x1="673" y1="174" x2="673" y2="208" marker-end="url(#a1)"/>
+      <path d="M700,225 H716 V57 H702" marker-end="url(#a1)"/>
+    </g>
+    <text x="384" y="95" text-anchor="end" class="sm m">dispatch</text>
+    <text x="384" y="195" text-anchor="end" class="sm m">writes</text>
+    <text transform="translate(730,140) rotate(-90)" text-anchor="middle" class="sm m">reads</text>
+    <rect x="390" y="210" width="310" height="30" rx="6" class="sunk"/>
+    <text x="545" y="229" text-anchor="middle" class="sm">files: brief, plan, results, commits</text>
+  </svg></div>
+  <figcaption>The same work, two shapes. On the left everything shares one context. On the right each step starts clean, and the only memory between steps is the files on disk.</figcaption>
+  </figure>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Without orchestra</th><th>With orchestra</th></tr></thead>
+    <tbody>
+      <tr><td>Rules get lost in a long context.</td><td>Each step is a fresh agent with a small prompt and one job.</td></tr>
+      <tr><td>The author reviews its own code.</td><td>Every reviewer is a new agent. It sees the requirements, not the author's story.</td></tr>
+      <tr><td>The model skips or reorders steps.</td><td>Code fixes the order. The model only runs the step it is given.</td></tr>
+      <tr><td>A missing price or rate is guessed.</td><td>A missing business fact stops the run and asks you.</td></tr>
+      <tr><td>Tests pass but prove nothing.</td><td>A reviewer checks that each test fails on a likely wrong version of the code.</td></tr>
+      <tr><td>Each team builds its own pipeline.</td><td>Swap the stack plugin (Java today) or the workflow. The rest stays.</td></tr>
+      <tr><td>It works on one AI tool.</td><td>The same files run on Claude Code and Codex.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="philosophy">One steady workflow, many gates</h3>
+  <p>Orchestra splits a run into two parts that change at different speeds. The <strong>workflow</strong> is the same for every project: the same steps, in the same order, with the same places to stop. The <strong>gates</strong> differ per project: each level adds the checks it knows about. So you always know what a run will do, while the checks fit the code in front of it.</p>
+
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 720 330" role="img" aria-label="Two projects side by side. A Java service and an example TypeScript app run the identical steps spec, plan, check and code, in the same order with the same stops. Their gates differ: the Java service gets ops, testing, comments, logging, layout and Spotless; the TypeScript app gets a type check, component and API client reviews, and eslint. Both get the build first and last and the two workflow reviewers.">
+    <rect x="114" y="34" width="218" height="180" rx="10" class="ln blue dash"/>
+    <text x="223" y="118" text-anchor="middle" class="sm ta b">same steps</text>
+    <text x="223" y="133" text-anchor="middle" class="sm ta b">same order</text>
+    <text x="223" y="148" text-anchor="middle" class="sm ta b">same stops</text>
+
+    <text x="10" y="54" class="b">Java service</text>
+    <text x="10" y="68" class="sm m">orc-java-stack</text>
+    <rect x="120" y="40" width="46" height="28" rx="5" class="okb"/><text x="143" y="58" text-anchor="middle" class="sm">spec</text>
+    <rect x="172" y="40" width="46" height="28" rx="5" class="okb"/><text x="195" y="58" text-anchor="middle" class="sm">plan</text>
+    <rect x="224" y="40" width="50" height="28" rx="5" class="okb"/><text x="249" y="58" text-anchor="middle" class="sm">check</text>
+    <rect x="280" y="40" width="46" height="28" rx="5" class="okb"/><text x="303" y="58" text-anchor="middle" class="sm">code</text>
+    <rect x="338" y="40" width="120" height="28" rx="5" class="sunk"/><text x="398" y="58" text-anchor="middle" class="c">impl-check</text>
+    <rect x="464" y="40" width="120" height="28" rx="5" class="sunk"/><text x="524" y="58" text-anchor="middle" class="c">conv-check</text>
+    <rect x="590" y="40" width="120" height="28" rx="5" class="sunk"/><text x="650" y="58" text-anchor="middle" class="c">finish</text>
+    <rect x="344" y="76" width="108" height="18" rx="4" class="acc"/><text x="398" y="89" text-anchor="middle" class="sm">build</text>
+    <rect x="344" y="98" width="108" height="18" rx="4" class="okb"/><text x="398" y="111" text-anchor="middle" class="sm">conformance</text>
+    <rect x="344" y="120" width="108" height="18" rx="4" class="okb"/><text x="398" y="133" text-anchor="middle" class="sm">logic review</text>
+    <rect x="344" y="142" width="108" height="18" rx="4" class="gateb"/><text x="398" y="155" text-anchor="middle" class="sm">ops</text>
+    <rect x="470" y="76" width="108" height="18" rx="4" class="gateb"/><text x="524" y="89" text-anchor="middle" class="sm">testing</text>
+        <rect x="596" y="76" width="108" height="18" rx="4" class="gateb"/><text x="650" y="89" text-anchor="middle" class="sm">comments</text>
+    <rect x="596" y="98" width="108" height="18" rx="4" class="gateb"/><text x="650" y="111" text-anchor="middle" class="sm">logging</text>
+    <rect x="596" y="120" width="108" height="18" rx="4" class="gateb"/><text x="650" y="133" text-anchor="middle" class="sm">layout</text>
+    <rect x="596" y="142" width="108" height="18" rx="4" class="gateb"/><text x="650" y="155" text-anchor="middle" class="sm">spotless</text>
+    <rect x="596" y="164" width="108" height="18" rx="4" class="acc"/><text x="650" y="177" text-anchor="middle" class="sm">final build</text>
+
+    <text x="10" y="194" class="b">TypeScript app</text>
+    <text x="10" y="208" class="sm m">an example stack</text>
+    <rect x="120" y="180" width="46" height="28" rx="5" class="okb"/><text x="143" y="198" text-anchor="middle" class="sm">spec</text>
+    <rect x="172" y="180" width="46" height="28" rx="5" class="okb"/><text x="195" y="198" text-anchor="middle" class="sm">plan</text>
+    <rect x="224" y="180" width="50" height="28" rx="5" class="okb"/><text x="249" y="198" text-anchor="middle" class="sm">check</text>
+    <rect x="280" y="180" width="46" height="28" rx="5" class="okb"/><text x="303" y="198" text-anchor="middle" class="sm">code</text>
+    <rect x="338" y="180" width="120" height="28" rx="5" class="sunk"/><text x="398" y="198" text-anchor="middle" class="c">impl-check</text>
+    <rect x="464" y="180" width="120" height="28" rx="5" class="sunk"/><text x="524" y="198" text-anchor="middle" class="c">conv-check</text>
+    <rect x="590" y="180" width="120" height="28" rx="5" class="sunk"/><text x="650" y="198" text-anchor="middle" class="c">finish</text>
+    <rect x="344" y="216" width="108" height="18" rx="4" class="acc"/><text x="398" y="229" text-anchor="middle" class="sm">build</text>
+    <rect x="344" y="238" width="108" height="18" rx="4" class="okb"/><text x="398" y="251" text-anchor="middle" class="sm">conformance</text>
+    <rect x="344" y="260" width="108" height="18" rx="4" class="okb"/><text x="398" y="273" text-anchor="middle" class="sm">logic review</text>
+    <rect x="344" y="282" width="108" height="18" rx="4" class="gateb"/><text x="398" y="295" text-anchor="middle" class="sm">type check</text>
+    <rect x="470" y="216" width="108" height="18" rx="4" class="gateb"/><text x="524" y="229" text-anchor="middle" class="sm">components</text>
+    <rect x="470" y="238" width="108" height="18" rx="4" class="gateb"/><text x="524" y="251" text-anchor="middle" class="sm">API client</text>
+    <rect x="596" y="216" width="108" height="18" rx="4" class="gateb"/><text x="650" y="229" text-anchor="middle" class="sm">eslint --fix</text>
+    <rect x="596" y="238" width="108" height="18" rx="4" class="acc"/><text x="650" y="251" text-anchor="middle" class="sm">final build</text>
+
+    <text x="524" y="322" text-anchor="middle" class="sm m">different gates, brought by the stack and tuned by the project</text>
+  </svg></div>
+  <figcaption>Blue gates come from orchestra, green from the workflow, amber from the stack. The left part never changes. The right part is whatever the plugins in your slots declare. The TypeScript stack is an example of what the slot allows, and the Java stack gates are still planned.</figcaption>
+  </figure>
+
+  <h4>Each level adds its own gates</h4>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Level</th><th>Knows about</th><th>Adds</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Orchestra</strong></td><td>Any project</td><td>The full build, first and last. The fix loop, the round limits, triage and the report for every gate.</td></tr>
+      <tr><td><strong>Workflow</strong></td><td>Any language</td><td>Checks that need no stack: was the plan done, is the logic right, can each test fail.</td></tr>
+      <tr><td><strong>Stack</strong></td><td>One language and its tools</td><td>The build command, tool gates (coverage, mutation, formatting) and reviewers for its conventions.</td></tr>
+      <tr><td><strong>Project</strong></td><td>Your code base</td><td>Which gates are on, how many fix rounds, your own patterns. Later: its own gates and a build that overrides the stack.</td></tr>
+    </tbody>
+  </table></div>
+  <p>A gate is declared as data by the level that owns its knowledge. The level never decides when or how the gate runs. Orchestra does that, the same way for every gate. That is why a new stack cannot break the workflow, and a new workflow does not need to know Java.</p>
+
+  <h4>Write small, check big</h4>
+  <p>The coder gets a small context: its part of the plan, the code it touches, and a short guide of 5 to 15 rules. The full rules of each topic live in a gate after the code, one topic per gate. Long rule lists are followed worse as the context grows. A focused reviewer with one topic and the finished code follows them better.</p>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 720 180" role="img" aria-label="While the code is written, the coder holds only its plan tasks, a short guide and the code it touches. After the code is written, a row of gates each holds the full rules for one topic.">
+    <defs><marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <text x="125" y="20" text-anchor="middle" class="b">while writing</text>
+    <rect x="20" y="32" width="210" height="116" rx="10" class="okb"/>
+    <rect x="34" y="46" width="182" height="24" rx="5" class="box"/><text x="125" y="62" text-anchor="middle" class="sm">its plan tasks</text>
+    <rect x="34" y="76" width="182" height="24" rx="5" class="box"/><text x="125" y="92" text-anchor="middle" class="sm">5–15 short rules (guide)</text>
+    <rect x="34" y="106" width="182" height="24" rx="5" class="box"/><text x="125" y="122" text-anchor="middle" class="sm">the code it touches</text>
+    <text x="125" y="168" text-anchor="middle" class="sm m">small and focused</text>
+
+    <line x1="230" y1="90" x2="276" y2="90" class="ln" marker-end="url(#m3)"/>
+    <text x="253" y="82" text-anchor="middle" class="sm">code</text>
+
+    <text x="490" y="20" text-anchor="middle" class="b">after writing</text>
+    <rect x="280" y="32" width="76" height="116" rx="8" class="acc"/><text x="318" y="84" text-anchor="middle" class="sm b">build</text><text x="318" y="100" text-anchor="middle" class="sm">all tests</text>
+    <rect x="364" y="32" width="76" height="116" rx="8" class="okb"/><text x="402" y="84" text-anchor="middle" class="sm b">logic</text><text x="402" y="100" text-anchor="middle" class="sm">the brief</text>
+    <rect x="448" y="32" width="76" height="116" rx="8" class="gateb"/><text x="486" y="84" text-anchor="middle" class="sm b">ops</text><text x="486" y="100" text-anchor="middle" class="sm">full rules</text>
+    <rect x="532" y="32" width="76" height="116" rx="8" class="gateb"/><text x="570" y="84" text-anchor="middle" class="sm b">testing</text><text x="570" y="100" text-anchor="middle" class="sm">full rules</text>
+    <rect x="616" y="32" width="76" height="116" rx="8" class="gateb"/><text x="654" y="84" text-anchor="middle" class="sm b">logging</text><text x="654" y="100" text-anchor="middle" class="sm">full rules</text>
+    <text x="486" y="168" text-anchor="middle" class="sm m">one topic per gate, each in a fresh context</text>
+  </svg></div>
+  <figcaption>The knowledge is the same. Only its timing changes: a little while writing, the rest at review time, split by topic.</figcaption>
+  </figure>
+
+  <h4>The rules every gate follows</h4>
+  <div class="outcomes">
+    <div class="card"><h4>One gate, one concern</h4><div class="sub">Each gate checks one thing, and the plugin that knows that thing declares it.</div></div>
+    <div class="card"><h4>Machines first</h4><div class="sub">The build and tool gates run before reviewers, so reviewers judge code that already compiles and passes.</div></div>
+    <div class="card"><h4>Only what changed</h4><div class="sub">A gate runs only when the change touches its files or patterns. The report lists what was skipped and why.</div></div>
+    <div class="card"><h4>Fix in place, once</h4><div class="sub">A reviewer fixes its findings and commits, and never re-reviews its own fix. A tool gets a fixed number of fix rounds.</div></div>
+    <div class="card"><h4>Leftovers go to you</h4><div class="sub">What a gate cannot or should not fix goes to the report as Evaluate. The run goes on. No endless loops.</div></div>
+    <div class="card"><h4>Green is the proof</h4><div class="sub">The last gate is always the full build. Gates in finish must not change behaviour, because nothing reviews after them.</div></div>
+  </div>
+
+  <h3 id="explore">Explore a run</h3>
+  <p>Pick a step. Then pick how deep you want to go: <strong>What</strong> it does for you, the <strong>Flow</strong> inside it, or the <strong>Code</strong> that runs it.</p>
+
+  <div class="xp" id="xp">
+    <div class="xp-steps" role="tablist" aria-label="Steps of a run">
+      <button class="xp-step k-code" role="tab" data-step="1" aria-selected="true"><span class="n">1</span>Prepare</button>
+      <button class="xp-step k-agent" role="tab" data-step="2" aria-selected="false"><span class="n">2</span>Spec</button>
+      <button class="xp-step k-you" role="tab" data-step="3" aria-selected="false"><span class="n">3</span>Missing facts</button>
+      <button class="xp-step k-agent" role="tab" data-step="4" aria-selected="false"><span class="n">4</span>Plan</button>
+      <button class="xp-step k-agent" role="tab" data-step="5" aria-selected="false"><span class="n">5</span>Plan check</button>
+      <button class="xp-step k-agent" role="tab" data-step="6" aria-selected="false"><span class="n">6</span>Code</button>
+      <button class="xp-step k-gate" role="tab" data-step="7" aria-selected="false"><span class="n">7</span>Implementation check</button>
+      <button class="xp-step k-gate" role="tab" data-step="8" aria-selected="false"><span class="n">8</span>Conventions check</button>
+      <button class="xp-step k-gate" role="tab" data-step="9" aria-selected="false"><span class="n">9</span>Finish</button>
+      <button class="xp-step k-out" role="tab" data-step="10" aria-selected="false"><span class="n">10</span>Report</button>
+    </div>
+    <div class="xp-bar">
+      <div class="xp-depth" role="group" aria-label="Depth">
+        <button class="xp-d" data-depth="what" aria-pressed="true">What</button>
+        <button class="xp-d" data-depth="flow" aria-pressed="false">Flow</button>
+        <button class="xp-d" data-depth="code" aria-pressed="false">Code</button>
+      </div>
+      <div class="legend"><span class="k-code">plain code</span><span class="k-agent">AI agent</span><span class="k-you">you</span><span class="k-gate">checks</span><span class="k-out">output</span></div>
+    </div>
+    <div class="xp-body">
+
+      <section class="xp-panel" data-step="1">
+        <h4>Prepare</h4>
+        <div class="xp-meta"><span class="chip">plain code, no AI</span><span class="chip stopc">stops on a dirty tree</span></div>
+        <div data-depth="what">
+          <p>Orchestra starts from a fresh copy of your default branch and creates a new branch for the task. Your own work is safe: if you have changes that are not committed, the run stops and names the files.</p>
+        </div>
+        <div data-depth="flow" hidden>
+          <ol class="xp-flow"><li class="s">tree clean?</li><li class="arrow">→</li><li>check out the default branch</li><li class="arrow">→</li><li>git pull --rebase</li><li class="arrow">→</li><li>create task/&lt;name&gt;</li><li class="arrow">→</li><li>record the base commit</li><li class="arrow">→</li><li>save the task text</li></ol>
+          <p>The default branch comes from <code>origin/HEAD</code>. A taken branch name gets <code>-2</code>, <code>-3</code>. The base commit is what every later review compares against.</p>
+        </div>
+        <div data-depth="code" hidden>
+          <p><code>prepare()</code> in <code>orc-standard-workflow/bin/next.js</code>. It writes <code>tmp/runs/&lt;branch&gt;/run.json</code> (base, branch, brief path, notes folder) and <code>docs/runs/&lt;branch&gt;/task.md</code>.</p>
+        </div>
+      </section>
+
+      <section class="xp-panel" data-step="2" hidden>
+        <h4>Spec</h4>
+        <div class="xp-meta"><span class="chip">AI agent, fresh</span><span class="chip">writes brief.md</span></div>
+        <div data-depth="what">
+          <p>An agent turns your task into a short brief: the goal, the acceptance criteria as given-when-then, what is in and out of scope, the other services and repos it touches (its integration points), and its assumptions. Every later step is checked against this brief, so it is the contract of the run.</p>
+        </div>
+        <div data-depth="flow" hidden>
+          <ol class="xp-flow"><li>read the task</li><li class="arrow">→</li><li>read AGENTS.md and the code</li><li class="arrow">→</li><li>external fact? read it at its source</li><li class="arrow">→</li><li>open question?</li><li class="arrow">→</li><li>technical: take a default, record it</li><li class="arrow">·</li><li class="s">business fact: mark it</li><li class="arrow">→</li><li>write brief.md</li></ol>
+          <p>A <strong>technical choice</strong> (rounding, null handling, order of two steps) gets a boring default. A <strong>business fact</strong> (a rate, a price, a limit, who qualifies) never gets a value. A fact from outside the project is read at its source (a sibling checkout, an API contract, a schema or a migration) or recorded as an assumption. A repo the task names is read only: its needed changes become follow-ups. See <a href="#lanes">who does what</a>.</p>
+        </div>
+        <div data-depth="code" hidden>
+          <p>Skill <code>orc-standard-workflow:spec</code>. Dispatched by <code>stage(ctx, 'spec', …)</code> in <code>next.js</code>. Result in <code>spec.result.json</code>, with an <code>assumptions</code> list.</p>
+        </div>
+      </section>
+
+      <section class="xp-panel" data-step="3" hidden>
+        <h4>Missing facts</h4>
+        <div class="xp-meta"><span class="chip">plain code</span><span class="chip stopc">asks you</span></div>
+        <div data-depth="what">
+          <p>If the brief needs a fact that only you know, the run stops here and asks. This is before any plan or code, so nothing is built on a guessed value. When the brief has no open fact, this step does nothing.</p>
+        </div>
+        <div data-depth="flow" hidden>
+          <ol class="xp-flow"><li>find "business fact:" lines</li><li class="arrow">→</li><li class="s">stop with the questions</li><li class="arrow">→</li><li>you add ## business-facts</li><li class="arrow">→</li><li>run again</li><li class="arrow">→</li><li>plan writes the values into the brief</li></ol>
+          <p>See <a href="#answer">answer a question</a> for the exact format.</p>
+        </div>
+        <div data-depth="code" hidden>
+          <p><code>openFacts()</code> in <code>next.js</code> reads the brief with a regex. It writes <code>business-facts.result.json</code> so the stop shows in the report.</p>
+        </div>
+      </section>
+
+      <section class="xp-panel" data-step="4" hidden>
+        <h4>Plan</h4>
+        <div class="xp-meta"><span class="chip">AI agent, fresh</span><span class="chip">uses the stack's plan guide, if any</span><span class="chip">writes plan.md</span></div>
+        <div data-depth="what">
+          <p>An agent splits the brief into small, ordered tasks. Each task names its files and the tests that prove each acceptance criterion. The plan has no code.</p>
+        </div>
+        <div data-depth="flow" hidden>
+          <ol class="xp-flow"><li>load the plan guide, if any</li><li class="arrow">→</li><li>apply your answers to the brief</li><li class="arrow">→</li><li>read the affected files</li><li class="arrow">→</li><li>write tasks T1, T2, …</li></ol>
+          <p>A task has at most about four files and one job. Notes may hold a signature or ten lines of pseudo-code, no more.</p>
+        </div>
+        <div data-depth="code" hidden>
+          <p>Skill <code>orc-standard-workflow:plan</code>, with input <code>guide</code> when the stack has a plan guide and the project does not disable it. <code>orc-java-stack</code> has a code guide only, with the test-command facts. It has no plan guide (S68).</p>
+        </div>
+      </section>
+
+      <section class="xp-panel" data-step="5" hidden>
+        <h4>Plan check</h4>
+        <div class="xp-meta"><span class="chip">AI agent, fresh</span><span class="chip stopc">can ask you</span><span class="chip">fixes the brief and plan</span></div>
+        <div data-depth="what">
+          <p>A second agent, which did not write the plan, checks the brief and the plan against the real code and fixes them. A wrong plan is cheapest to fix here, before any code exists. It also checks that every external fact has a source, and it stops the run when the task needs a change in a repo the task does not name.</p>
+        </div>
+        <div data-depth="flow" hidden>
+          <ol class="xp-flow"><li>every criterion has a test?</li><li class="arrow">→</li><li>files and signatures exist?</li><li class="arrow">→</li><li>in scope, small, no over-building?</li><li class="arrow">→</li><li>external facts sourced?</li><li class="arrow">→</li><li><a href="#triage">triage</a></li><li class="arrow">→</li><li class="s">a real decision? stop</li><li class="arrow">·</li><li>else patch</li></ol>
+          <p>After it, code counts the task headings <code>### T1…Tn</code>. A plan with gaps in the numbers sends the run back to plan check.</p>
+        </div>
+        <div data-depth="code" hidden>
+          <p>Skill <code>orc-standard-workflow:plan-check</code>, which invokes <code>orchestra:triage</code>. <code>planTasks()</code> in <code>next.js</code> counts the tasks.</p>
+        </div>
+      </section>
+
+      <section class="xp-panel" data-step="6" hidden>
+        <h4>Code</h4>
+        <div class="xp-meta"><span class="chip">AI agents, one per 2 tasks</span><span class="chip">uses the stack's code guide, if any</span><span class="chip">one commit per task</span></div>
+        <div data-depth="what">
+          <p>Coder agents implement the plan, two tasks each by default, with tests. Each task becomes one commit. A coder never deletes or disables a test to get a pass.</p>
+        </div>
+        <div data-depth="flow" hidden>
+          <ol class="xp-flow"><li>load the code guide, if any</li><li class="arrow">→</li><li>do the task</li><li class="arrow">→</li><li>write its named tests</li><li class="arrow">→</li><li>run the affected tests</li><li class="arrow">→</li><li>commit</li><li class="arrow">→</li><li>log it, record assumptions</li></ol>
+          <p>The coder runs only the tests it touched. Orchestra runs the full build after it. A task done another way than the plan says is written down as a deviation. Detail inside a task, such as an extra check, is the coder's call: it goes into <code>code.md</code>. When a coder fails and the run goes on, the next coder finds the reason in the implementation log.</p>
+        </div>
+        <div data-depth="code" hidden>
+          <p>Skill <code>orc-standard-workflow:code</code>, dispatched as <code>code-1</code>, <code>code-3</code>, … The chunk size is the config key <code>tasks-per-coder</code>.</p>
+        </div>
+      </section>
+
+      <section class="xp-panel" data-step="7" hidden>
+        <h4>Implementation check</h4>
+        <div class="xp-meta"><span class="chip">full build, then reviewers</span><span class="chip stopc">a red build fails the run</span></div>
+        <div data-depth="what">
+          <p>Is the code correct and sound? The full build and tests run. Then one reviewer checks that the plan was done, and a second checks the logic against the brief. They fix what they find and commit the fixes.</p>
+        </div>
+        <div data-depth="flow" hidden>
+          <ol class="xp-flow"><li>build (up to 3 fix rounds)</li><li class="arrow">→</li><li>tool checks</li><li class="arrow">→</li><li>plan-conformance</li><li class="arrow">→</li><li>logic-review</li></ol>
+          <p>See <a href="#gates">gates and phases</a> and <a href="#reviewers">the two reviewers</a>.</p>
+        </div>
+        <div data-depth="code" hidden>
+          <p><code>runner.step()</code> in <code>orchestra/lib/runner.js</code>, with the gate list from both plugins' <code>orchestra.json</code>.</p>
+        </div>
+      </section>
+
+      <section class="xp-panel" data-step="8" hidden>
+        <h4>Conventions check</h4>
+        <div class="xp-meta"><span class="chip">stack reviewers</span><span class="chip">no gates yet</span></div>
+        <div data-depth="what">
+          <p>Does the code follow your team's conventions? Stack reviewers check things like test style, and fix them. Only the reviewers that concern the changed files run. The Java reviewer here is <code>testing</code>. The <code>ops</code> reviewer runs earlier, in implementation-check.</p>
+        </div>
+        <div data-depth="flow" hidden>
+          <ol class="xp-flow"><li>select by changed files</li><li class="arrow">→</li><li>tool checks</li><li class="arrow">→</li><li>review agents</li></ol>
+        </div>
+        <div data-depth="code" hidden>
+          <p><code>collect()</code>, <code>select()</code> and <code>plan()</code> in <code>orchestra/lib/gates.js</code>.</p>
+        </div>
+      </section>
+
+      <section class="xp-panel" data-step="9" hidden>
+        <h4>Finish</h4>
+        <div class="xp-meta"><span class="chip">cosmetic passes, then build</span><span class="chip stopc">a red build fails the run</span></div>
+        <div data-depth="what">
+          <p>Cosmetic passes (comments, logging, formatting) clean up. Then the full build runs one last time. A green build is the proof that the branch is good. Nothing runs after it.</p>
+        </div>
+        <div data-depth="flow" hidden>
+          <ol class="xp-flow"><li>review agents</li><li class="arrow">→</li><li>formatter</li><li class="arrow">→</li><li>final build</li></ol>
+          <p>A finish check must never change behaviour, because no review comes after it.</p>
+        </div>
+        <div data-depth="code" hidden>
+          <p><code>PHASE_ORDER.finish</code> in <code>gates.js</code>. The build is skipped when <code>HEAD</code> is the last green commit and the tree is clean.</p>
+        </div>
+      </section>
+
+      <section class="xp-panel" data-step="10" hidden>
+        <h4>Report</h4>
+        <div class="xp-meta"><span class="chip">plain code</span><span class="chip">docs/runs/&lt;branch&gt;/report.md</span></div>
+        <div data-depth="what">
+          <p>Orchestra writes <code>report.md</code> and commits the run notes. You read the report, check the branch, and push when you are happy. Orchestra never pushes and never opens a pull request.</p>
+        </div>
+        <div data-depth="flow" hidden>
+          <ol class="xp-flow"><li>status and reason</li><li class="arrow">·</li><li>plugin versions</li><li class="arrow">·</li><li>commits and changed files</li><li class="arrow">·</li><li>results in run order</li><li class="arrow">·</li><li>assumptions</li><li class="arrow">·</li><li>deviations</li><li class="arrow">·</li><li>integration points</li><li class="arrow">·</li><li>Evaluate findings</li><li class="arrow">·</li><li>skipped checks</li><li class="arrow">·</li><li>your answers</li></ol>
+          <p>See <a href="#readreport">read the report</a>.</p>
+        </div>
+        <div data-depth="code" hidden>
+          <p><code>writeReport()</code> in <code>orchestra/lib/report.js</code>, called by <code>finish()</code> in <code>drive.js</code>.</p>
+        </div>
+      </section>
+
+      <div class="xp-nav"><button type="button" data-move="-1">← Previous step</button><button type="button" data-move="1">Next step →</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== LEVEL 2 ============================== -->
+<section class="level" id="l2">
+  <div class="level-head"><span class="n">2</span><h2>Use it</h2><span class="stop">Enough to run it.</span></div>
+
+  <h3 id="setup">Set up and start</h3>
+  <p>Your project needs four things:</p>
+  <ul>
+    <li>The three plugins installed: <code>orchestra</code>, <code>orc-standard-workflow</code> and a stack plugin such as <code>orc-java-stack</code>.</li>
+    <li>A committed <code>.orchestra/config.json</code> that names the plugins (below).</li>
+    <li>A <code>.gitignore</code> with <code>.orchestra/*</code>, <code>!.orchestra/config.json</code> and <code>tmp/</code>.</li>
+    <li>An <code>origin/HEAD</code> that points to the default branch, and project instructions in <code>AGENTS.md</code>, not <code>CLAUDE.md</code>. In Claude Code, one <code>CLAUDE.md</code> turns off every <code>AGENTS.md</code>.</li>
+  </ul>
+<pre><code>// .orchestra/config.json
+{
+  "workflow":     { "plugin": "orc-standard-workflow" },
+  "stack-skills": { "plugin": "orc-java-stack" }
+}</code></pre>
+  <p>Then ask your AI tool:</p>
+<pre><code>orchestra run "Add a VIP discount to the order total"   # start from text
+orchestra run docs/tasks/vip.md                          # start from a file
+orchestra run                                            # continue a stopped run</code></pre>
+  <p>Before it starts, orchestra tells you that it will check out the default branch, pull it, and create the task branch. A run can take a while, because the full build runs more than once.</p>
+
+  <h3 id="answer">Answer a question</h3>
+  <p>A run stops for you only when a real decision is needed. The report lists each question with its options. You answer in a file, then run again.</p>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 720 255" role="img" aria-label="The decide cycle: a step returns decide; orchestra writes the report and stops; the human adds a new section to decisions.md; orchestra run resumes; if there are more answer sections than before, the step runs again, reads the answers and fixes; if not, it stays at decide.">
+    <defs><marker id="a8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <rect x="20" y="20" width="200" height="56" rx="8" class="stopb"/><text x="120" y="44" text-anchor="middle" class="b">step returns decide</text><text x="120" y="62" text-anchor="middle" class="sm">questions, one line each</text>
+    <rect x="260" y="20" width="200" height="56" rx="8" class="box"/><text x="360" y="44" text-anchor="middle" class="b">orchestra writes report.md</text><text x="360" y="62" text-anchor="middle" class="sm m">commits the notes, stops</text>
+    <rect x="500" y="20" width="200" height="56" rx="8" class="acc"/><text x="600" y="44" text-anchor="middle" class="b">human adds a new section</text><text x="600" y="62" text-anchor="middle" class="c">## &lt;step&gt; in decisions.md</text>
+    <rect x="500" y="170" width="200" height="56" rx="8" class="box"/><text x="600" y="194" text-anchor="middle" class="b">orchestra run</text><text x="600" y="212" text-anchor="middle" class="sm m">no task = resume</text>
+    <rect x="260" y="170" width="200" height="56" rx="8" class="box"/><text x="360" y="194" text-anchor="middle" class="b">more answers than seen?</text><text x="360" y="212" text-anchor="middle" class="sm m">counts the ## &lt;step&gt; headings</text>
+    <rect x="20" y="170" width="200" height="56" rx="8" class="okb"/><text x="120" y="194" text-anchor="middle" class="b">step runs again</text><text x="120" y="212" text-anchor="middle" class="sm">applies answers, fixes, no re-review</text>
+    <g class="ln">
+      <line x1="220" y1="48" x2="258" y2="48" marker-end="url(#a8)"/>
+      <line x1="460" y1="48" x2="498" y2="48" marker-end="url(#a8)"/>
+      <line x1="600" y1="76" x2="600" y2="168" marker-end="url(#a8)"/>
+      <line x1="500" y1="198" x2="462" y2="198" marker-end="url(#a8)"/>
+      <line x1="260" y1="198" x2="222" y2="198" marker-end="url(#a8)"/>
+      <line x1="360" y1="170" x2="360" y2="78" class="ln mute dash" marker-end="url(#a8)"/>
+    </g>
+    <text x="241" y="191" text-anchor="middle" class="sm">yes</text>
+    <text x="368" y="128" class="sm m">no: still decide</text>
+    <text x="120" y="246" text-anchor="middle" class="sm m">→ the run goes on</text>
+  </svg></div>
+  <figcaption>The trigger is a count, not a flag. A step that stopped remembers how many answer sections it had seen. Only a new section restarts it, so editing an old answer never re-runs anything by accident.</figcaption>
+  </figure>
+  <p>Add a <strong>new</strong> section at the end of <code>docs/runs/&lt;branch&gt;/decisions.md</code>, named after the step that asked. Write one line per question:</p>
+<pre><code>## business-facts
+- the VIP discount rate → 10%
+- who counts as VIP → customers with 10 or more orders this year</code></pre>
+  <p>For business facts, every question needs its own line. When a line is missing, the run stops again with the same questions. Then run <code>orchestra run</code> with no task, on the task branch. You can also give the answers in the chat: orchestra writes the section for you, in your words.</p>
+  <div class="note stopnote">
+    <div class="label">Two rules</div>
+    <p>Text added to an old section is not read as an answer. Always add a new section. And do not change other files while a run is stopped: on resume, orchestra stops if it finds changed files, so your work is never mixed into the task.</p>
+  </div>
+
+  <h4>When a run fails</h4>
+  <p>A <code>failed</code> run shows the reason and the report. Fix the cause if it is yours (for example a dirty tree), then run <code>orchestra run</code> again. The failed step runs again. Steps that finished never run again.</p>
+
+  <h3 id="readreport">Read the report</h3>
+  <p>The report is in <code>docs/runs/&lt;branch&gt;/report.md</code>, next to the brief, the plan and the review notes. Read these parts first:</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Part</th><th>What to do with it</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Assumptions</strong></td><td>Technical choices the agents made on their own. Check that you agree.</td></tr>
+      <tr><td><strong>Deviations</strong></td><td>Tasks the coder did another way than the plan says, with the reason. Check that the change of direction is right.</td></tr>
+      <tr><td><strong>Integration points</strong></td><td>The other services and repos the task touches. A change that another repo needs is a follow-up for you: the run never changes another repo.</td></tr>
+      <tr><td><strong>Evaluate</strong></td><td>Findings a reviewer chose not to fix, because the fix costs more than the problem, or because only a human can judge it. Each has a <code>file:line</code>.</td></tr>
+      <tr><td><strong>Results</strong></td><td>Every step in order, with its counts: how many findings were patched, sent to you, or dropped.</td></tr>
+      <tr><td><strong>Skipped checks</strong></td><td>Checks that did not run, and why (for example "no changed file matches").</td></tr>
+      <tr><td><strong>Decisions</strong></td><td>A copy of your answers, so the report is the full record.</td></tr>
+      <tr><td><strong>Commits</strong></td><td>The commits of the run and a list of the changed files, without the run notes.</td></tr>
+    </tbody>
+  </table></div>
+  <p>The notes folder is committed. It goes to the default branch with your pull request, so the reasons stay next to the code.</p>
+
+  <h3 id="customise">Change what runs</h3>
+  <p>Orchestra is built from parts you can swap. The <strong>workflow</strong> says which steps run and in what order. The <strong>stack</strong> brings the build command and the rules for one language. Your <strong>project</strong> config picks both and tunes them.</p>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 740 330" role="img" aria-label="Orchestra sits in the middle. It runs the workflow's next.js and gets actions back, reads the stack's declaration and runs its build and gates, takes the project config, and dispatches fresh subagents. The workflow and the stack have no direct link.">
+    <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <rect x="20" y="40" width="200" height="70" rx="8" class="okb"/>
+    <text x="120" y="68" text-anchor="middle" class="b">Workflow</text>
+    <text x="120" y="86" text-anchor="middle" class="c">orc-standard-workflow</text>
+    <text x="120" y="102" text-anchor="middle" class="sm m">next.js · stage skills · 2 gates</text>
+
+    <rect x="500" y="40" width="200" height="70" rx="8" class="gateb"/>
+    <text x="600" y="68" text-anchor="middle" class="b">Stack Skills</text>
+    <text x="600" y="86" text-anchor="middle" class="c">orc-java-stack</text>
+    <text x="600" y="102" text-anchor="middle" class="sm m">build · guides · fix guides · gates</text>
+
+    <rect x="260" y="150" width="200" height="64" rx="8" class="acc"/>
+    <text x="360" y="176" text-anchor="middle" class="b">Orchestrator</text>
+    <text x="360" y="194" text-anchor="middle" class="sm m">driver · gate runner · report</text>
+
+    <rect x="260" y="262" width="200" height="54" rx="8" class="box dash"/>
+    <text x="360" y="284" text-anchor="middle" class="b">Project</text>
+    <text x="360" y="302" text-anchor="middle" class="c">.orchestra/config.json</text>
+
+    <rect x="20" y="262" width="200" height="54" rx="8" class="box"/>
+    <text x="120" y="284" text-anchor="middle" class="b">fresh subagents</text>
+    <text x="120" y="302" text-anchor="middle" class="sm m">load a workflow or stack skill</text>
+
+    <g class="ln">
+      <path d="M120,110 V182 H258" marker-start="url(#a2)" marker-end="url(#a2)"/>
+      <path d="M462,182 H600 V112" marker-end="url(#a2)"/>
+      <line x1="360" y1="262" x2="360" y2="216" marker-end="url(#a2)"/>
+      <line x1="258" y1="208" x2="190" y2="260" marker-end="url(#a2)"/>
+    </g>
+    <text x="112" y="140" text-anchor="end" class="sm">runs next.js</text>
+    <text x="112" y="155" text-anchor="end" class="sm">gets one action</text>
+    <text x="608" y="140" class="sm">reads orchestra.json</text>
+    <text x="608" y="155" class="sm">runs build + gates</text>
+    <text x="368" y="244" class="sm">slots · disable · rounds · keys</text>
+    <text x="196" y="236" text-anchor="end" class="sm">dispatches</text>
+
+    <line x1="222" y1="75" x2="498" y2="75" class="ln mute dash"/>
+    <line x1="352" y1="67" x2="368" y2="83" class="ln red"/><line x1="368" y1="67" x2="352" y2="83" class="ln red"/>
+    <text x="360" y="100" text-anchor="middle" class="sm tr">no direct link</text>
+    <text x="360" y="115" text-anchor="middle" class="sm m">build command and guides go via orchestra</text>
+  </svg></div>
+  <figcaption>Only orchestra talks to everyone. The workflow never names a Java tool, and the stack never states an order. That is what makes each side replaceable.</figcaption>
+  </figure>
+  <div class="stack">
+    <div class="layer orc"><div class="who">Orchestrator<small>orchestra</small></div><div>The engine: the entry, the loop, the checks, the report. You do not change it.</div></div>
+    <div class="layer wf"><div class="who">Workflow<small>orc-standard-workflow</small></div><div>The steps of a run and their order, plus its own two reviewers. Works with any stack.</div></div>
+    <div class="layer st"><div class="who">Stack Skills<small>orc-java-stack</small></div><div>Java with Maven: the build, a code guide, fix guides, and six gates: ops, testing, comments, logging, layout and Spotless.</div></div>
+    <div class="layer pr"><div class="who">Project<small>.orchestra/config.json</small></div><div>Your choices: which plugins, which checks are off, how many fix rounds, your naming patterns.</div></div>
+    <div class="layer pr later"><div class="who">Project rules<small>later</small></div><div>Rules for one project that override the stack, including its build.</div></div>
+    <div class="layer pr later"><div class="who">Curator<small>later</small></div><div>Keeps your backlog, direction and decisions current after each feature.</div></div>
+  </div>
+  <h4>What you can set</h4>
+<pre><code>{
+  "workflow": {
+    "plugin": "orc-standard-workflow",
+    "tasks-per-coder": 3                      // tasks per coder agent (default 2)
+  },
+  "stack-skills": {
+    "plugin": "orc-java-stack",
+    "disable": ["code-guide"],                // turn off a check or a guide by name
+    "gates": { "crap": { "max_rounds": 5 } }  // more fix rounds for one check
+  }
+}</code></pre>
+  <p>A stack can also offer its own keys, for example a pattern that marks your entity classes. You set them in the same section. Today <code>orchestra run</code> checks the plugin names and slots. A full check of every key (<code>orchestra check</code>) and a setup wizard (<code>orchestra init</code>) are planned.</p>
+</section>
+
+<!-- ============================== LEVEL 3 ============================== -->
+<section class="level" id="l3">
+  <div class="level-head"><span class="n">3</span><h2>How it works</h2><span class="stop">The flow, without code.</span></div>
+
+  <h3 id="lanes">Who does what</h3>
+  <p>Three kinds of actor take part in a run. Plain code makes every decision about order. AI agents do the work, each one fresh. You answer only real questions.</p>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 840 260" role="img" aria-label="A run in three lanes. Code does prepare, the business-facts check, the task-heading check and the builds. Agents do spec, plan, plan-check, code and the gates. The human lane gets three possible stops: business facts, plan-check questions and gate questions.">
+    <defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <line x1="88" y1="16" x2="826" y2="16" class="ln mute" marker-end="url(#a4)"/><text x="88" y="11" class="sm m">time</text>
+    <rect x="6" y="32" width="828" height="56" rx="6" class="lane"/>
+    <rect x="6" y="94" width="828" height="56" rx="6" class="lane"/>
+    <rect x="6" y="156" width="828" height="64" rx="6" class="lane"/>
+    <text x="14" y="58" class="b">code</text><text x="14" y="73" class="sm m">no model</text>
+    <text x="14" y="120" class="b">agents</text><text x="14" y="135" class="sm m">fresh each</text>
+    <text x="14" y="184" class="b">human</text><text x="14" y="199" class="sm m">decisions.md</text>
+
+    <rect x="88" y="46" width="64" height="28" rx="5" class="box"/><text x="120" y="64" text-anchor="middle" class="sm">prepare</text>
+    <rect x="162" y="108" width="56" height="28" rx="5" class="okb"/><text x="190" y="126" text-anchor="middle" class="sm">spec</text>
+    <polygon points="230,60 258,42 286,60 258,78" class="stopb"/><text x="258" y="64" text-anchor="middle" class="sm">facts?</text>
+    <rect x="296" y="108" width="56" height="28" rx="5" class="okb"/><text x="324" y="126" text-anchor="middle" class="sm">plan</text>
+    <rect x="362" y="108" width="80" height="28" rx="5" class="okb"/><text x="402" y="126" text-anchor="middle" class="sm">plan-check</text>
+    <polygon points="450,60 476,44 502,60 476,76" class="box"/><text x="476" y="64" text-anchor="middle" class="sm">T1..n?</text>
+    <rect x="508" y="108" width="76" height="28" rx="5" class="okb"/><text x="546" y="126" text-anchor="middle" class="sm">code × N</text>
+
+    <rect x="594" y="38" width="80" height="108" rx="6" class="gateb"/><text x="634" y="54" text-anchor="middle" class="sm b">impl-check</text>
+    <rect x="600" y="62" width="68" height="20" rx="4" class="acc"/><text x="634" y="76" text-anchor="middle" class="sm">build</text>
+    <rect x="600" y="100" width="68" height="18" rx="4" class="box"/><text x="634" y="113" text-anchor="middle" class="sm">conform</text>
+    <rect x="600" y="122" width="68" height="18" rx="4" class="box"/><text x="634" y="135" text-anchor="middle" class="sm">logic</text>
+    <rect x="682" y="38" width="68" height="108" rx="6" class="gateb"/><text x="716" y="54" text-anchor="middle" class="sm b">conv-check</text>
+    <text x="716" y="118" text-anchor="middle" class="sm m">no gates yet</text>
+    <rect x="758" y="38" width="68" height="108" rx="6" class="gateb"/><text x="792" y="54" text-anchor="middle" class="sm b">finish</text>
+    <text x="792" y="118" text-anchor="middle" class="sm m">no gates yet</text>
+    <rect x="764" y="62" width="56" height="20" rx="4" class="acc"/><text x="792" y="76" text-anchor="middle" class="sm">build</text>
+
+    <g class="ln red dash"><line x1="258" y1="78" x2="258" y2="166"/><line x1="402" y1="136" x2="402" y2="166"/><line x1="634" y1="146" x2="634" y2="166"/></g>
+    <rect x="212" y="166" width="92" height="28" rx="5" class="stopb"/><text x="258" y="184" text-anchor="middle" class="sm">business facts</text>
+    <rect x="358" y="166" width="88" height="28" rx="5" class="stopb"/><text x="402" y="184" text-anchor="middle" class="sm">plan-check</text>
+    <rect x="590" y="166" width="88" height="28" rx="5" class="stopb"/><text x="634" y="184" text-anchor="middle" class="sm">a gate</text>
+    <text x="258" y="210" text-anchor="middle" class="sm m">before any plan</text>
+    <text x="402" y="210" text-anchor="middle" class="sm m">before any code</text>
+    <text x="634" y="210" text-anchor="middle" class="sm m">before its fixes</text>
+    <text x="826" y="240" text-anchor="end" class="sm m">then report.md · red final build = failed</text>
+  </svg></div>
+  <figcaption>Red marks the three places a run can stop for a human. Each stop comes before the work that would build on a guess. The Java stack brings six gates: ops in implementation-check, testing in conventions-check, and comments, logging, layout and Spotless in finish.</figcaption>
+  </figure>
+
+  <h4>Technical choice or business fact</h4>
+  <p>This split runs through every step. A <strong>technical choice</strong> has a sensible default: the rounding mode, null handling, the order of two steps. The agent takes the default and records it, and the report shows it to you. A <strong>business fact</strong> never has a default: a rate, a price, a limit value, who qualifies. An invented fact is the one mistake a later review cannot see, because the code and the tests agree with each other and both are wrong. So business facts always come to you.</p>
+
+  <h3 id="gates">Gates and phases</h3>
+  <p>After the code is written, a series of checks runs. Each check is called a <strong>gate</strong>. A gate is a command (a <em>tool</em>, which passes or fails by its exit code) or a reviewer (an <em>agent</em>, which reads the change and fixes what it finds). Gates are grouped into three <strong>phases</strong>, always in this order:</p>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 720 190" role="img" aria-label="Three phases in a row. Implementation-check runs build, tool gates, agent gates. Conventions-check runs tool gates, agent gates. Finish runs agent gates, tool gates, build. The build opens and closes the sequence.">
+    <defs><marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <path d="M50,84 V36 H670 V84" class="ln blue" marker-end="url(#a5)"/>
+    <text x="360" y="28" text-anchor="middle" class="sm ta">the build runs first and last · a red final build = failed</text>
+    <rect x="10" y="50" width="220" height="100" rx="8" class="box"/>
+    <rect x="250" y="50" width="220" height="100" rx="8" class="box"/>
+    <rect x="490" y="50" width="220" height="100" rx="8" class="box"/>
+    <text x="120" y="70" text-anchor="middle" class="c b">implementation-check</text>
+    <text x="360" y="70" text-anchor="middle" class="c b">conventions-check</text>
+    <text x="600" y="70" text-anchor="middle" class="c b">finish</text>
+    <rect x="22" y="86" width="56" height="26" rx="5" class="acc"/><text x="50" y="103" text-anchor="middle" class="sm">build</text>
+    <rect x="86" y="86" width="56" height="26" rx="5" class="sunk"/><text x="114" y="103" text-anchor="middle" class="sm">tools</text>
+    <rect x="150" y="86" width="70" height="26" rx="5" class="gateb"/><text x="185" y="103" text-anchor="middle" class="sm">agents</text>
+    <rect x="262" y="86" width="96" height="26" rx="5" class="sunk"/><text x="310" y="103" text-anchor="middle" class="sm">tools</text>
+    <rect x="366" y="86" width="94" height="26" rx="5" class="gateb"/><text x="413" y="103" text-anchor="middle" class="sm">agents</text>
+    <rect x="502" y="86" width="62" height="26" rx="5" class="gateb"/><text x="533" y="103" text-anchor="middle" class="sm">agents</text>
+    <rect x="572" y="86" width="62" height="26" rx="5" class="sunk"/><text x="603" y="103" text-anchor="middle" class="sm">tools</text>
+    <rect x="642" y="86" width="56" height="26" rx="5" class="acc"/><text x="670" y="103" text-anchor="middle" class="sm">build</text>
+    <text x="120" y="134" text-anchor="middle" class="sm m">correct and sound?</text>
+    <text x="360" y="134" text-anchor="middle" class="sm m">our conventions?</text>
+    <text x="600" y="134" text-anchor="middle" class="sm m">clean and green?</text>
+    <g class="ln"><line x1="230" y1="100" x2="248" y2="100" marker-end="url(#a5)"/><line x1="470" y1="100" x2="488" y2="100" marker-end="url(#a5)"/></g>
+    <text x="360" y="176" text-anchor="middle" class="sm m">inside each step: workflow gates first, then stack gates, then declaration order</text>
+  </svg></div>
+  <figcaption>The order inside a phase is fixed by orchestra, not by the plugins. Agents run before tools in finish so that a formatter cleans up after the comment and logging reviewers.</figcaption>
+  </figure>
+  <div class="tablewrap"><table>
+    <thead><tr><th>A gate has</th><th>Values</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>phase</td><td>implementation-check, conventions-check, finish</td><td>Where it runs.</td></tr>
+      <tr><td>kind</td><td>tool or agent</td><td>A command, or a reviewer.</td></tr>
+      <tr><td>fix</td><td>self, fixer, none</td><td>A formatter fixes itself; the fixer agent fixes a tool's findings; or report only. A reviewer always fixes its own findings, once.</td></tr>
+      <tr><td>selection</td><td>files, grep, when, always</td><td>When it runs: a file pattern, a text pattern in the changed files, a rule in words, or always.</td></tr>
+      <tr><td>max_rounds</td><td>a number, default 2</td><td>How many fix rounds a tool gets.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>The build and the fix loop</h4>
+  <p>The build is special. It is not a gate you can turn off. It runs first in implementation-check and last in finish, and it produces the test coverage that other tools read. When a tool or the build fails, a fixer agent gets the raw output and a fix guide from the stack, fixes only what the output reports, and commits. Then the tool runs again.</p>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 720 270" role="img" aria-label="Tool gate loop: run the command; exit 0 means ok. Otherwise, while rounds are below the limit, the fixer fixes and commits and the command runs again. After the last round a red build fails the run, and any other tool goes to Evaluate.">
+    <defs><marker id="a6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <rect x="20" y="90" width="150" height="46" rx="6" class="box"/>
+    <text x="95" y="110" text-anchor="middle" class="b">run the command</text>
+    <text x="95" y="126" text-anchor="middle" class="sm m">output to a log file</text>
+    <polygon points="200,113 250,83 300,113 250,143" class="box"/><text x="250" y="117" text-anchor="middle">exit 0?</text>
+    <rect x="360" y="88" width="340" height="50" rx="6" class="okb"/>
+    <text x="374" y="108" class="b">ok</text><text x="400" y="108" class="sm">fix: self → orchestra commits the change</text>
+    <text x="400" y="126" class="sm m">build → record HEAD as the last green build</text>
+    <polygon points="192,198 250,168 308,198 250,228" class="box"/><text x="250" y="202" text-anchor="middle" class="sm">rounds &lt; max?</text>
+    <rect x="20" y="176" width="130" height="46" rx="6" class="gateb"/>
+    <text x="85" y="196" text-anchor="middle" class="b">fixer subagent</text>
+    <text x="85" y="212" text-anchor="middle" class="sm m">raw log + fix guide</text>
+    <rect x="360" y="152" width="340" height="36" rx="6" class="stopb"/><text x="374" y="175" class="sm"><tspan class="b">build</tspan>: the run stops as failed</text>
+    <rect x="360" y="216" width="340" height="36" rx="6" class="gateb"/><text x="374" y="239" class="sm"><tspan class="b">any other tool</tspan>: Evaluate, the phase goes on</text>
+    <g class="ln">
+      <line x1="170" y1="113" x2="198" y2="113" marker-end="url(#a6)"/>
+      <line x1="300" y1="113" x2="358" y2="113" marker-end="url(#a6)"/>
+      <line x1="250" y1="143" x2="250" y2="166" marker-end="url(#a6)"/>
+      <line x1="192" y1="198" x2="152" y2="198" marker-end="url(#a6)"/>
+      <line x1="85" y1="176" x2="85" y2="138" marker-end="url(#a6)"/>
+      <path d="M308,198 H340 V170 H358" marker-end="url(#a6)"/>
+      <path d="M340,198 V234 H358" marker-end="url(#a6)"/>
+    </g>
+    <text x="329" y="106" text-anchor="middle" class="sm">yes</text>
+    <text x="258" y="159" class="sm">no</text>
+    <text x="172" y="191" text-anchor="middle" class="sm">yes</text>
+    <text x="322" y="191" text-anchor="middle" class="sm">no</text>
+    <text x="93" y="152" class="sm m">fix, commit,</text>
+    <text x="93" y="165" class="sm m">run again</text>
+  </svg></div>
+  <figcaption>The same loop serves the build and every tool gate. Only the end differs: a build that stays red stops the run, and any other tool leaves its findings for a human.</figcaption>
+  </figure>
+
+  <h3 id="reviewers">The two reviewers</h3>
+  <p>The workflow brings two reviewers. They split one job on purpose, and each one sees different documents:</p>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 720 300" role="img" aria-label="Which documents each reviewer reads. logic-review reads the brief, decisions, the diff and code, and code.md last. plan-conformance reads decisions, the diff, code.md, the plan and the implementation log. The plan is blocked from logic-review.">
+    <defs><marker id="a9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <rect x="20" y="30" width="180" height="32" rx="5" class="box"/><text x="110" y="50" text-anchor="middle" class="c">brief.md</text>
+    <rect x="20" y="75" width="180" height="32" rx="5" class="box"/><text x="110" y="95" text-anchor="middle" class="c">decisions.md</text>
+    <rect x="20" y="120" width="180" height="32" rx="5" class="box"/><text x="110" y="140" text-anchor="middle" class="c">diff + code</text>
+    <rect x="20" y="165" width="180" height="32" rx="5" class="box dash"/><text x="110" y="185" text-anchor="middle" class="c">code.md (read last)</text>
+    <rect x="20" y="210" width="180" height="32" rx="5" class="sunk"/><text x="110" y="230" text-anchor="middle" class="c">plan.md</text>
+    <rect x="20" y="255" width="180" height="32" rx="5" class="sunk"/><text x="110" y="275" text-anchor="middle" class="c">implementation-log.md</text>
+
+    <rect x="480" y="40" width="220" height="72" rx="8" class="okb"/>
+    <text x="590" y="64" text-anchor="middle" class="b">logic-review</text>
+    <text x="590" y="82" text-anchor="middle" class="sm">correct? can each test fail?</text>
+    <text x="590" y="98" text-anchor="middle" class="sm m">requirements first, code second</text>
+    <rect x="480" y="200" width="220" height="72" rx="8" class="acc"/>
+    <text x="590" y="224" text-anchor="middle" class="b">plan-conformance</text>
+    <text x="590" y="242" text-anchor="middle" class="sm">was the plan carried out?</text>
+    <text x="590" y="258" text-anchor="middle" class="sm m">no verdict on correctness</text>
+
+    <g class="ln">
+      <line x1="200" y1="46" x2="478" y2="56" marker-end="url(#a9)"/>
+      <line x1="200" y1="91" x2="478" y2="68" marker-end="url(#a9)"/>
+      <line x1="200" y1="136" x2="478" y2="80" marker-end="url(#a9)"/>
+      <line x1="200" y1="181" x2="478" y2="98" class="ln dash" marker-end="url(#a9)"/>
+    </g>
+    <g class="ln mute">
+      <line x1="200" y1="91" x2="478" y2="214" marker-end="url(#a9)"/>
+      <line x1="200" y1="136" x2="478" y2="226" marker-end="url(#a9)"/>
+      <line x1="200" y1="181" x2="478" y2="234" marker-end="url(#a9)"/>
+      <line x1="200" y1="226" x2="478" y2="244" marker-end="url(#a9)"/>
+      <line x1="200" y1="271" x2="478" y2="258" marker-end="url(#a9)"/>
+    </g>
+    <line x1="200" y1="222" x2="300" y2="176" class="ln red dash"/>
+    <circle cx="308" cy="172" r="9" class="stopb"/><line x1="302" y1="178" x2="314" y2="166" class="ln red"/>
+    <text x="322" y="168" class="sm tr">never the plan</text>
+  </svg></div>
+  <figcaption>Two reviewers, two different sets of documents. logic-review judges the code against the requirements only. plan-conformance compares the code with the plan only. Neither one's blind spot is the other's.</figcaption>
+  </figure>
+  <p><strong>plan-conformance</strong> checks that every task of the plan is done, every named test exists, a task done another way is declared as a deviation, and nothing falls outside the brief's scope. The plan sets the direction, not every line: an extra check or a helper inside a task is not a deviation (S67). It gives no verdict on correctness.</p>
+  <p><strong>logic-review</strong> first writes down what each acceptance criterion requires and one likely wrong version of the code (the wrong rounding mode, <code>&lt;</code> for <code>&lt;=</code>, a missing null check). Only then does it read the code. Each test must fail on that wrong version. A test that would pass on wrong code is a finding. Then it hunts for bugs. Last, it reads <code>code.md</code>: a recorded choice that changes behaviour, such as a check that throws, needs its own test too.</p>
+  <p>Why the split: the plan is the author's view of the code. A reviewer who reads it tends to check "did the code follow the plan" and to take over the plan's blind spots. Research shows that author framing makes AI reviewers miss bugs (<a href="#research">R5</a>).</p>
+
+  <h3 id="triage">Triage: what happens to a finding</h3>
+  <p>Every reviewer puts each finding into exactly one bucket. The bucket decides the action.</p>
+  <div class="buckets">
+    <div class="dec"><b>Decide</b><span>Stop and ask you, before any fix.</span></div>
+    <div class="pat"><b>Patch</b><span>Fix it now, with the smallest fix.</span></div>
+    <div class="eva"><b>Evaluate</b><span>Do not fix. Show it in the report.</span></div>
+    <div class="noi"><b>Noise</b><span>Drop it, with one line why.</span></div>
+  </div>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 720 330" role="img" aria-label="Triage tree. First: a real fork and not your call gives Decide. Else: low probability, low risk and a costly fix gives Noise. Else: a cheap or worthwhile fix, or a document mismatch, gives Patch. Everything else is Evaluate.">
+    <defs><marker id="a7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <rect x="20" y="12" width="680" height="36" rx="6" class="sunk"/>
+    <text x="360" y="34" text-anchor="middle" class="sm">a finding · check it first, a wrong one is rejected · the rules from real runs apply before this tree</text>
+    <rect x="20" y="62" width="420" height="46" rx="6" class="box"/>
+    <text x="34" y="81" class="b">1 · A real fork (half A) AND not your call (half B)?</text>
+    <text x="34" y="98" class="sm m">B1: a product answer no file gives · B2: shape-setting, no recommendation</text>
+    <rect x="20" y="132" width="420" height="46" rx="6" class="box"/>
+    <text x="34" y="151" class="b">2 · Probability Low AND Risk Low AND Fix-Risk Mid/High?</text>
+    <text x="34" y="168" class="sm m">unlikely, harmless, and costly to fix</text>
+    <rect x="20" y="202" width="420" height="46" rx="6" class="box"/>
+    <text x="34" y="221" class="b">3 · A cheap fix, a worthwhile fix, or a doc mismatch?</text>
+    <text x="34" y="238" class="sm m">Fix-Risk Low · or Mid with Risk and Probability Mid+ · or docs disagree</text>
+    <rect x="20" y="272" width="420" height="46" rx="6" class="gateb"/>
+    <text x="34" y="291" class="b">Evaluate</text>
+    <text x="34" y="308" class="sm">do not fix · it goes to the report for a human</text>
+
+    <rect x="520" y="62" width="180" height="46" rx="6" class="stopb"/><text x="534" y="81" class="b">Decide</text><text x="534" y="98" class="sm">stop before any fix</text>
+    <rect x="520" y="132" width="180" height="46" rx="6" class="box"/><text x="534" y="151" class="b">Noise</text><text x="534" y="168" class="sm">drop it, one line why</text>
+    <rect x="520" y="202" width="180" height="46" rx="6" class="okb"/><text x="534" y="221" class="b">Patch</text><text x="534" y="238" class="sm">smallest fix, commit</text>
+
+    <g class="ln">
+      <line x1="230" y1="48" x2="230" y2="60" marker-end="url(#a7)"/>
+      <line x1="440" y1="85" x2="518" y2="85" marker-end="url(#a7)"/>
+      <line x1="440" y1="155" x2="518" y2="155" marker-end="url(#a7)"/>
+      <line x1="440" y1="225" x2="518" y2="225" marker-end="url(#a7)"/>
+      <line x1="230" y1="108" x2="230" y2="130" marker-end="url(#a7)"/>
+      <line x1="230" y1="178" x2="230" y2="200" marker-end="url(#a7)"/>
+      <line x1="230" y1="248" x2="230" y2="270" marker-end="url(#a7)"/>
+    </g>
+    <text x="479" y="78" text-anchor="middle" class="sm">yes</text><text x="479" y="148" text-anchor="middle" class="sm">yes</text><text x="479" y="218" text-anchor="middle" class="sm">yes</text>
+    <text x="238" y="124" class="sm">no</text><text x="238" y="194" class="sm">no</text><text x="238" y="264" class="sm">no</text>
+    <text x="520" y="290" class="sm m">Half A without half B?</text>
+    <text x="520" y="305" class="sm m">Make the call, write why,</text>
+    <text x="520" y="320" class="sm m">and go on to rule 2.</text>
+  </svg></div>
+  <figcaption>The tree runs top to bottom and stops at the first yes. Size alone never makes a Decide. A large finding with a clear recommendation is Evaluate.</figcaption>
+  </figure>
+  <p>Each finding is rated on five axes: where it comes from, the risk, the risk of the fix, how likely it is, and what kind of problem it is. <strong>Decide</strong> needs two things together: a real choice between options with different trade-offs, and a reason the agent cannot make the call. Either the answer is a product question nobody wrote down, or the choice reshapes the work and no option is clearly better. When the agent can reason to an answer, it must make the call and write why. Asking you about something it could decide is a failure too.</p>
+
+  <h3 id="guards">Guardrails</h3>
+  <p>Gates check the code. Other guardrails keep the run itself safe. Most are code, not instructions, because code cannot be talked out of a rule.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Guardrail</th><th>Protects against</th></tr></thead>
+    <tbody>
+      <tr><td>Code decides the order. The model runs only the step it is given.</td><td>Skipped or reordered steps.</td></tr>
+      <tr><td>A dirty tree stops a new run and names the files.</td><td>Your work mixed into a task.</td></tr>
+      <tr><td>On resume, changed files stop the run. Nothing is committed.</td><td>Your edits committed by accident.</td></tr>
+      <tr><td>No run without separate agents. The driver never does a step itself.</td><td>An agent judging its own work.</td></tr>
+      <tr><td>No push, no branch change, no questions mid-step, for every agent.</td><td>Surprises outside the task branch.</td></tr>
+      <tr><td>Never delete, disable or weaken a test. Never change a tool threshold.</td><td>Passing by cheating.</td></tr>
+      <tr><td>No pipe on a test or build command.</td><td>A hidden failure exit code.</td></tr>
+      <tr><td>A business fact never gets a default.</td><td>Invented product behaviour.</td></tr>
+      <tr><td>A reviewer fixes once and never re-reviews its own fixes.</td><td>Endless self-approval.</td></tr>
+      <tr><td>A limit on fix rounds for every tool.</td><td>Endless fix loops.</td></tr>
+      <tr><td>A red final build fails the run.</td><td>A branch that does not build.</td></tr>
+      <tr><td>A broken result file counts as a failed step.</td><td>An agent that writes nonsense.</td></tr>
+      <tr><td>A step that writes no result is sent twice, then fails.</td><td>An endless loop on a crashed agent.</td></tr>
+      <tr><td>A change in a repo the task does not name stops the run. A named repo is read only.</td><td>Work that silently needs another team's repo.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="files">Files</h3>
+  <p>A run keeps two folders, both named after the branch. What code needs to choose the next step stays in a git-ignored folder. What you read is committed.</p>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 720 200" role="img" aria-label="Subagents write notes to docs/runs and a result JSON to tmp/runs. next.js and the gate runner read only tmp/runs. The human reads and answers in docs/runs. report.js reads tmp/runs and writes report.md into docs/runs.">
+    <defs><marker id="a14" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <rect x="270" y="14" width="180" height="40" rx="8" class="okb"/><text x="360" y="39" text-anchor="middle" class="b">subagents</text>
+    <rect x="80" y="110" width="220" height="70" rx="8" class="sunk"/>
+    <text x="190" y="134" text-anchor="middle" class="c b">tmp/runs/&lt;branch&gt;/</text>
+    <text x="190" y="152" text-anchor="middle" class="sm">results · state · logs</text>
+    <text x="190" y="168" text-anchor="middle" class="sm m">git-ignored</text>
+    <rect x="420" y="110" width="220" height="70" rx="8" class="acc"/>
+    <text x="530" y="134" text-anchor="middle" class="c b">docs/runs/&lt;branch&gt;/</text>
+    <text x="530" y="152" text-anchor="middle" class="sm">brief · plan · reviews · report</text>
+    <text x="530" y="168" text-anchor="middle" class="sm m">committed</text>
+    <g class="ln">
+      <line x1="320" y1="54" x2="220" y2="108" marker-end="url(#a14)"/>
+      <line x1="400" y1="54" x2="500" y2="108" marker-end="url(#a14)"/>
+      <line x1="80" y1="145" x2="24" y2="145" marker-end="url(#a14)"/>
+      <line x1="640" y1="145" x2="696" y2="145" marker-start="url(#a14)" marker-end="url(#a14)"/>
+      <line x1="300" y1="160" x2="418" y2="160" class="ln dash" marker-end="url(#a14)"/>
+    </g>
+    <text x="252" y="76" text-anchor="end" class="sm">result JSON</text>
+    <text x="468" y="76" class="sm">notes in prose</text>
+    <text x="52" y="134" text-anchor="middle" class="sm b">code</text><text x="52" y="198" text-anchor="middle" class="sm m">reads</text>
+    <text x="668" y="134" text-anchor="middle" class="sm b">human</text><text x="668" y="198" text-anchor="middle" class="sm m">reads, answers</text>
+    <text x="359" y="152" text-anchor="middle" class="sm m">report.md</text>
+  </svg></div>
+  <figcaption>Every agent writes twice: prose for people and JSON for code. Code never reads the prose to choose a step, so the two must agree (the triage skill says how).</figcaption>
+  </figure>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Folder</th><th>Holds</th></tr></thead>
+    <tbody>
+      <tr><td><code>docs/runs/&lt;branch&gt;/</code><br>committed</td><td><code>task.md</code>, <code>brief.md</code>, <code>plan.md</code>, <code>plan-check.md</code>, <code>implementation-log.md</code>, <code>code.md</code>, <code>plan-conformance.md</code>, <code>logic-review.md</code>, <code>decisions.md</code>, <code>report.md</code></td></tr>
+      <tr><td><code>tmp/runs/&lt;branch&gt;/</code><br>git-ignored</td><td>result files, checkpoints, tool logs. A resume works on the same machine only, because this folder is not committed.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================== LEVEL 4 ============================== -->
+<section class="level" id="l4">
+  <div class="level-head"><span class="n">4</span><h2>Why it works this way</h2><span class="stop">For when you want to argue with a choice.</span></div>
+
+  <h3 id="how-decided">How decisions are made</h3>
+  <p>Every choice in orchestra has a numbered record. The bigger ones have research or a real run behind them. You can trace any rule back to its reason.</p>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 720 210" role="img" aria-label="Decision pipeline. Research notes, run feedback and the port inventory feed a full entry in DECISIONS.md. Every decision, including grill sessions and user calls, gets a TENSIONS.md row with the same S number. The record and the change go in one commit.">
+    <defs><marker id="a12" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <rect x="20" y="20" width="180" height="30" rx="5" class="box"/><text x="110" y="39" text-anchor="middle" class="sm">research R1–R5</text>
+    <rect x="20" y="62" width="180" height="30" rx="5" class="box"/><text x="110" y="81" text-anchor="middle" class="sm">real run feedback</text>
+    <rect x="20" y="104" width="180" height="30" rx="5" class="box"/><text x="110" y="123" text-anchor="middle" class="sm">port inventory</text>
+    <rect x="20" y="146" width="180" height="30" rx="5" class="box"/><text x="110" y="165" text-anchor="middle" class="sm">grill · design review · user</text>
+    <rect x="255" y="28" width="455" height="162" rx="10" class="ln mute dash"/>
+    <text x="700" y="182" text-anchor="end" class="sm m">one commit</text>
+    <rect x="270" y="40" width="190" height="54" rx="8" class="acc"/><text x="365" y="62" text-anchor="middle" class="c b">DECISIONS.md</text><text x="365" y="80" text-anchor="middle" class="sm">options · evidence · cost</text>
+    <rect x="270" y="122" width="190" height="54" rx="8" class="box"/><text x="365" y="144" text-anchor="middle" class="c b">TENSIONS.md S&lt;n&gt;</text><text x="365" y="162" text-anchor="middle" class="sm">one row per decision</text>
+    <rect x="520" y="80" width="180" height="54" rx="8" class="okb"/><text x="610" y="102" text-anchor="middle" class="b">the change</text><text x="610" y="120" text-anchor="middle" class="sm">plugins/ · DESIGN.md</text>
+    <g class="ln">
+      <line x1="200" y1="35" x2="268" y2="58" marker-end="url(#a12)"/>
+      <line x1="200" y1="77" x2="268" y2="67" marker-end="url(#a12)"/>
+      <line x1="200" y1="119" x2="268" y2="76" marker-end="url(#a12)"/>
+      <line x1="200" y1="161" x2="268" y2="149" marker-end="url(#a12)"/>
+      <line x1="365" y1="94" x2="365" y2="120" marker-end="url(#a12)"/>
+      <line x1="460" y1="67" x2="518" y2="100" marker-end="url(#a12)"/>
+      <line x1="460" y1="149" x2="518" y2="116" marker-end="url(#a12)"/>
+    </g>
+    <text x="372" y="112" class="sm m">same S number</text>
+    <text x="110" y="198" text-anchor="middle" class="sm m">options weighed → full entry</text>
+  </svg></div>
+  <figcaption>A decision that weighed options gets the full record. Every decision gets the one-line row. Both land with the code they decide, so the history of the code and the history of the reasons stay in step.</figcaption>
+  </figure>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td><code>docs/TENSIONS.md</code></td><td>The index. One row per decision, <code>S1</code> to <code>S68</code> today, with its source. Also the open points for later.</td></tr>
+      <tr><td><code>docs/DECISIONS.md</code></td><td>The full record of a decision that weighed options: question, options, evidence, choice, cost and risk.</td></tr>
+      <tr><td><code>docs/research/</code></td><td>Research written before the decision. Each finding has a source and a strength: strong, medium or weak.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Records are never rewritten. A newer decision replaces an older one and names it.</p>
+
+  <h3 id="research">The research</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Note</th><th>Question</th><th>Answer</th><th>Led to</th></tr></thead>
+    <tbody>
+      <tr><td>R1</td><td>How do AI tools load project instructions?</td><td>Claude Code reads <code>AGENTS.md</code> only when there is no <code>CLAUDE.md</code>, and a repo cannot change that.</td><td>Projects use <code>AGENTS.md</code>.</td></tr>
+      <tr><td>R2</td><td>How to keep a fixed step order on every AI tool?</td><td>Tool-specific workflow scripts do not travel. A small program that reads files and prints the next step does.</td><td>The order lives in plain Node code.</td></tr>
+      <tr><td>R3</td><td>Give the coder all the rules, or check them after?</td><td>Both, unevenly: 5 to 15 short rules while writing, the full rules in focused reviewers after. Medium confidence.</td><td>Short guides, then gates.</td></tr>
+      <tr><td>R4</td><td>Can an agent start its own agents?</td><td>Claude Code yes. Codex not by default.</td><td>All agents start from the main session.</td></tr>
+      <tr><td>R5</td><td>Should the logic reviewer see the plan?</td><td>No. Author framing makes reviewers miss bugs (measured).</td><td>Two separate reviewers.</td></tr>
+      <tr><td>R6</td><td>How much to instruct the planner and the coder?</td><td>Keep the guides near-empty. Generic principles and personas gave no gain. Conventions go to the reviewers. Medium confidence.</td><td>A lean coder; stack rules in gates.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note gate">
+    <div class="label">Example of the evidence</div>
+    <p>When a pull request text said the code was "bug-free", AI reviewers found far fewer of its security bugs: one model dropped from 97% to 4%, another from 68% to 9%. Removing the text recovered most of them. This is why logic-review never reads the plan.</p>
+  </div>
+
+  <h3 id="key-decisions">Key decisions</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th>Decision</th><th>Because</th></tr></thead>
+    <tbody>
+      <tr><td>S4</td><td>Running on many AI tools wins over tool-specific features.</td><td>Teams use different tools.</td></tr>
+      <tr><td>S5</td><td>The order of steps lives in code, not in instructions.</td><td>Instructions drift.</td></tr>
+      <tr><td>S7</td><td>Most stack rules reach the code through reviewers at the end.</td><td>R3: long contexts lose rules.</td></tr>
+      <tr><td>S14</td><td>A reviewer fixes once and never re-reviews its own fixes.</td><td>Self-review is kind.</td></tr>
+      <tr><td>S43–S49</td><td>Every check is a gate, declared as data, run by orchestra in three fixed phases.</td><td>A stack must not be able to break the order.</td></tr>
+      <tr><td>S58</td><td>Run state is git-ignored; only notes are committed.</td><td>Run feedback: state files cluttered the history.</td></tr>
+      <tr><td>S60, S63</td><td>A business fact never gets a default, and stops the run before planning.</td><td>Run feedback: a discount rate was guessed.</td></tr>
+      <tr><td>S65</td><td>No run without separate agents.</td><td>A reviewer must not judge from the author's context.</td></tr>
+      <tr><td>S66</td><td>logic-review sees no plan; plan-conformance is its own gate.</td><td>R5, and a test that could not fail went unnoticed.</td></tr>
+      <tr><td>S67</td><td>plan-conformance checks direction, not detail. A choice that changes behaviour needs a test. The Java placeholder guides are removed.</td><td>Run feedback: the library-loans run.</td></tr>
+      <tr><td>S68</td><td>The coder stays lean and the stack rules live in six Java gates. There is no structure gate.</td><td>R6 and the grilling.</td></tr>
+      <tr><td>S69</td><td>Every source part that the summaries lost is decided: a step that writes no result fails after two tries, another repo's need stops the run unless the task names that repo, and the report lists deviations and changed files.</td><td>The port inventory.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Each real run on a sample project fed back into the design. The first runs led to clearer errors, a skip for repeated builds, the Evaluate list in the report, the assumptions list, the business-fact stop, and the rebuilt logic review.</p>
+</section>
+
+<!-- ============================== LEVEL 5 ============================== -->
+<section class="level" id="l5">
+  <div class="level-head"><span class="n">5</span><h2>Under the hood</h2><span class="stop">The code explains the rest.</span></div>
+  <p class="level-intro">Plain Node, standard library only, about 830 lines. This level gives you the map. Read the code for the detail.</p>
+
+  <h3 id="ctrl-map">Code map</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th>Job</th></tr></thead>
+    <tbody>
+      <tr><td><code>orchestra/bin/drive.js</code></td><td>One call advances the run to the next step that needs an AI agent, then prints it.</td></tr>
+      <tr><td><code>orc-standard-workflow/bin/next.js</code></td><td>Reads the files on disk and prints the next workflow step.</td></tr>
+      <tr><td><code>orchestra/lib/runner.js</code></td><td>Runs one phase gate by gate, with a checkpoint file.</td></tr>
+      <tr><td><code>orchestra/lib/gates.js</code></td><td>Collects, selects and orders the gates of a phase.</td></tr>
+      <tr><td><code>orchestra/lib/report.js</code></td><td>Writes <code>report.md</code> from the result files.</td></tr>
+      <tr><td><code>orchestra/lib/protocol.js</code></td><td>Checks each action and builds the agent prompt.</td></tr>
+      <tr><td><code>orchestra/bin/resolve.js</code>, <code>lib/resolved.js</code></td><td>Find the plugins and write <code>.orchestra/resolved.json</code>.</td></tr>
+      <tr><td><code>orchestra/lib/git.js</code></td><td>Git helpers that skip the run folders.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="sequence">One call, end to end</h3>
+  <p>No process keeps state in memory between two agents. Every call starts from the files on disk, so a stop, a crash or a closed terminal costs nothing.</p>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 730 445" role="img" aria-label="Sequence: the main session calls drive.js, which calls next.js and gets dispatch spec, and returns the action and prompt. The main session dispatches a subagent, which writes its result. The main session calls drive.js again; next.js returns a phase; drive.js calls the runner, which runs the build and returns a gate dispatch.">
+    <defs><marker id="a10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <rect x="15" y="12" width="110" height="30" rx="6" class="okb"/><text x="70" y="32" text-anchor="middle" class="sm b">main session</text>
+    <rect x="165" y="12" width="110" height="30" rx="6" class="acc"/><text x="220" y="32" text-anchor="middle" class="c">drive.js</text>
+    <rect x="315" y="12" width="110" height="30" rx="6" class="acc"/><text x="370" y="32" text-anchor="middle" class="c">next.js</text>
+    <rect x="465" y="12" width="110" height="30" rx="6" class="acc"/><text x="520" y="32" text-anchor="middle" class="c">runner</text>
+    <rect x="615" y="12" width="110" height="30" rx="6" class="gateb"/><text x="670" y="32" text-anchor="middle" class="sm b">subagent</text>
+    <g class="ln mute dash"><line x1="70" y1="42" x2="70" y2="420"/><line x1="220" y1="42" x2="220" y2="420"/><line x1="370" y1="42" x2="370" y2="420"/><line x1="520" y1="42" x2="520" y2="420"/><line x1="670" y1="42" x2="670" y2="420"/></g>
+    <g class="ln">
+      <line x1="70" y1="70" x2="218" y2="70" marker-end="url(#a10)"/>
+      <line x1="220" y1="96" x2="368" y2="96" marker-end="url(#a10)"/>
+      <line x1="370" y1="122" x2="222" y2="122" class="ln dash" marker-end="url(#a10)"/>
+      <line x1="220" y1="148" x2="72" y2="148" class="ln dash" marker-end="url(#a10)"/>
+      <line x1="70" y1="176" x2="668" y2="176" marker-end="url(#a10)"/>
+      <line x1="670" y1="238" x2="72" y2="238" class="ln dash" marker-end="url(#a10)"/>
+      <line x1="70" y1="262" x2="218" y2="262" marker-end="url(#a10)"/>
+      <line x1="220" y1="286" x2="368" y2="286" marker-end="url(#a10)"/>
+      <line x1="370" y1="310" x2="222" y2="310" class="ln dash" marker-end="url(#a10)"/>
+      <line x1="220" y1="334" x2="518" y2="334" marker-end="url(#a10)"/>
+      <line x1="520" y1="388" x2="222" y2="388" class="ln dash" marker-end="url(#a10)"/>
+      <line x1="220" y1="410" x2="72" y2="410" class="ln dash" marker-end="url(#a10)"/>
+    </g>
+    <text x="145" y="64" text-anchor="middle" class="c">--task-file</text>
+    <text x="295" y="90" text-anchor="middle" class="sm">run next.js</text>
+    <text x="295" y="116" text-anchor="middle" class="sm">dispatch spec</text>
+    <text x="145" y="142" text-anchor="middle" class="sm">action + prompt</text>
+    <text x="370" y="170" text-anchor="middle" class="sm">the prompt, fresh context</text>
+    <rect x="625" y="186" width="90" height="36" rx="5" class="okb"/><text x="670" y="201" text-anchor="middle" class="sm">spec skill</text><text x="670" y="215" text-anchor="middle" class="sm m">writes result</text>
+    <text x="370" y="232" text-anchor="middle" class="sm">finished</text>
+    <text x="145" y="256" text-anchor="middle" class="sm">drive.js again</text>
+    <text x="295" y="280" text-anchor="middle" class="sm">run next.js</text>
+    <text x="295" y="304" text-anchor="middle" class="sm">phase impl-check</text>
+    <text x="370" y="328" text-anchor="middle" class="sm">runner.step()</text>
+    <rect x="475" y="344" width="90" height="28" rx="5" class="acc"/><text x="520" y="362" text-anchor="middle" class="sm">runs the build</text>
+    <text x="370" y="382" text-anchor="middle" class="sm">dispatch a gate</text>
+    <text x="145" y="404" text-anchor="middle" class="sm">action + prompt</text>
+    <text x="365" y="438" text-anchor="middle" class="sm m">… repeat until done, decide or failed, then report.md</text>
+  </svg></div>
+  <figcaption>Blue boxes are code, green is the model in the main session, amber is a subagent. Each <code>drive.js</code> call runs every step that needs no model (next.js, the runner, the build), then returns at the first step that needs one.</figcaption>
+  </figure>
+
+  <h3 id="lifecycle">Step lifecycle</h3>
+  <p>Each workflow step and each reviewer gate follows the same small state machine, driven by its result file.</p>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 720 250" role="img" aria-label="Stage state machine. No result file leads to a dispatch; the subagent writes ok, failed or decide. Ok moves to the next stage. Failed is reported once, then the next call deletes the result and dispatches again. Decide stores the answer count and waits; a new answer section deletes the result and dispatches again.">
+    <defs><marker id="a11" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <rect x="20" y="90" width="120" height="34" rx="6" class="box"/><text x="80" y="111" text-anchor="middle" class="sm">no result file</text>
+    <rect x="180" y="90" width="120" height="34" rx="6" class="okb"/><text x="240" y="111" text-anchor="middle" class="sm">subagent runs</text>
+    <rect x="360" y="20" width="120" height="34" rx="6" class="okb"/><text x="420" y="41" text-anchor="middle" class="sm b">ok</text>
+    <rect x="360" y="90" width="120" height="34" rx="6" class="stopb"/><text x="420" y="111" text-anchor="middle" class="sm b">failed</text>
+    <rect x="360" y="160" width="120" height="34" rx="6" class="stopb"/><text x="420" y="181" text-anchor="middle" class="sm b">decide</text>
+    <rect x="540" y="90" width="150" height="34" rx="6" class="box"/><text x="615" y="111" text-anchor="middle" class="sm">reported once</text>
+    <rect x="540" y="160" width="150" height="34" rx="6" class="box"/><text x="615" y="181" text-anchor="middle" class="sm">waiting, seen = n</text>
+    <g class="ln">
+      <line x1="140" y1="107" x2="178" y2="107" marker-end="url(#a11)"/>
+      <line x1="300" y1="100" x2="358" y2="40" marker-end="url(#a11)"/>
+      <line x1="300" y1="107" x2="358" y2="107" marker-end="url(#a11)"/>
+      <line x1="300" y1="114" x2="358" y2="174" marker-end="url(#a11)"/>
+      <line x1="480" y1="37" x2="538" y2="37" marker-end="url(#a11)"/>
+      <line x1="480" y1="107" x2="538" y2="107" marker-end="url(#a11)"/>
+      <line x1="480" y1="177" x2="538" y2="177" marker-end="url(#a11)"/>
+      <path d="M690,107 H706 V222 H80 V126" class="ln dash" marker-end="url(#a11)"/>
+      <line x1="615" y1="194" x2="615" y2="222" class="ln dash"/>
+    </g>
+    <text x="159" y="100" text-anchor="middle" class="sm">dispatch</text>
+    <text x="240" y="142" text-anchor="middle" class="sm m">writes result</text>
+    <text x="545" y="41" class="sm">next stage</text>
+    <text x="509" y="100" text-anchor="middle" class="sm">print failed</text>
+    <text x="509" y="170" text-anchor="middle" class="sm">print decide</text>
+    <text x="609" y="212" text-anchor="end" class="sm m">a new ## section</text>
+    <text x="360" y="240" text-anchor="middle" class="sm m">next call: delete the result, dispatch again</text>
+  </svg></div>
+  <figcaption>A stop and a retry are the same move: delete the result file, so the stage looks like it never ran. A result file with broken JSON counts as failed. Each dispatch is counted in a <code>.sent</code> file next to the result: after two dispatches with no result, the step fails. A retry deletes the count too, so it starts with two fresh tries.</figcaption>
+  </figure>
+
+  <h3 id="plugins">Plugin contracts</h3>
+  <p>For people who write a workflow or a stack plugin. A plugin finds its own folder through its <code>manifest</code> skill, so orchestra never guesses an install path:</p>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 720 240" role="img" aria-label="Resolution: the main session invokes each plugin's manifest skill, gets back its folder, passes slot=folder pairs to resolve.js, which checks them and writes resolved.json.">
+    <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <rect x="25" y="14" width="130" height="30" rx="6" class="okb"/><text x="90" y="34" text-anchor="middle" class="sm b">main session</text>
+    <rect x="205" y="14" width="130" height="30" rx="6" class="box"/><text x="270" y="34" text-anchor="middle" class="c">&lt;plugin&gt;:manifest</text>
+    <rect x="385" y="14" width="130" height="30" rx="6" class="acc"/><text x="450" y="34" text-anchor="middle" class="c">resolve.js</text>
+    <rect x="565" y="14" width="130" height="30" rx="6" class="sunk"/><text x="630" y="34" text-anchor="middle" class="c">resolved.json</text>
+    <g class="ln mute dash"><line x1="90" y1="44" x2="90" y2="200"/><line x1="270" y1="44" x2="270" y2="200"/><line x1="450" y1="44" x2="450" y2="200"/><line x1="630" y1="44" x2="630" y2="200"/></g>
+    <g class="ln">
+      <line x1="90" y1="78" x2="268" y2="78" marker-end="url(#a3)"/>
+      <line x1="270" y1="108" x2="92" y2="108" class="ln dash" marker-end="url(#a3)"/>
+      <line x1="90" y1="143" x2="448" y2="143" marker-end="url(#a3)"/>
+      <line x1="450" y1="175" x2="628" y2="175" marker-end="url(#a3)"/>
+    </g>
+    <text x="180" y="72" text-anchor="middle" class="sm">invoke, once per slot</text>
+    <text x="180" y="102" text-anchor="middle" class="c">PLUGIN_DIR=/abs/path</text>
+    <text x="270" y="137" text-anchor="middle" class="c">workflow=… stack-skills=…</text>
+    <text x="540" y="169" text-anchor="middle" class="sm">checks name + slot, writes</text>
+    <text x="630" y="222" text-anchor="middle" class="sm m">next.js and the runner read only this</text>
+    <text x="90" y="222" text-anchor="middle" class="sm m">every call, also a resume</text>
+  </svg></div>
+  <figcaption>The harness knows where a skill lives, so the skill reports its own folder. No code ever guesses an install path. This works the same on every AI tool that can load a skill.</figcaption>
+  </figure>
+  <p>Each plugin ships a declaration, <code>orchestra.json</code>. It is data only. Orchestra decides when and how to use it.</p>
+<pre><code>{
+  "slot": "stack-skills",
+  "build":  { "run": "./mvnw -B -fae $(grep -q spotless-maven-plugin pom.xml 2&gt;/dev/null &amp;&amp; echo -Dspotless.check.skip=true) verify",
+              "guide": "fix-build", "max_rounds": 3 },
+  "guides": { "code": "code-guide" },
+  "gates": [
+    { "name": "ops", "phase": "implementation-check", "kind": "agent",
+      "skill": "review-ops", "files": ["**/*.java", "**/*.sql"] },
+    { "name": "spotless", "phase": "finish", "kind": "tool", "files": "**/*.java",
+      "run": "if grep -q spotless-maven-plugin pom.xml 2&gt;/dev/null; then ./mvnw -B spotless:apply; fi",
+      "fix": "fixer", "guide": "fix-spotless" }
+  ]
+}</code></pre>
+  <p>The build skips the format check only when the root <code>pom.xml</code> names the Spotless plugin, the same test the Spotless gate uses: the gate formats the code before the final build (S69).</p>
+  <p>A workflow declares <code>"slot": "workflow"</code>, its config keys and its own gates, and ships <code>bin/next.js</code>. Every step writes a small result file that code reads:</p>
+<pre><code>{ "stage": "logic-review", "status": "ok",
+  "decide": [], "counts": { "decide": 0, "patch": 2, "evaluate": 1, "noise": 0 },
+  "evaluate": ["OrderService.java:42 — a null customer now throws"], "assumptions": [] }</code></pre>
+</section>
+
+<!-- ============================== LEVEL 6 ============================== -->
+<section class="level" id="l6">
+  <div class="level-head"><span class="n">6</span><h2>Status and words</h2><span class="stop">Reference.</span></div>
+
+  <h3 id="status">Built and not built</h3>
+  <figure class="dg-fig"><div class="dg-scroll">
+  <svg class="dg" viewBox="0 0 720 150" role="img" aria-label="Roadmap: plans 1, 3, 3.1, 3.3 and 4 are done. Next are plan 2 (check and init) and plan 5 (Codex run). Then phase 2 (CRAP and mutation) and later the Curator, PSK and adapters.">
+    <line x1="30" y1="70" x2="700" y2="70" class="ln mute"/>
+    <circle cx="50" cy="70" r="8" class="dot-done"/><circle cx="128" cy="70" r="8" class="dot-done"/><circle cx="206" cy="70" r="8" class="dot-done"/><circle cx="284" cy="70" r="8" class="dot-done"/><circle cx="362" cy="70" r="8" class="dot-done"/>
+    <circle cx="440" cy="70" r="8" class="dot-next"/><circle cx="518" cy="70" r="8" class="dot-next"/>
+    <circle cx="596" cy="70" r="8" class="dot-later"/><circle cx="674" cy="70" r="8" class="dot-later"/>
+    <text x="50" y="40" text-anchor="middle" class="sm b">plan 1</text><text x="50" y="54" text-anchor="middle" class="sm m">walking skeleton</text>
+    <text x="128" y="96" text-anchor="middle" class="sm b">plan 3</text><text x="128" y="110" text-anchor="middle" class="sm m">full workflow</text>
+    <text x="206" y="40" text-anchor="middle" class="sm b">plan 3.1</text><text x="206" y="54" text-anchor="middle" class="sm m">run feedback</text>
+    <text x="284" y="96" text-anchor="middle" class="sm b">plan 3.3</text><text x="284" y="110" text-anchor="middle" class="sm m">review depth</text>
+    <text x="362" y="40" text-anchor="middle" class="sm b">plan 4</text><text x="362" y="54" text-anchor="middle" class="sm m">Java gates</text>
+    <text x="440" y="96" text-anchor="middle" class="sm b">plan 2</text><text x="440" y="110" text-anchor="middle" class="sm m">check, init</text>
+    <text x="518" y="40" text-anchor="middle" class="sm b">plan 5</text><text x="518" y="54" text-anchor="middle" class="sm m">Codex run</text>
+    <text x="596" y="96" text-anchor="middle" class="sm b">phase 2</text><text x="596" y="110" text-anchor="middle" class="sm m">CRAP, mutation</text>
+    <text x="710" y="40" text-anchor="end" class="sm b">later</text><text x="710" y="54" text-anchor="end" class="sm m">Curator, PSK, adapters</text>
+    <polygon points="401,80 395,90 407,90" class="stopb"/><text x="401" y="134" text-anchor="middle" class="sm tr">now</text>
+  </svg></div>
+  <figcaption>Filled dots are done (October 1 to 9, 2026). Blue rings are the next plans in their agreed order. Dashed rings are later phases.</figcaption>
+  </figure>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Part</th><th>State</th></tr></thead>
+    <tbody>
+      <tr><td>The run: start, resume, all workflow steps, the build, the fixer, the two reviewers, triage, the report</td><td><span class="pill built">built</span></td></tr>
+      <tr><td>Java stack: build, code guide, build fix guide, Spotless fix guide</td><td><span class="pill built">built</span></td></tr>
+      <tr><td>Java reviewers (ops, testing, comments, logging, layout, Spotless)</td><td><span class="pill built">built</span></td></tr>
+      <tr><td>Gates selected by a rule in words</td><td><span class="pill later">later</span></td></tr>
+      <tr><td><code>orchestra check</code> and the <code>orchestra init</code> setup</td><td><span class="pill designed">plan 2</span></td></tr>
+      <tr><td>A tested run on Codex</td><td><span class="pill designed">plan 5</span></td></tr>
+      <tr><td>Complexity (CRAP) and mutation testing gates</td><td><span class="pill later">phase 2</span></td></tr>
+      <tr><td>Project rules, the Curator, adapters for other AI frameworks, runs in a separate worktree</td><td><span class="pill later">later</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="glossary">Glossary</h3>
+  <dl class="gloss">
+    <dt>Orchestrator</dt><dd>The <code>orchestra</code> plugin and its single entry, <code>orchestra run</code>.</dd>
+    <dt>Workflow</dt><dd>The plugin that sets the steps of a run and their order.</dd>
+    <dt>Stack Skills</dt><dd>The plugin with the build, guides and reviewers for one language stack.</dd>
+    <dt>Slot</dt><dd>A named place in the config that one plugin fills: <code>workflow</code> or <code>stack-skills</code>.</dd>
+    <dt>Declaration</dt><dd>A plugin's <code>orchestra.json</code>. Data only.</dd>
+    <dt>Brief</dt><dd>The goal and acceptance criteria of a run. Every check compares against it.</dd>
+    <dt>Phase</dt><dd>implementation-check, conventions-check, finish: the three groups of gates.</dd>
+    <dt>Gate</dt><dd>One check after the code: a tool (a command) or an agent (a reviewer).</dd>
+    <dt>Build</dt><dd>The full build and tests. It runs first and last. Not a gate.</dd>
+    <dt>Fixer</dt><dd>The agent that fixes a failed tool, using the tool's fix guide.</dd>
+    <dt>Guide</dt><dd>Short rules for the planner or the coder, from the stack.</dd>
+    <dt>Triage</dt><dd>Sorting a finding into Decide, Patch, Evaluate or Noise.</dd>
+    <dt>Business fact</dt><dd>A product value no agent may invent: a rate, a price, a limit, who qualifies.</dd>
+    <dt>Technical choice</dt><dd>A choice with a sensible default, taken and recorded.</dd>
+    <dt>Notes folder</dt><dd><code>docs/runs/&lt;branch&gt;/</code>. What you read. Committed.</dd>
+    <dt>Run folder</dt><dd><code>tmp/runs/&lt;branch&gt;/</code>. What code reads. Git-ignored.</dd>
+    <dt>S&lt;n&gt;, R&lt;n&gt;</dt><dd>A recorded decision, a research note.</dd>
+  </dl>
+</section>
+
+<footer>
+  This guide matches plugin version 0.9.0 and decisions up to S69. The sources of truth are <code>docs/DESIGN.md</code>, <code>docs/TENSIONS.md</code>, <code>docs/DECISIONS.md</code>, <code>docs/CONTEXT.md</code> and the code in <code>plugins/</code>.
+</footer>
+</main>
+</div>
+
+<script>
+(() => {
+  const root = document.getElementById('xp');
+  if (!root) return;
+  const steps = [...root.querySelectorAll('.xp-step')];
+  const depths = [...root.querySelectorAll('.xp-d')];
+  const panels = [...root.querySelectorAll('.xp-panel')];
+  const [prev, next] = root.querySelectorAll('.xp-nav button');
+  let cur = 0, depth = 'what';
+  function render(focus) {
+    steps.forEach((b, i) => b.setAttribute('aria-selected', String(i === cur)));
+    depths.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.depth === depth)));
+    panels.forEach((p, i) => {
+      p.hidden = i !== cur;
+      p.querySelectorAll('[data-depth]').forEach(d => { d.hidden = d.dataset.depth !== depth; });
+    });
+    prev.disabled = cur === 0;
+    next.disabled = cur === steps.length - 1;
+    if (focus) steps[cur].focus();
+    const strip = root.querySelector('.xp-steps');
+    strip.scrollTo({ left: steps[cur].offsetLeft - strip.offsetLeft - 16 });
+  }
+  steps.forEach((b, i) => b.addEventListener('click', () => { cur = i; render(); }));
+  root.querySelector('.xp-steps').addEventListener('keydown', e => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    cur = Math.max(0, Math.min(steps.length - 1, cur + (e.key === 'ArrowRight' ? 1 : -1)));
+    render(true);
+    e.preventDefault();
+  });
+  depths.forEach(b => b.addEventListener('click', () => { depth = b.dataset.depth; render(); }));
+  [prev, next].forEach(b => b.addEventListener('click', () => { cur += Number(b.dataset.move); render(); }));
+  render();
+})();
+</script>
