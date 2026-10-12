@@ -49,6 +49,16 @@ function deviations(file) {
   });
 }
 
+// The `- ` lines under the brief's `## Integration points`: what other repos must change.
+function integrationPoints(file) {
+  if (!fs.existsSync(file)) return [];
+  let inside = false;
+  return fs.readFileSync(file, 'utf8').split('\n').flatMap(line => {
+    if (line.startsWith('## ')) inside = line.trim() === '## Integration points';
+    return inside && line.startsWith('- ') ? [line.slice(2).trim()] : [];
+  });
+}
+
 function writeReport(project, runDir, final, resolved) {
   const abs = path.join(project, runDir);
   const files = fs.readdirSync(abs).sort();
@@ -75,6 +85,7 @@ function writeReport(project, runDir, final, resolved) {
   for (const r of results) lines.push(`| ${r.step} | ${status(r)} | ${counts(r)} |`);
   lines.push('', '## Assumptions', '', ...list(assumptions));
   lines.push('', '## Deviations', '', ...list(deviations(path.join(project, run ? run.docs : runDir, 'implementation-log.md'))));
+  lines.push('', '## Integration points', '', ...list(integrationPoints(path.join(project, run && run.spec ? run.spec : `${runDir}/brief.md`))));
   lines.push('', '## Evaluate', '', ...list(evaluate));
   lines.push('', '## Skipped gates', '', ...list(skipped));
   const docs = run ? run.docs : runDir;

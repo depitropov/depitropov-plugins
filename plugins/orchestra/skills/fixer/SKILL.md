@@ -27,7 +27,8 @@ You get the output of one tool that failed, and the name of a fix guide.
 4. Never delete or weaken a test to make a tool pass. Never change the tool's configuration or
    threshold.
 5. Commit your fix once, with the message `fix(<gate>): <short summary>`. orchestra handles its own
-   files: do not stage files under `docs/runs/` or `tmp/`.
+   files: do not stage files under `docs/runs/` or `tmp/`. In the commit body, write the failure, its root
+   cause, and, when a test failed, whether the test or the code was wrong.
 6. Write the result JSON.
 
 ## Result

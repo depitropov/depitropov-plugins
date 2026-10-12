@@ -217,6 +217,19 @@ test('the report lists real deviations, not "none", and the files changed', () =
   const report = fs.readFileSync(path.join(dir, drive(dir).report), 'utf8');
   assert.match(report, /## Deviations\n\n- T2: used BigDecimal, not double\n/);
   assert.doesNotMatch(report, /T1: none/);
+  assert.match(report, /## Integration points\n\n- none\n/);
   assert.ok(report.indexOf('## Assumptions') < report.indexOf('## Deviations'));
   assert.match(report, /## Commits[\s\S]*```\n[\s\S]*Price\.java \|/);
+});
+
+test('the report copies the brief\'s Integration points, or says none', () => {
+  const dir = project();
+  const code = toCode(dir);
+  fs.writeFileSync(path.join(dir, 'docs/runs/task/add-a-discount/brief.md'),
+    '# Brief\n\n## Integration points\n- pricing API — needs a discount field — assumption\n\n## Assumptions\n- x\n');
+  writeJson(path.join(dir, code.result), { stage: 'code', status: 'ok' });
+  const review = toReview(dir);
+  writeJson(path.join(dir, review.result), { stage: 'logic-review', status: 'ok' });
+  const report = fs.readFileSync(path.join(dir, drive(dir).report), 'utf8');
+  assert.match(report, /## Deviations\n\n- none\n\n## Integration points\n\n- pricing API — needs a discount field — assumption\n\n## Evaluate/);
 });

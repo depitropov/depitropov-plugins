@@ -37,8 +37,11 @@ problems are still cheap. You fix what you can in the two files. You do not writ
    - **Over-building**: no abstraction, layer or new library the goal does not need.
    - **Business facts**: every `business fact:` line in the brief, and every rate, price, limit
      value or rule of who qualifies that the plan uses with no source.
+   - **External facts**: every line under Integration points has a source, or is an assumption with the cost of being wrong.
+   - **Other repos**: a change that another repo must make, in a repo the task does not name.
 4. Invoke the skill `orchestra:triage` and follow it: give every finding its axes and one bucket.
    A business fact that neither the brief nor `decisions` gives is Decide (triage, B1).
+   A change in a repo the task does not name is Decide (triage, B2).
 5. Write `<notes>/plan-check.md` in the triage notes format, with the checks of step 3 and their
    outcome under **Checked**.
 6. If there is a Decide finding, stop here. Do not fix any finding in the brief or the plan. Write

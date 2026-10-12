@@ -19,8 +19,9 @@ and you do not ask the user.
 2. Read the code the task touches: entry points, services, data classes, tests. Everything you
    write must come from code that exists, not from guesses.
 3. When the task depends on something outside this project (an endpoint, a field name, a library's
-   behaviour), read it at its source if you can reach it. If you cannot, record it as an
-   assumption.
+   behaviour), read it at its source if you can reach it: a sibling checkout of the other repo, or the API
+   contract, schema or migration in this repo. If you cannot, record it as an assumption. Record
+   what the change needs from another repo under Integration points.
 4. For each question you would ask a human, take a default and record it. Tell two kinds apart:
    - A **technical choice** has a sensible default: rounding mode, null handling, the order of two
      steps. Take the boring, minimal default.
@@ -52,6 +53,9 @@ Out: <…>
 ## Patterns to reuse
 - `<path>` — <the pattern the plan must follow>
 
+## Integration points
+- <service, API, schema or topic outside this change> — <what this change needs from it> — <source: path or URL, or "assumption">
+
 ## Assumptions
 - <question> — <the default you took, and why>
 - business fact: <what is missing> — options: <a> | <b>
@@ -62,6 +66,8 @@ Rules:
   them from the goal. A criterion describes behaviour a test can see, never the implementation.
 - An acceptance criterion that depends on a missing business fact names the fact, for example
   "then the late fee is the daily fee times the days late".
+- A repo the task names is read only. List the changes it needs under Integration points; the run
+  does not make them.
 - Keep the brief short. No code.
 
 ## Result
