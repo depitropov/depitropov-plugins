@@ -161,26 +161,18 @@ function agentStep(s, ctx, state, save) {
     if (fs.existsSync(path.join(ctx.project, decisionsFile))) inputs.decisions = decisionsFile;
     return { action: 'dispatch', skill: `${s.plugin}:${s.skill}`, inputs, result: resultRel, runDir: ctx.runDir };
   };
+  const retry = res && ((res.status === 'decide' && answers > (state.seen[s.name] || 0)) || (res.status === 'failed' && !reportOnce(resultFile, res)));
+  if (retry) {
+    fs.rmSync(resultFile);
+    fs.rmSync(`${resultFile}.sent`, { force: true });
+    res = null;
+  }
   if (!res) {
     const lost = noResult(resultFile, s.name);
     return lost ? { status: 'failed', reason: lost.reason } : send();
   }
-  if (res.status === 'decide') {
-    if (answers > (state.seen[s.name] || 0)) {
-      fs.rmSync(resultFile);
-      fs.rmSync(`${resultFile}.sent`, { force: true });
-      return send();
-    }
-    return { status: 'decide', gate: s.name, questions: res.decide || [] };
-  }
-  if (res.status === 'failed') {
-    if (!reportOnce(resultFile, res)) {
-      fs.rmSync(resultFile);
-      fs.rmSync(`${resultFile}.sent`, { force: true });
-      return send();
-    }
-    return { status: 'failed', reason: res.reason || `${s.name} failed. See ${resultRel}.` };
-  }
+  if (res.status === 'decide') return { status: 'decide', gate: s.name, questions: res.decide || [] };
+  if (res.status === 'failed') return { status: 'failed', reason: res.reason || `${s.name} failed. See ${resultRel}.` };
   return null;
 }
 

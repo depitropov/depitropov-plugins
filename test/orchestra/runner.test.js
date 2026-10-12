@@ -265,6 +265,8 @@ test('an agent gate with no result is dispatched twice, then fails; a resume dis
   assert.equal(r.status, 'failed');
   assert.match(r.reason, /logic-review wrote no result after 2 dispatches/);
   assert.equal(t.step('implementation-check').action, 'dispatch');
+  assert.equal(t.step('implementation-check').action, 'dispatch');
+  assert.equal(t.step('implementation-check').status, 'failed');
 });
 
 test('a fixer with no result is dispatched twice, then the build fails; a resume starts clean', () => {
