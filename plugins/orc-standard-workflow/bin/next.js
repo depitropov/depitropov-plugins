@@ -31,6 +31,20 @@ function reportOnce(file, res) {
   return true;
 }
 
+// A subagent that writes no result is dispatched once more. Then the step fails (S69).
+function noResult(file, name) {
+  const sent = `${file}.sent`;
+  const count = fs.existsSync(sent) ? Number(fs.readFileSync(sent, 'utf8')) : 0;
+  if (count < 2) {
+    fs.writeFileSync(sent, String(count + 1));
+    return null;
+  }
+  fs.rmSync(sent);
+  const res = { status: 'failed', reason: `${name} wrote no result after 2 dispatches.`, reported: true };
+  fs.writeFileSync(file, JSON.stringify(res, null, 2) + '\n');
+  return res;
+}
+
 function slugify(text) {
   const firstLine = text.split('\n').find(line => line.trim()) || '';
   return firstLine.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+/, '').slice(0, 40).replace(/-+$/, '') || 'task';
@@ -128,9 +142,12 @@ function stage(ctx, name, inputs, skill = name) {
   const retry = res && ((res.status === 'failed' && !reportOnce(file, res)) || (res.status === 'decide' && res.seen !== undefined && answers > res.seen));
   if (retry) {
     fs.rmSync(file);
+    fs.rmSync(`${file}.sent`, { force: true });
     res = null;
   }
   if (!res) {
+    const lost = noResult(file, `Stage ${name}`);
+    if (lost) return { action: 'failed', reason: lost.reason, runDir: ctx.runDir };
     const decisionsFile = `${ctx.run.docs}/decisions.md`;
     const decisions = fs.existsSync(path.join(ctx.project, decisionsFile)) ? { decisions: decisionsFile } : {};
     return { action: 'dispatch', skill: `orc-standard-workflow:${skill}`, inputs: { ...inputs, ...decisions }, result, runDir: ctx.runDir };

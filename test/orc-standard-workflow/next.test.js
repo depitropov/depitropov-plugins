@@ -302,3 +302,16 @@ test('a new run on a reused branch name ignores the old run folder', () => {
   assert.equal(a.skill, 'orc-standard-workflow:spec');
   assert.equal(fs.existsSync(path.join(dir, 'tmp/runs/task/add-a-discount/spec.result.json')), false);
 });
+
+test('a stage with no result is dispatched twice, then fails; a resume dispatches again', () => {
+  const dir = project();
+  const first = next(dir, '.orchestra/task.txt');
+  assert.equal(first.action, 'dispatch');
+  assert.equal(next(dir).action, 'dispatch');
+  const a = next(dir);
+  assert.equal(a.action, 'failed');
+  assert.match(a.reason, /Stage spec wrote no result after 2 dispatches/);
+  assert.equal(next(dir).action, 'dispatch');
+  assert.equal(next(dir).action, 'dispatch');
+  assert.equal(next(dir).action, 'failed');
+});

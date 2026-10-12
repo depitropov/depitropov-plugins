@@ -27,6 +27,20 @@ function reportOnce(file, res) {
   return true;
 }
 
+// A subagent that writes no result is dispatched once more. Then the step fails (S69).
+function noResult(file, name) {
+  const sent = `${file}.sent`;
+  const count = fs.existsSync(sent) ? Number(fs.readFileSync(sent, 'utf8')) : 0;
+  if (count < 2) {
+    fs.writeFileSync(sent, String(count + 1));
+    return null;
+  }
+  fs.rmSync(sent);
+  const res = { status: 'failed', reason: `${name} wrote no result after 2 dispatches.`, reported: true };
+  fs.writeFileSync(file, JSON.stringify(res, null, 2) + '\n');
+  return res;
+}
+
 function runCommand(command, cwd, logFile) {
   const r = spawnSync(command, { cwd, shell: true, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
   fs.writeFileSync(logFile, `$ ${command}\n${r.stdout || ''}${r.stderr || ''}${r.error ? String(r.error) : ''}`);
@@ -83,7 +97,8 @@ function toolStep(s, ctx, state, save) {
   }
   const rounds = state.rounds[s.name] || 0;
   if (rounds > 0) {
-    const fix = readResult(path.join(ctx.abs, `${ctx.phase}.${s.name}.fix${rounds}.result.json`));
+    const fixFile = path.join(ctx.abs, `${ctx.phase}.${s.name}.fix${rounds}.result.json`);
+    const fix = readResult(fixFile) || noResult(fixFile, `The fixer for ${s.name}`);
     if (!fix) return fixerDispatch(s, ctx, rounds);
     if (fix.status === 'failed') return endTool(s, ctx, resultFile, `The fixer could not fix ${s.name}: ${fix.reason || 'no reason given'}.`, rounds);
   }
@@ -109,6 +124,8 @@ function toolStep(s, ctx, state, save) {
   if (s.fix === 'fixer' && rounds < s.max_rounds) {
     state.rounds[s.name] = rounds + 1;
     save();
+    // This dispatch is the first of the two the fixer round gets.
+    fs.writeFileSync(path.join(ctx.abs, `${ctx.phase}.${s.name}.fix${rounds + 1}.result.json.sent`), '1');
     return fixerDispatch(s, ctx, rounds + 1);
   }
   return endTool(s, ctx, resultFile, `${s.name} still fails after ${rounds} fix round(s). See ${logRel}.`, rounds);
@@ -124,7 +141,7 @@ function endTool(s, ctx, resultFile, reason, rounds) {
 function retryTool(s, ctx, state, save) {
   const prefix = `${ctx.phase}.${s.name}.`;
   for (const f of fs.readdirSync(ctx.abs)) {
-    if (f.startsWith(prefix) && (f.endsWith('.result.json'))) fs.rmSync(path.join(ctx.abs, f));
+    if (f.startsWith(prefix) && (f.endsWith('.result.json') || f.endsWith('.sent'))) fs.rmSync(path.join(ctx.abs, f));
   }
   state.rounds[s.name] = 0;
   save();
@@ -133,7 +150,7 @@ function retryTool(s, ctx, state, save) {
 function agentStep(s, ctx, state, save) {
   const resultRel = `${ctx.runDir}/${ctx.phase}.${s.name}.result.json`;
   const resultFile = path.join(ctx.project, resultRel);
-  const res = readResult(resultFile);
+  let res = readResult(resultFile);
   const answers = countAnswers(path.join(ctx.project, ctx.run.docs), s.name);
   const send = () => {
     state.seen[s.name] = answers;
@@ -144,10 +161,14 @@ function agentStep(s, ctx, state, save) {
     if (fs.existsSync(path.join(ctx.project, decisionsFile))) inputs.decisions = decisionsFile;
     return { action: 'dispatch', skill: `${s.plugin}:${s.skill}`, inputs, result: resultRel, runDir: ctx.runDir };
   };
-  if (!res) return send();
+  if (!res) {
+    const lost = noResult(resultFile, s.name);
+    return lost ? { status: 'failed', reason: lost.reason } : send();
+  }
   if (res.status === 'decide') {
     if (answers > (state.seen[s.name] || 0)) {
       fs.rmSync(resultFile);
+      fs.rmSync(`${resultFile}.sent`, { force: true });
       return send();
     }
     return { status: 'decide', gate: s.name, questions: res.decide || [] };
@@ -155,6 +176,7 @@ function agentStep(s, ctx, state, save) {
   if (res.status === 'failed') {
     if (!reportOnce(resultFile, res)) {
       fs.rmSync(resultFile);
+      fs.rmSync(`${resultFile}.sent`, { force: true });
       return send();
     }
     return { status: 'failed', reason: res.reason || `${s.name} failed. See ${resultRel}.` };

@@ -256,3 +256,24 @@ test('an agent gate gets decisions.md once it exists, but only its own answer re
   fs.appendFileSync(path.join(t.dir, t.docs, 'decisions.md'), '\n## plan-check\n\n- b? → z\n');
   assert.equal(t.step('implementation-check').status, 'decide');
 });
+
+test('an agent gate with no result is dispatched twice, then fails; a resume dispatches again', () => {
+  const t = setup({ workflowGates: [logicReview] });
+  assert.equal(t.step('implementation-check').action, 'dispatch');
+  assert.equal(t.step('implementation-check').action, 'dispatch');
+  const r = t.step('implementation-check');
+  assert.equal(r.status, 'failed');
+  assert.match(r.reason, /logic-review wrote no result after 2 dispatches/);
+  assert.equal(t.step('implementation-check').action, 'dispatch');
+});
+
+test('a fixer with no result is dispatched twice, then the build fails; a resume starts clean', () => {
+  const t = setup({ build: `node -e "process.exit(require('fs').existsSync('fixed') ? 0 : 1)"`, maxRounds: 1 });
+  assert.equal(t.step('implementation-check').skill, 'orchestra:fixer');
+  assert.equal(t.step('implementation-check').skill, 'orchestra:fixer');
+  const r = t.step('implementation-check');
+  assert.equal(r.status, 'failed');
+  assert.match(r.reason, /wrote no result after 2 dispatches/);
+  fs.writeFileSync(path.join(t.dir, 'fixed'), '');
+  assert.equal(t.step('implementation-check').status, 'ok');
+});
