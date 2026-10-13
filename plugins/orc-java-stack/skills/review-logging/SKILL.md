@@ -20,7 +20,8 @@ description: Reviews the log statements of the changed Java code against the log
    is not in scope.
 3. The project's code wins. When the untouched code of the same kind in this project does it another
    way, follow the project: that rule is not a finding.
-4. Each finding names the rule number and `file:line`.
+4. The title of each finding starts with its rule number, as in `▸ Rule 3: <title>`, and its "In the
+   code" line gives `file:line`.
 5. Invoke the skill `orchestra:triage` and follow it: give every finding its axes and one bucket.
 6. Write `<notes>/logging.md` in the triage notes format.
 7. If there is an open Decide finding (one that `decisions` does not answer), stop here. Do not fix
