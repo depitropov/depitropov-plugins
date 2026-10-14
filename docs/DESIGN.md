@@ -450,6 +450,7 @@ Phase 1 is done when all five pass (S34):
 2. `orchestra:init`, then one run end to end on Claude Code: a task branch with commits, a green
    final build, and `report.md`.
 3. The same run on Codex. This run also tests that the `manifest` skill finds its folder on Codex.
+   Paused with plan 5 (S71).
 4. One run stops on `decide`, gets an answer in `decisions.md`, and resumes to `done`.
 5. `orchestra check` passes on `orc-standard-workflow` and `orc-java-stack`.
 

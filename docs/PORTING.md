@@ -599,8 +599,8 @@ phase (S2). Inventory it, by the steps above, before the Curator is planned.
 ### sc-agent-plugins
 
 Source: `~/Projects/sc-agent-plugins`, read on 2026-10-14 at commit `de112a8`. Its packaging rules
-became pillar 4 (S33, DESIGN §11). Plan 5 (Codex) is not written yet; rows that say "plan 5" are its
-input.
+became pillar 4 (S33, DESIGN §11). Plan 5 (Codex) is paused (S71); rows that say "plan 5" are its
+input. R7 settles gaps 2 and 4 below from the Codex source, and makes gap 1 optional.
 
 Scope: the files that carry the portability mechanism are read in full and inventoried part by part.
 The six plugins hold ship.cars product and frontend content; only their harness passages have rows.
