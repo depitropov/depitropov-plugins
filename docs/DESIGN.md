@@ -454,6 +454,8 @@ Phase 1 is done when all five pass (S34):
 4. One run stops on `decide`, gets an answer in `decisions.md`, and resumes to `done`.
 5. `orchestra check` passes on `orc-standard-workflow` and `orc-java-stack`.
 
+Criteria 1, 2, 4 and 5 pass with version 0.10.0 (S72). Only criterion 3 is open.
+
 ## 14. Out of scope
 
 The Curator, the PSK and PSK-over-Stack-Skills precedence (O6), General Knowledge (O7), adapters for
