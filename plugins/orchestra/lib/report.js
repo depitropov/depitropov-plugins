@@ -65,8 +65,15 @@ function writeReport(project, runDir, final, resolved) {
   const files = fs.readdirSync(abs).sort();
   const run = files.includes('run.json') ? readJson(path.join(abs, 'run.json')) : null;
   const results = runOrder(abs, files).map(f => ({ ...readJson(path.join(abs, f)), step: f.replace('.result.json', '') }));
-  const skipped = files.filter(f => f.endsWith('.state.json')).flatMap(f =>
-    (readJson(path.join(abs, f)).skipped || []).map(s => `${f.replace('.state.json', '')}: ${s.name} (${s.why})`));
+  // Gates the runner did not select, then gates that ran and skipped themselves.
+  const skipped = [
+    ...files.filter(f => f.endsWith('.state.json')).flatMap(f =>
+      (readJson(path.join(abs, f)).skipped || []).map(s => `${f.replace('.state.json', '')}: ${s.name} (${s.why})`)),
+    ...results.filter(r => r.status === 'skipped' && PHASES.some(p => r.step.startsWith(`${p}.`))).map(r => {
+      const [phase, name] = r.step.split('.');
+      return `${phase}: ${name} (${r.reason || 'the gate found nothing in scope'})`;
+    }),
+  ];
   const commits = run ? git(project, 'log', '--oneline', `${run.base}..HEAD`) : '';
   const assumptions = results.flatMap(r => (Array.isArray(r.assumptions) ? r.assumptions.map(a => `${r.step}: ${a}`) : []));
   const evaluate = results.flatMap(r => [

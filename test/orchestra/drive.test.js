@@ -84,6 +84,18 @@ test('a run goes from task to done: code, logic-review, report, committed run fi
   assert.ok(order.every((pos, i) => pos >= 0 && (i === 0 || pos > order[i - 1])), `rows out of run order: ${order}`);
 });
 
+test('a gate that skips itself is listed under Skipped gates', () => {
+  const dir = project();
+  const code = toCode(dir);
+  writeJson(path.join(dir, code.result), { stage: 'code', status: 'ok' });
+  const pc = drive(dir);
+  writeJson(path.join(dir, pc.result), { stage: 'plan-conformance', status: 'skipped' });
+  const review = drive(dir);
+  writeJson(path.join(dir, review.result), { stage: 'logic-review', status: 'ok' });
+  const report = fs.readFileSync(path.join(dir, drive(dir).report), 'utf8');
+  assert.match(report, /## Skipped gates\n\n- implementation-check: plan-conformance \(the gate found nothing in scope\)/);
+});
+
 test('a Decide ends the call with the questions and a report that says how to answer', () => {
   const dir = project();
   const code = toCode(dir);
