@@ -65,7 +65,7 @@ function checkDeclaration(d, dir, where) {
   };
   const placeholders = (text, what) => {
     for (const m of String(text).matchAll(PLACEHOLDER)) {
-      if (!config[m[1]]) fail(`${what} uses {config.${m[1]}}, which "config" does not declare`, `declare "${m[1]}" under "config" or fix the name`);
+      if (!Object.hasOwn(config, m[1])) fail(`${what} uses {config.${m[1]}}, which "config" does not declare`, `declare "${m[1]}" under "config" or fix the name`);
     }
   };
   if (d.slot === 'stack-skills') {
@@ -118,7 +118,7 @@ function checkDeclaration(d, dir, where) {
     if (g.grep !== undefined) {
       placeholders(g.grep, at);
       try {
-        new RegExp(String(g.grep).replace(PLACEHOLDER, (m, key) => (config[key] ? String(config[key].default) : '')));
+        new RegExp(String(g.grep).replace(PLACEHOLDER, (m, key) => (Object.hasOwn(config, key) ? String(config[key].default) : '')));
       } catch (e) {
         fail(`${at} "grep" is not a valid regular expression: ${e.message}`, 'fix the pattern');
       }
@@ -172,11 +172,21 @@ function checkSection(slot, section, s, out) {
         }
         if (!override || !wholeNumber(override.max_rounds)) fail(`"${slot}.gates.${name}.max_rounds" is not a whole number of 1 or more`, 'set it to 1 or more');
       }
-    } else if (!declared[key]) {
+    } else if (!Object.hasOwn(declared, key)) {
       const keys = Object.keys(declared);
       fail(`section "${slot}" has unknown key "${key}"`, keys.length ? `remove it or use a key that ${s.plugin} declares: ${keys.join(', ')}` : `remove it; ${s.plugin} declares no config keys`);
     } else if (typeof value !== declared[key].type) {
       fail(`"${slot}.${key}" is not a ${declared[key].type}`, `set it to a ${declared[key].type}, or remove it to take the default ${JSON.stringify(declared[key].default)}`);
+    }
+  }
+  // A project value can break a gate's grep that the defaults compile. Only gates whose grep names a key
+  // the section sets are tried, so a broken default is reported once, by the declaration rule.
+  for (const g of Array.isArray(d.gates) ? d.gates : []) {
+    if (!g || typeof g.grep !== 'string' || !Object.keys(section).some(k => g.grep.includes(`{config.${k}}`))) continue;
+    try {
+      new RegExp(g.grep.replace(PLACEHOLDER, (m, k) => String(Object.hasOwn(section, k) ? section[k] : declared[k] && declared[k].default)));
+    } catch (e) {
+      fail(`the values of section "${slot}" make the "grep" of gate "${g.name}" invalid: ${e.message}`, 'fix the value of the key that the pattern uses');
     }
   }
 }
@@ -225,7 +235,7 @@ function checkSkills(dir, label) {
   const names = fs.existsSync(skillsDir) ? fs.readdirSync(skillsDir).filter(s => fs.existsSync(path.join(skillsDir, s, 'SKILL.md'))).sort() : [];
   for (const s of names) {
     const where = `${label}/skills/${s}/SKILL.md`;
-    const text = fs.readFileSync(path.join(skillsDir, s, 'SKILL.md'), 'utf8');
+    const text = fs.readFileSync(path.join(skillsDir, s, 'SKILL.md'), 'utf8').replace(/\r\n/g, '\n');
     const m = text.match(/^---\n([\s\S]*?)\n---\n/);
     if (!m) {
       out.push(`${where}: it has no frontmatter. Fix: start it with ---, name, description, ---.`);
@@ -247,24 +257,32 @@ function dryRun(dir, label, declaration) {
   if (!fs.existsSync(nextJs)) return [`${where} is missing. Fix: add it; it prints the next action of a run as one JSON line.`];
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'orchestra-check-'));
   try {
-    const project = scratchRepo(root);
-    const stack = { plugin: 'check-stack', version: '0.0.0', dir: root, declaration: { slot: 'stack-skills', build: { run: 'true' } } };
-    fs.mkdirSync(path.join(project, '.orchestra'));
-    fs.writeFileSync(path.join(project, CONFIG), JSON.stringify({ workflow: { plugin: label }, 'stack-skills': { plugin: stack.plugin } }) + '\n');
     const env = cleanEnv();
-    for (const args of [['add', CONFIG], ['-c', 'core.hooksPath=/dev/null', 'commit', '-q', '-m', 'config']]) {
-      execFileSync('git', args, { cwd: project, env, stdio: 'ignore' });
+    let project;
+    let task;
+    try {
+      project = scratchRepo(root);
+      const stack = { plugin: 'check-stack', version: '0.0.0', dir: root, declaration: { slot: 'stack-skills', build: { run: 'true' } } };
+      fs.mkdirSync(path.join(project, '.orchestra'));
+      fs.writeFileSync(path.join(project, CONFIG), JSON.stringify({ workflow: { plugin: label }, 'stack-skills': { plugin: stack.plugin } }) + '\n');
+      for (const args of [['add', CONFIG], ['-c', 'core.hooksPath=/dev/null', 'commit', '-q', '-m', 'config']]) {
+        execFileSync('git', args, { cwd: project, env, stdio: 'ignore' });
+      }
+      const resolved = { orchestra: { dir: path.join(__dirname, '..') }, slots: { workflow: { plugin: label, version: '0.0.0', dir, declaration }, 'stack-skills': stack } };
+      fs.writeFileSync(path.join(project, '.orchestra', 'resolved.json'), JSON.stringify(resolved) + '\n');
+      task = path.join(root, 'task.txt');
+      fs.writeFileSync(task, 'Dry run of orchestra check\n');
+    } catch (e) {
+      return [`${where}: the dry run could not build its scratch repo: ${e.message.split('\n')[0]}. Fix: check that git is installed and can commit in a new repo.`];
     }
-    const resolved = { orchestra: { dir: path.join(__dirname, '..') }, slots: { workflow: { plugin: label, version: '0.0.0', dir, declaration }, 'stack-skills': stack } };
-    fs.writeFileSync(path.join(project, '.orchestra', 'resolved.json'), JSON.stringify(resolved) + '\n');
-    const task = path.join(root, 'task.txt');
-    fs.writeFileSync(task, 'Dry run of orchestra check\n');
-    const printed = execFileSync(process.execPath, [nextJs, '--project', project, '--task-file', task], { encoding: 'utf8', env, stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 });
-    const action = validateAction(JSON.parse(printed.trim().split('\n').pop()));
-    if (action.action === 'failed') return [`${where}: the dry run ended with failed: ${action.reason}. Fix: make the first call of a new run work.`];
-    return [];
-  } catch (e) {
-    return [`${where}: the dry run did not print a valid action: ${e.message.split('\n')[0]}. Fix: print one action of the orchestra protocol as JSON on the last line.`];
+    try {
+      const printed = execFileSync(process.execPath, [nextJs, '--project', project, '--task-file', task], { encoding: 'utf8', env, stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 });
+      const action = validateAction(JSON.parse(printed.trim().split('\n').pop()));
+      if (action.action === 'failed') return [`${where}: the dry run ended with failed: ${action.reason}. Fix: make the first call of a new run work.`];
+      return [];
+    } catch (e) {
+      return [`${where}: the dry run did not print a valid action: ${e.message.split('\n')[0]}. Fix: print one action of the orchestra protocol as JSON on the last line.`];
+    }
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

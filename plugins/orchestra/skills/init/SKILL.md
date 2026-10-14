@@ -71,5 +71,6 @@ When it passes, tell the user:
 
 ## Permitted actions
 
-- Change only `.orchestra/config.json` and `.gitignore`.
+- Change only `.orchestra/config.json` and `.gitignore`. The check in step 5 also writes
+  `.orchestra/resolved.json`, which git ignores.
 - Do not commit, push or start a run.

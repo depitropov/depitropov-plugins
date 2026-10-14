@@ -182,3 +182,41 @@ test('the dry run ignores the git variables of a calling hook', () => {
   }
   assert.equal(execFileSync('git', ['ls-files'], { cwd: user, encoding: 'utf8' }), before);
 });
+
+test('inherited object keys do not count as declared', () => {
+  const out = errors(stack({ gates: [{ name: 'a', phase: 'finish', kind: 'tool', run: 'x {config.constructor}', always: true }] }));
+  assert.equal(out.length, 1, out.join(' | '));
+  assert.match(out[0], /uses \{config\.constructor\}/);
+  const cfg = checkProject(project({ workflow: { plugin: 'wf', toString: 'x' }, 'stack-skills': { plugin: 'st' } }, { workflow: wf, 'stack-skills': st }));
+  assert.equal(cfg.length, 1, cfg.join(' | '));
+  assert.match(cfg[0], /unknown key "toString"/);
+});
+
+test('a dry run that cannot build its scratch repo says so, and does not blame next.js', () => {
+  const dir = writePlugin(tmp('wf-'), 'wf', { slot: 'workflow', gates: [] });
+  fs.mkdirSync(path.join(dir, 'bin'));
+  fs.writeFileSync(path.join(dir, 'bin/next.js'), 'console.log(JSON.stringify({ action: "done" }))\n');
+  const saved = process.env.PATH;
+  process.env.PATH = '';
+  let out;
+  try {
+    out = checkPlugin(dir).join('\n');
+  } finally {
+    process.env.PATH = saved;
+  }
+  assert.match(out, /wf\/bin\/next\.js: the dry run could not build its scratch repo: .+\. Fix: /);
+  assert.doesNotMatch(out, /did not print a valid action/);
+});
+
+test('a project value that breaks a gate grep fails the config check', () => {
+  const d = stack({ config: { pat: { type: 'string', default: '@Entity' } }, gates: [{ name: 'g', phase: 'finish', kind: 'agent', skill: 's', grep: '{config.pat}' }] });
+  const out = checkProject(project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', pat: '(' } }, { workflow: wf, 'stack-skills': d }));
+  assert.equal(out.length, 1, out.join(' | '));
+  assert.match(out[0], /the values of section "stack-skills" make the "grep" of gate "g" invalid: .+\. Fix: /);
+});
+
+test('a SKILL.md with Windows line endings passes the frontmatter rule', () => {
+  const dir = writePlugin(tmp('orc-'), 'orc');
+  fs.writeFileSync(path.join(dir, 'skills/manifest/SKILL.md'), '---\r\nname: manifest\r\ndescription: d\r\n---\r\nBody\r\n');
+  assert.deepEqual(checkPlugin(dir), []);
+});
