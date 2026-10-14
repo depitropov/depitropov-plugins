@@ -39,10 +39,7 @@ function slotValues(declaration, section) {
 }
 
 function expand(text, dir, values) {
-  return text.replace(/\{plugin\}/g, dir).replace(/\{config\.([\w-]+)\}/g, (match, key) => {
-    if (values[key] === undefined) throw new Error(`Unknown config key "${key}" in "${text}".`);
-    return String(values[key]);
-  });
+  return text.replace(/\{plugin\}/g, dir).replace(/\{config\.([\w-]+)\}/g, (match, key) => String(values[key]));
 }
 
 function collect(resolved, config, phase) {
@@ -57,9 +54,6 @@ function collect(resolved, config, phase) {
     for (const g of slot.declaration.gates || []) {
       if (g.phase !== phase || disabled.includes(g.name)) continue;
       const fix = g.fix || (g.kind === 'agent' ? 'self' : 'none');
-      if (fix === 'fixer' && !g.guide) {
-        throw new Error(`Gate "${g.name}" in ${slot.plugin} uses the fixer but names no guide.`);
-      }
       gates.push({
         ...g,
         provider,

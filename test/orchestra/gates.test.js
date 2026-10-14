@@ -50,13 +50,6 @@ test('collect applies the project config: disable, max_rounds, config values', (
   assert.equal(collect(resolved, config, 'conventions-check')[0].grep, 'CarEntity');
 });
 
-test('collect rejects a fixer gate without a guide', () => {
-  const bad = { slots: { 'stack-skills': { plugin: 'st', dir: '/p', declaration: { gates: [
-    { name: 'x', phase: 'finish', kind: 'tool', run: 'x', fix: 'fixer' },
-  ] } } } };
-  assert.throws(() => collect(bad, {}, 'finish'), /names no guide/);
-});
-
 test('select applies files and grep, and records why a gate is skipped', () => {
   const gates = [
     { name: 'java', files: '**/*.java' },

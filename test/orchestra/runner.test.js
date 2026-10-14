@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { makeRepo, writeJson, git } = require('../helpers');
+const { makeRepo, writeJson, git, writePlugin } = require('../helpers');
 const { resolve } = require('../../plugins/orchestra/lib/resolved');
 const runner = require('../../plugins/orchestra/lib/runner');
 
@@ -14,12 +14,7 @@ const OK = 'node -e "process.exit(0)"';
 function setup({ build = OK, maxRounds = 1, stackGates = [], workflowGates = [] } = {}) {
   const dir = makeRepo();
   const plugins = fs.mkdtempSync(path.join(os.tmpdir(), 'plugins-'));
-  const mk = (name, declaration) => {
-    const d = path.join(plugins, name);
-    writeJson(path.join(d, 'plugin.json'), { name, version: '0.0.1' });
-    writeJson(path.join(d, 'orchestra.json'), declaration);
-    return d;
-  };
+  const mk = (name, declaration) => writePlugin(path.join(plugins, name), name, declaration);
   const wf = mk('wf', { slot: 'workflow', gates: workflowGates });
   const st = mk('st', { slot: 'stack-skills', build: { run: build, guide: 'fix-build', max_rounds: maxRounds }, gates: stackGates });
   const config = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' } };

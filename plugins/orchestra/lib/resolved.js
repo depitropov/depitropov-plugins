@@ -1,6 +1,7 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
+const { checkProject } = require('./check');
 
 const FILE = path.join('.orchestra', 'resolved.json');
 
@@ -16,29 +17,19 @@ function pluginInfo(dir) {
   throw new Error(`No plugin.json in ${dir}.`);
 }
 
+// Writes resolved.json from the folders the manifest skills reported, then runs orchestra check on the
+// config, so a bad config stops the run before any subagent (S70).
 function resolve(project, slotDirs, orchestraDir) {
-  const config = readJson(path.join(project, '.orchestra', 'config.json'));
-  if (!config) throw new Error('No .orchestra/config.json. Run orchestra init first.');
-  for (const slot of Object.keys(slotDirs)) {
-    if (!config[slot]) throw new Error(`Slot ${slot} is not in the config.`);
-  }
+  if (!readJson(path.join(project, '.orchestra', 'config.json'))) throw new Error('No .orchestra/config.json. Run orchestra init first.');
   const slots = {};
-  for (const [slot, section] of Object.entries(config)) {
-    const dir = slotDirs[slot];
-    if (!dir) throw new Error(`Slot ${slot}: no plugin folder given.`);
+  for (const [slot, dir] of Object.entries(slotDirs)) {
     const info = pluginInfo(dir);
-    if (info.name !== section.plugin) {
-      throw new Error(`Slot ${slot}: the config names ${section.plugin}, but ${dir} holds ${info.name}.`);
-    }
-    const declaration = readJson(path.join(dir, 'orchestra.json'));
-    if (!declaration) throw new Error(`Slot ${slot}: ${info.name} has no orchestra.json.`);
-    if (declaration.slot !== slot) {
-      throw new Error(`Slot ${slot}: ${info.name} declares slot ${declaration.slot}.`);
-    }
-    slots[slot] = { plugin: info.name, version: info.version, dir: path.resolve(dir), declaration };
+    slots[slot] = { plugin: info.name, version: info.version, dir: path.resolve(dir), declaration: readJson(path.join(dir, 'orchestra.json')) };
   }
   const resolved = { orchestra: { dir: path.resolve(orchestraDir) }, slots };
   fs.writeFileSync(path.join(project, FILE), JSON.stringify(resolved, null, 2) + '\n');
+  const failures = checkProject(project);
+  if (failures.length) throw new Error(failures.join('\n'));
   return resolved;
 }
 

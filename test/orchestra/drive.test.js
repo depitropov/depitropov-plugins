@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { makeRepo, writeJson, git } = require('../helpers');
+const { makeRepo, writeJson, git, writePlugin } = require('../helpers');
 const { resolve } = require('../../plugins/orchestra/lib/resolved');
 const { drive } = require('../../plugins/orchestra/bin/drive');
 
@@ -13,8 +13,7 @@ const PLUGINS = path.join(__dirname, '../../plugins');
 function project() {
   const dir = makeRepo();
   const st = fs.mkdtempSync(path.join(os.tmpdir(), 'st-'));
-  writeJson(path.join(st, 'plugin.json'), { name: 'st', version: '0.0.1' });
-  writeJson(path.join(st, 'orchestra.json'), { slot: 'stack-skills', build: { run: 'node -e "process.exit(0)"', guide: 'fix-build' }, gates: [] });
+  writePlugin(st, 'st', { slot: 'stack-skills', build: { run: 'node -e "process.exit(0)"', guide: 'fix-build' }, gates: [] });
   writeJson(path.join(dir, '.orchestra/config.json'), { workflow: { plugin: 'orc-standard-workflow' }, 'stack-skills': { plugin: 'st' } });
   git(dir, 'add', '-A');
   git(dir, 'commit', '-m', 'config');
