@@ -598,5 +598,121 @@ phase (S2). Inventory it, by the steps above, before the Curator is planned.
 
 ### sc-agent-plugins
 
-Source: `~/Projects/sc-agent-plugins`. Not inventoried yet. Its packaging rules became pillar 4
-(S33, DESIGN §11). Inventory it before plan 5 (Codex).
+Source: `~/Projects/sc-agent-plugins`, read on 2026-10-14 at commit `de112a8`. Its packaging rules
+became pillar 4 (S33, DESIGN §11). Plan 5 (Codex) is not written yet; rows that say "plan 5" are its
+input.
+
+Scope: the files that carry the portability mechanism are read in full and inventoried part by part.
+The six plugins hold ship.cars product and frontend content; only their harness passages have rows.
+The rest is `n/a` as a group (last table).
+
+#### README.md
+
+| Part | Where now | Status | Applicable? |
+|---|---|---|---|
+| Skills are the unit of delivery; a harness-specific part is generated or absent | pillar 4 (S33, DESIGN §11) | ported | yes |
+| Install commands for Claude Code and for Codex (`codex plugin marketplace add`) | — (this repo has no README) | planned (plan 5) | yes |
+| Codex dispatches subagents only with `multi_agent = true` in `~/.codex/config.toml` | — | planned (plan 5): the install text must say it; orchestra stops without subagents (S65) | yes |
+| Each orchestrator's README says what it does without subagents: inline, or stop | run skill stops (S65); no README says it | partial (no README) | yes |
+| Rule 1: frontmatter has only `name` and `description` | `check.js` `checkSkills` (S33, S70) | ported | yes |
+| Rule 2: a specialist is a skill, not an agent; context isolation comes from the dispatch | S1, S57; the run skill dispatches a subagent that invokes a skill | ported | yes |
+| Rule 2: registration files (`agents/*.md`, `.codex/agents/*.toml`) are generated from the skill | — | n/a: orchestra ships no agents | no |
+| Rule 3: bodies name actions, not tools | DESIGN §11; `check.js` `HARNESS_WORDS` | partial: the check misses `Agent tool`, `run_in_background`, `Claude Code`, `CLAUDE_PLUGIN_ROOT` | yes |
+| Rule 4: a portable `plugin.json` and a `.claude-plugin/plugin.json`, same name and version | `check.js` `checkPlugin` | ported | yes |
+| Rule 4: two catalogs, `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json` | only `.claude-plugin/marketplace.json` exists, though DESIGN §11 names both | planned (plan 5) | yes |
+| Rule 4: the manifests are generated | DESIGN §11 says a script generates them; none exists, `check.js` checks that they agree | partial (plan 5 decides: generate, or keep the check) | yes |
+| Cost: tool allowlists cannot be enforced; a role states its limits under "Permitted actions" | run skill "Permitted actions"; the dispatch says what the subagent must be able to do | ported | yes |
+| Cost: model pinning is not portable; say the tier | — | dropped (Scope: one model) | no |
+| Cost: context isolation is the harness's call; never degrade silently | S65: the run stops | ported | yes |
+| Cost: no `@`-mention; a specialist is reached by its description | the user calls `orchestra:run`; other skills are dispatched by name | n/a | no |
+
+#### .agents/skills/multi-harness-support/SKILL.md
+
+Claude Code reads it through the link `.claude/skills/multi-harness-support`.
+
+| Part | Where now | Status | Applicable? |
+|---|---|---|---|
+| The four rules (as in README) | rows above | as above | yes |
+| Rule 1: a key beyond the two does nothing elsewhere; write the behavior into the body | `check.js` frontmatter rule | ported | yes |
+| Rule 2: Claude Code's agent registry comes from a plugin; Codex's only from config layers (`<repo>/.codex/agents/`, `~/.codex/agents/`); Agent Plugins 1.0 has no agents | S57 (one general-purpose subagent) | ported (nothing depends on a registry) | yes |
+| Rule 2: an agent is a skill plus a tool allowlist and a model pin; only those two are lost | rows above | ported | yes |
+| Rule 2: a prompt only one orchestrator uses may be a plain file under `skills/<orchestrator>/roles/` | — | n/a: every stage is a skill (S1) | no |
+| Rule 3: the word list, including `Agent tool`, `run_in_background`, "Claude Code" | `HARNESS_WORDS` | partial (as in README) | yes |
+| Rule 4: four versions per plugin move together (two manifests, two catalogs) | two manifests checked; the catalog carries no version | ported for two; the second catalog is plan 5 | yes |
+| Add a skill: the `name` matches the folder | `check.js` | ported | yes |
+| Add a skill: write the description for triggering; on a harness with no skill tool it is the only thing that loads the skill | run and init descriptions; `writing-plugins` | ported | yes |
+| Add a skill: long material goes in `references/` next to `SKILL.md` | — | n/a: no skill needs it yet | no |
+| Add a plugin: `name` matches the folder in both manifests | `packaging.test.js`, `check.js` | ported | yes |
+| Add a plugin: `.agents` catalog `source.path` starts with `./`; `policy.installation` and `policy.authentication` values (`ON_INSTALL`/`ON_USE`, not `ON_FIRST_USE`) | — | planned (plan 5, with the second catalog) | yes |
+| Add a plugin: a README with what, how and structure | — | planned (plan 5) | yes |
+| Add a plugin: MCP config as both `mcp.json` and `.mcp.json` | — | n/a: no MCP servers | no |
+| Port a Claude-Code-only plugin: agents → skills, repoint the orchestrator, neutral words, decide what does not come | PORTING steps; S1, S4 | ported | yes |
+| Before done: the four shell checks (frontmatter, words, manifests parse, role files exist) | `orchestra check` (S70) runs the same rules in code | ported | yes |
+| Before done: run it on a second harness; a port is done when a skill triggers and completes there | S34 (phase 1 needs a Codex run) | planned (plan 5) | yes |
+
+#### .agents/skills/multi-harness-support/references/adding-a-harness.md
+
+| Part | Where now | Status | Applicable? |
+|---|---|---|---|
+| No bootstrap: skills trigger by description; no session-start injection needed | orchestra has no bootstrap | ported | yes |
+| Capabilities: skill discovery, file read/write, shell are required; subagents, MCP, todos degrade | S65: for orchestra subagents are required, not degradable | ported (stricter) | yes |
+| Learn the mechanism: harness source first (`codex-rs/core-plugins/src/loader.rs`, `codex-rs/ext/skills/src/host_roots.rs`), then a real plugin, then docs, then ask the model for its tool names | — | planned (plan 5 research note) | yes |
+| Prove a file is loaded with a unique marker in a fresh session | — | planned (plan 5) | yes |
+| A fork does not inherit its parent's behavior | — | planned (plan 5) | yes |
+| Never edit the user's config; `.codex/agents/*.toml` belongs in the project repo | orchestra writes only `.orchestra/` and `.gitignore` in the project (init) | ported | yes |
+| The work: manifest, catalog, registrations only when useful, install docs, versions in lockstep | rows above | planned (plan 5) | yes |
+| Done: install by the harness's own command; a skill triggers from a plain request in a clean session; an orchestrator completes or stops by its declared path; checks pass; README covers it | S34 | planned (plan 5) | yes |
+| Gotchas: docs lie; an unknown component is silently ignored; an absent `hooks` key differs from `{}`; catalog paths are root-relative, `../` is rejected; do not port a command or workflow script; do not edit a body for one harness | — | planned (plan 5 research note) | yes |
+
+#### .claude-plugin/marketplace.json, .agents/plugins/marketplace.json
+
+| Part | Where now | Status | Applicable? |
+|---|---|---|---|
+| Claude Code catalog: `name`, `owner`, `plugins[].source` `./plugins/<name>` | `.claude-plugin/marketplace.json` | ported | yes |
+| Agent Plugins catalog: `interface.displayName`; per plugin `source: {source: local, path}`, `policy`, `category` | — | planned (plan 5) | yes |
+
+#### plugins/fe-coding-agent/plugin.json, .claude-plugin/plugin.json, mcp.json, .mcp.json
+
+| Part | Where now | Status | Applicable? |
+|---|---|---|---|
+| Portable manifest with `$schema`, `author`, `repository`, `license`, `keywords` | orchestra's `plugin.json` has `name`, `version`, `description` | partial (plan 5 checks what Codex needs) | yes |
+| `extensions.com.openai.interface` (`displayName`, `shortDescription`, `category`) | — | planned (plan 5) | yes |
+| MCP files | — | n/a: no MCP servers | no |
+
+#### Harness passages in the six plugins
+
+| Part | Where now | Status | Applicable? |
+|---|---|---|---|
+| validate-idea: if a subagent cannot invoke skills, give it the text of the skill's `SKILL.md` | `withPrompt` (`lib/protocol.js`) only says "Invoke the skill" | planned (plan 5: check that a Codex subagent can invoke a plugin skill) | yes |
+| validate-idea: without subagents, run each specialist inline, in order, and say so once | S65 chose stop for orchestra | dropped (S65) | no |
+| architect-feature `references/headless.md`: without subagents, the review is a separate pass by the main session; the result records which | S65 | dropped (S65) | no |
+| review-requirements: some harnesses show `plugin:name`, others the bare name; match on the description | init and run look for `<plugin>:manifest`; every slot plugin has a skill named `manifest` | planned (plan 5: a bare name makes every manifest skill look the same) | yes |
+| product-context: resolve paths from the skill's own folder; never guess from a plugin name or marketplace layout | manifest skill and run skill (`<orchestra>` = two folders up) | ported | yes |
+| eval-anchor: a skill that reports its plugin root as one line | the manifest skill (`PLUGIN_DIR=`) | ported (same mechanism, S50) | yes |
+| fe-coding-agent: subagents cannot start subagents; the main session dispatches all | R4, S57 | ported | yes |
+| fe-coding-agent: headless prompt sent through `claude -p` or `codex exec`; final status line | — | n/a: orchestra runs in the user's session (S12) | no |
+
+#### Not applicable as a group
+
+| Files | Why |
+|---|---|
+| The six plugins' product, frontend and Jira content (`product-research`, `product-worker`, `feature-architect`, `fe-coding-agent` stages, `requirements-review`, `sc-shared-context`) | ship.cars domain content. This source's role is pillar 4 (Sources table). |
+| `plugins/*/evals/`, `plugins/*/eval-support/` | `claude plugin eval` suites for those plugins |
+| `scripts/` (knowledge sync, allow list, seed) | they build `sc-shared-context` |
+| `docs/superpowers/` | the plan, spec and verification of the knowledge skills |
+
+#### Top gaps (sc-agent-plugins), input for plan 5
+
+1. **Second catalog.** `.agents/plugins/marketplace.json` is missing, though DESIGN §11 names it.
+2. **Skill names on Codex.** init and run find `<plugin>:manifest`. If Codex shows bare names, every
+   slot plugin's `manifest` skill has the same name.
+3. **Skills in a subagent.** Every dispatch says "Invoke the skill". Check that a Codex subagent can
+   invoke a plugin skill; if not, the fallback is to hand it the `SKILL.md` text.
+4. **`multi_agent`.** Codex needs it to dispatch. orchestra stops without subagents (S65), so the
+   install text must say it. orchestra never edits `~/.codex/config.toml`.
+5. **Harness words.** `HARNESS_WORDS` misses `Agent tool`, `run_in_background`, `Claude Code`,
+   `CLAUDE_PLUGIN_ROOT`.
+6. **Generated manifests.** DESIGN §11 says a script generates them. None exists; `check.js` checks
+   that they agree. Decide which one stays.
+7. **README.** No install text for either harness.
+8. **Proof.** A Codex run of the sample repo (S34), with the loader read from the Codex source.
