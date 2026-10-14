@@ -208,3 +208,16 @@ wording change needs no entry.
   - From the final review of the branch: every slot needs a section in the config (a missing slot made the run fail after it had created the task branch), and `build.run` takes only `{plugin}`, because `buildStep` and `next.js` expand nothing else there.
 - **Cost and risk:** the sync test checks one direction only: a key that the runtime reads but `check.js` does not know is caught only by the `CLAUDE.md` rule. The dry run needs `git` on the path and takes about a second. init depends on the harness showing its skill list; the question to the user is the fallback.
 - **Where it lives:** `orchestra/lib/check.js`, `orchestra/bin/check.js`, `orchestra/lib/resolved.js`, `orchestra/lib/gates.js`, `orchestra/lib/git.js`, the skills `orchestra:init` and `orchestra:writing-plugins`, `test/packaging.test.js`, `CLAUDE.md`.
+
+## S73: Close phase 1 without the Codex run
+
+- **Date:** 2026-10-14
+- **Status:** decided
+- **Question:** Phase 1 needs five criteria (S34). Four pass (S72). The Codex run (criterion 3) waits for plan 5, which is paused because no Codex install is available (S71). Does phase 1 stay open until then?
+- **Options:**
+  1. Keep phase 1 open until a Codex run passes. Rejected: no date is known, and the open phase blocks the next phase for a test that no one can run.
+  2. Close phase 1 now and move the Codex run to plan 5 as its own exit test. Chosen.
+- **Evidence:** the run `task/add-a-bulk-discount-to-pricecalculator-t` in the sample repo (S72); R7, which finds that Codex reads the Claude Code plugin layout as it is.
+- **Decision:** Phase 1 is closed on Claude Code. The Codex run is no longer a phase 1 criterion; it is the done test of plan 5. Pillar 4 (portability) stays: no harness-specific file enters a plugin.
+- **Cost and risk:** portability is not proven by a run. A Codex difference (skill names, subagent dispatch, the `manifest` skill's folder) can surface late, after more code depends on it. Watch for it when plan 5 resumes.
+- **Where it lives:** `docs/DESIGN.md` §13, `docs/TENSIONS.md`.

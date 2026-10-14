@@ -229,7 +229,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--line);
 <div class="shell">
 <nav class="rail" aria-label="Guide sections">
   <div class="brand">Orchestra</div>
-  <div class="ver">Field guide · plugins 0.10.0 · decisions to S70</div>
+  <div class="ver">Field guide · plugins 0.10.0 · decisions to S73</div>
   <ol>
     <li><a class="lvl" href="#l1"><span class="n">1</span> What it does</a>
       <ul><li><a href="#delivers">What it delivers</a></li><li><a href="#what">The result</a></li><li><a href="#why">Why use it</a></li><li><a href="#philosophy">Many gates, one workflow</a></li><li><a href="#explore">Explore a run</a></li></ul></li>
@@ -827,7 +827,7 @@ orchestra run                                            # continue a stopped ru
       <tr><td><strong>Integration points</strong></td><td>The other services and repos the task touches. A change that another repo needs is a follow-up for you: the run never changes another repo.</td></tr>
       <tr><td><strong>Evaluate</strong></td><td>Findings a reviewer chose not to fix, because the fix costs more than the problem, or because only a human can judge it. Each has a <code>file:line</code>.</td></tr>
       <tr><td><strong>Results</strong></td><td>Every step in order, with its counts: how many findings were patched, sent to you, or dropped.</td></tr>
-      <tr><td><strong>Skipped checks</strong></td><td>Checks that did not run, and why (for example "no changed file matches").</td></tr>
+      <tr><td><strong>Skipped checks</strong></td><td>Checks that did not run, and why (for example "no changed file matches"), and checks that ran but found nothing in scope.</td></tr>
       <tr><td><strong>Decisions</strong></td><td>A copy of your answers, so the report is the full record.</td></tr>
       <tr><td><strong>Commits</strong></td><td>The commits of the run and a list of the changed files, without the run notes.</td></tr>
     </tbody>
@@ -1260,6 +1260,7 @@ orchestra run                                            # continue a stopped ru
       <tr><td>S68</td><td>The coder stays lean and the stack rules live in six Java gates. There is no structure gate.</td><td>R6 and the grilling.</td></tr>
       <tr><td>S69</td><td>Every source part that the summaries lost is decided: a step that writes no result fails after two tries, another repo's need stops the run unless the task names that repo, and the report lists deviations and changed files.</td><td>The port inventory.</td></tr>
       <tr><td>S70</td><td>Every contract rule is plain code in <code>orchestra check</code>, which runs at the start of each run. A workflow is tested by a dry run of its real <code>next.js</code>. <code>orchestra init</code> writes only the plugin names.</td><td>The grilling of plan 2: one rule set, no schema files to keep in step.</td></tr>
+      <tr><td>S72, S73</td><td>Phase 1 is closed on Claude Code. The Codex run moves to plan 5, which stays paused.</td><td>The exit test passed; no Codex install is available.</td></tr>
     </tbody>
   </table></div>
   <p>Each real run on a sample project fed back into the design. The first runs led to clearer errors, a skip for repeated builds, the Evaluate list in the report, the assumptions list, the business-fact stop, and the rebuilt logic review.</p>
@@ -1420,10 +1421,10 @@ orchestra run                                            # continue a stopped ru
 
   <h3 id="status">Built and not built</h3>
   <figure class="dg-fig"><div class="dg-scroll">
-  <svg class="dg" viewBox="0 0 720 150" role="img" aria-label="Roadmap: plans 1, 3, 3.1, 3.3, 4 and 2 are done. Next is plan 5 (Codex run). Then phase 2 (CRAP and mutation) and later the Curator, PSK and adapters.">
+  <svg class="dg" viewBox="0 0 720 150" role="img" aria-label="Roadmap: plans 1, 3, 3.1, 3.3, 4 and 2 are done, and phase 1 is closed. Plan 5 (Codex run) is paused. Then phase 2 (CRAP and mutation) and later the Curator, PSK and adapters.">
     <line x1="30" y1="70" x2="700" y2="70" class="ln mute"/>
     <circle cx="50" cy="70" r="8" class="dot-done"/><circle cx="128" cy="70" r="8" class="dot-done"/><circle cx="206" cy="70" r="8" class="dot-done"/><circle cx="284" cy="70" r="8" class="dot-done"/><circle cx="362" cy="70" r="8" class="dot-done"/>
-    <circle cx="440" cy="70" r="8" class="dot-done"/><circle cx="518" cy="70" r="8" class="dot-next"/>
+    <circle cx="440" cy="70" r="8" class="dot-done"/><circle cx="518" cy="70" r="8" class="dot-later"/>
     <circle cx="596" cy="70" r="8" class="dot-later"/><circle cx="674" cy="70" r="8" class="dot-later"/>
     <text x="50" y="40" text-anchor="middle" class="sm b">plan 1</text><text x="50" y="54" text-anchor="middle" class="sm m">walking skeleton</text>
     <text x="128" y="96" text-anchor="middle" class="sm b">plan 3</text><text x="128" y="110" text-anchor="middle" class="sm m">full workflow</text>
@@ -1431,12 +1432,12 @@ orchestra run                                            # continue a stopped ru
     <text x="284" y="96" text-anchor="middle" class="sm b">plan 3.3</text><text x="284" y="110" text-anchor="middle" class="sm m">review depth</text>
     <text x="362" y="40" text-anchor="middle" class="sm b">plan 4</text><text x="362" y="54" text-anchor="middle" class="sm m">Java gates</text>
     <text x="440" y="96" text-anchor="middle" class="sm b">plan 2</text><text x="440" y="110" text-anchor="middle" class="sm m">check, init</text>
-    <text x="518" y="40" text-anchor="middle" class="sm b">plan 5</text><text x="518" y="54" text-anchor="middle" class="sm m">Codex run</text>
+    <text x="518" y="40" text-anchor="middle" class="sm b">plan 5</text><text x="518" y="54" text-anchor="middle" class="sm m">Codex, paused</text>
     <text x="596" y="96" text-anchor="middle" class="sm b">phase 2</text><text x="596" y="110" text-anchor="middle" class="sm m">CRAP, mutation</text>
     <text x="710" y="40" text-anchor="end" class="sm b">later</text><text x="710" y="54" text-anchor="end" class="sm m">Curator, PSK, adapters</text>
-    <polygon points="479,80 473,90 485,90" class="stopb"/><text x="479" y="134" text-anchor="middle" class="sm tr">now</text>
+    <polygon points="479,80 473,90 485,90" class="stopb"/><text x="479" y="134" text-anchor="middle" class="sm tr">phase 1 closed</text>
   </svg></div>
-  <figcaption>Filled dots are done (October 1 to 14, 2026). Blue rings are the next plans in their agreed order. Dashed rings are later phases.</figcaption>
+  <figcaption>Filled dots are done (October 1 to 14, 2026). Phase 1 closed on October 14, after the exit-test run on Claude Code. Dashed rings are paused or later work; the next plan is not chosen yet.</figcaption>
   </figure>
   <div class="tablewrap"><table>
     <thead><tr><th>Part</th><th>State</th></tr></thead>
@@ -1446,7 +1447,8 @@ orchestra run                                            # continue a stopped ru
       <tr><td>Java reviewers (ops, testing, comments, logging, layout, Spotless)</td><td><span class="pill built">built</span></td></tr>
       <tr><td>Gates selected by a rule in words</td><td><span class="pill later">later</span></td></tr>
       <tr><td><code>orchestra check</code>, the <code>orchestra init</code> setup, the <code>writing-plugins</code> reference</td><td><span class="pill built">built</span></td></tr>
-      <tr><td>A tested run on Codex</td><td><span class="pill designed">plan 5</span></td></tr>
+      <tr><td>The phase 1 exit test: <code>orchestra init</code>, then a run that stops on a business fact and resumes to done, on Claude Code</td><td><span class="pill built">passed</span></td></tr>
+      <tr><td>A tested run on Codex</td><td><span class="pill later">plan 5, paused</span></td></tr>
       <tr><td>Complexity (CRAP) and mutation testing gates</td><td><span class="pill later">phase 2</span></td></tr>
       <tr><td>Project rules, the Curator, adapters for other AI frameworks, runs in a separate worktree</td><td><span class="pill later">later</span></td></tr>
     </tbody>
@@ -1476,7 +1478,7 @@ orchestra run                                            # continue a stopped ru
 </section>
 
 <footer>
-  This guide matches plugin version 0.10.0 and decisions up to S70. The sources of truth are <code>docs/DESIGN.md</code>, <code>docs/TENSIONS.md</code>, <code>docs/DECISIONS.md</code>, <code>docs/CONTEXT.md</code> and the code in <code>plugins/</code>.
+  This guide matches plugin version 0.10.0 and decisions up to S73. The sources of truth are <code>docs/DESIGN.md</code>, <code>docs/TENSIONS.md</code>, <code>docs/DECISIONS.md</code>, <code>docs/CONTEXT.md</code> and the code in <code>plugins/</code>.
 </footer>
 </main>
 </div>

@@ -454,7 +454,8 @@ Phase 1 is done when all five pass (S34):
 4. One run stops on `decide`, gets an answer in `decisions.md`, and resumes to `done`.
 5. `orchestra check` passes on `orc-standard-workflow` and `orc-java-stack`.
 
-Criteria 1, 2, 4 and 5 pass with version 0.10.0 (S72). Only criterion 3 is open.
+Criteria 1, 2, 4 and 5 pass with version 0.10.0 (S72). Phase 1 is closed (S73); criterion 3 is
+now the done test of plan 5.
 
 ## 14. Out of scope
 
