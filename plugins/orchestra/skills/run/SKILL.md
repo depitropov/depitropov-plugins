@@ -56,8 +56,8 @@ the run is open. Tell the user both once, when the run starts. Every path in the
   edit files and run shell commands. Give it the `prompt` text exactly. Wait
   until it finishes. Then run `node <orchestra>/bin/drive.js` again, with no task.
 - `done`: tell the user the run is done, on which `branch`, and that they read the report with
-  `git show <branch>:<report>`. If the action has `kept`, say the worktree `<worktree>` was kept and show `kept`.
-- `failed`: show the `reason`, the `branch`, and `<worktree>/<report>`, if there is one.
+  `git show <branch>:<report>`. If the action has `kept`, say the worktree `<worktree>` was kept and show `kept`. When the user has dealt with the files, they remove it with `git worktree remove <worktree>`.
+- `failed`: show the `reason`, the `branch`, and `<worktree>/<report>` when the action has them.
 - `decide`: show each line of `questions` and `<worktree>/<report>`. The user answers in
   `decisions.md` in the notes folder inside `<worktree>`: a **new** section `## <gate>` at the end of the file, with
   one line per question: `- <question> → <answer>`. A `business-facts` stop counts these lines and

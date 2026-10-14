@@ -328,3 +328,33 @@ test('a done run keeps a worktree that git refuses to remove, and says why', () 
   assert.equal(done.worktree, '.orchestra/worktrees/task/add-a-discount');
   assert.match(done.kept, /untracked|modified/);
 });
+
+test('a start with a local config that differs from origin fails and leaves no worktree', () => {
+  const dir = project();
+  const file = path.join(dir, '.orchestra/config.json');
+  writeJson(file, { ...JSON.parse(fs.readFileSync(file, 'utf8')), gates: {} });
+  const a = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  assert.equal(a.action, 'failed');
+  assert.match(a.reason, /differs from the one on origin\/main\. Commit and push it/);
+  assert.equal(git(dir, 'worktree', 'list').split('\n').length, 1);
+});
+
+test('a resume with a local config that differs from the run\'s fails and keeps the worktree', () => {
+  const dir = project();
+  const first = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  const file = path.join(dir, '.orchestra/config.json');
+  writeJson(file, { ...JSON.parse(fs.readFileSync(file, 'utf8')), gates: {} });
+  const a = drive(dir);
+  assert.equal(a.action, 'failed');
+  assert.match(a.reason, /differs from the one on the run's base commit/);
+  assert.ok(fs.existsSync(wt(dir, first)));
+});
+
+test('a run started in the checkout by orchestra 0.10 gets its own failure on resume', () => {
+  const dir = project();
+  git(dir, 'checkout', '-q', '-b', 'task/old');
+  writeJson(path.join(dir, 'tmp/runs/task/old/run.json'), {});
+  const a = drive(dir);
+  assert.equal(a.action, 'failed');
+  assert.match(a.reason, /The run on task\/old started in your checkout before orchestra 0\.11\.0 and cannot resume in a worktree\. Finish it with orchestra 0\.10, or start it again\./);
+});

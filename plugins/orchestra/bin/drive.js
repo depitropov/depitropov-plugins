@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 const fs = require('node:fs');
+const { isDeepStrictEqual } = require('node:util');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { validateAction, withPrompt } = require('../lib/protocol');
@@ -35,12 +36,26 @@ function drive(project, extraArgs = [], { resume = false, branch } = {}) {
   load(project);
   if (extraArgs.length) return start(project, path.resolve(project, extraArgs[1]));
   const runs = worktree.find(project).filter(r => !branch || r.branch === branch);
-  if (!runs.length) return { action: 'failed', reason: branch ? `No run on branch "${branch}".` : 'No run to resume. Start a run with a task.' };
+  if (!runs.length) return { action: 'failed', reason: branch ? `No run on branch "${branch}".` : noRun(project) };
   if (runs.length > 1) return { action: 'failed', reason: `Several runs are open: ${runs.map(r => r.branch).join(', ')}. Name one with --branch <name>.` };
   const root = runs[0].root;
+  if (configDiffers(project, root)) return { action: 'failed', reason: configReason("the run's base commit") };
   copyResolved(project, root);
   return answer(project, root, step(root, [], resume));
 }
+
+function noRun(project) {
+  const current = git(project, 'branch', '--show-current');
+  if (current.startsWith('task/') && fs.existsSync(path.join(project, 'tmp', 'runs', current, 'run.json'))) {
+    return `The run on ${current} started in your checkout before orchestra 0.11.0 and cannot resume in a worktree. Finish it with orchestra 0.10, or start it again.`;
+  }
+  return 'No run to resume. Start a run with a task.';
+}
+
+// orchestra check validated the checkout's config; the run reads the worktree's, which is the one on origin.
+const readConfig = dir => JSON.parse(fs.readFileSync(path.join(dir, '.orchestra', 'config.json'), 'utf8'));
+const configDiffers = (project, root) => !isDeepStrictEqual(readConfig(project), readConfig(root));
+const configReason = base => `.orchestra/config.json in your checkout differs from the one on ${base}. Commit and push it, then run again.`;
 
 function start(project, taskFile) {
   const made = worktree.create(project);
@@ -49,6 +64,10 @@ function start(project, taskFile) {
   if (!fs.existsSync(path.join(root, '.orchestra', 'config.json'))) {
     worktree.remove(project, root);
     return { action: 'failed', reason: `.orchestra/config.json is not on ${made.base}. Commit and push it, then run again.` };
+  }
+  if (configDiffers(project, root)) {
+    worktree.remove(project, root);
+    return { action: 'failed', reason: configReason(made.base) };
   }
   copyResolved(project, root);
   const first = step(root, ['--task-file', taskFile], false);

@@ -66,7 +66,7 @@ When it passes, tell the user:
 - The config holds only the plugins. Every other key takes its default from the plugin's
   `orchestra.json`. A project can set those keys, turn gates off with `disable`, and change a gate's
   `max_rounds` under `gates`.
-- Commit `.orchestra/config.json` and `.gitignore`, so everyone on the project uses the same plugins.
+- Commit and push `.orchestra/config.json` and `.gitignore`, so everyone on the project uses the same plugins. A run reads them from `origin/<default>`. init never pushes; the user does.
 - Start a run with orchestra run.
 
 ## Permitted actions

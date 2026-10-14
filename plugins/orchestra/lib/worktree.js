@@ -23,8 +23,20 @@ function create(project) {
   } catch (e) {
     return { failed: `git fetch origin failed: ${firstLine(e)}. Check the remote and the network, then run again.` };
   }
+  // A start that died between create and rename leaves a detached .new- worktree. Never --force.
+  const stale = path.join(fs.realpathSync(project), DIR, '.new-');
+  for (const block of git(project, 'worktree', 'list', '--porcelain').split('\n\n')) {
+    const at = (block.match(/^worktree (.+)$/m) || [])[1];
+    if (at && at.startsWith(stale) && /^detached$/m.test(block)) {
+      try { git(project, 'worktree', 'remove', at); } catch { /* it holds work; leave it */ }
+    }
+  }
   const root = path.join(project, DIR, `.new-${process.pid}`);
-  git(project, 'worktree', 'add', '--detach', root, `origin/${branch}`);
+  try {
+    git(project, 'worktree', 'add', '--detach', root, `origin/${branch}`);
+  } catch (e) {
+    return { failed: `git worktree add failed: ${firstLine(e)}. Check the folder ${DIR} and run again.` };
+  }
   return { root: fs.realpathSync(root), base: `origin/${branch}` };
 }
 
@@ -32,6 +44,8 @@ function create(project) {
 // goes on under the temporary name: find() reads git's list, not folder names.
 function rename(project, root, branch) {
   const to = path.join(fs.realpathSync(project), DIR, branch);
+  // git would move the worktree into an existing folder, under its old name.
+  if (fs.existsSync(to)) return root;
   try {
     fs.mkdirSync(path.dirname(to), { recursive: true });
     git(project, 'worktree', 'move', root, to);

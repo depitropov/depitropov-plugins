@@ -25,5 +25,5 @@ The glossary of this project. Use these names and no others.
 | **Run folder** | `tmp/runs/<branch>/`. The orchestration state of one run: results, checkpoints, logs, `run.json`, `stages.json`. Git-ignored. Inside the run root. |
 | **Notes folder** | `docs/runs/<branch>/`. What a human reads about one run: `task.md`, `brief.md`, `plan.md`, `decisions.md`, review notes, `report.md`. Committed. Inside the run root. |
 | **Worktree** | The git worktree of one run, `.orchestra/worktrees/<branch>`. Git-ignored. Removed when the run is done; the branch stays. |
-| **Project root** | The user's checkout. orchestra reads `.orchestra/` there and never changes anything else. |
+| **Project root** | The user's checkout. orchestra reads `.orchestra/` there and never switches, commits in or edits files of the checkout. |
 | **Run root** | The run's worktree. Every stage, gate, build and commit of the run happens there. |

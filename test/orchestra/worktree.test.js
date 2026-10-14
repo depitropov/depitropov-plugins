@@ -52,3 +52,26 @@ test('remove deletes a clean worktree and keeps the branch; it refuses untracked
   assert.match(wt.remove(dir, kept), /untracked|modified/);
   assert.ok(fs.existsSync(path.join(kept, 'work.txt')));
 });
+
+test('create cleans a leftover detached .new- worktree of an earlier create', () => {
+  const dir = makeRepo();
+  assert.ok(wt.create(dir).root);
+  const again = wt.create(dir);
+  assert.ok(again.root, again.failed);
+  assert.equal(git(dir, 'worktree', 'list', '--porcelain').split('\n').filter(l => l.includes('/.new-')).length, 1);
+});
+
+test('create fails, not throws, when origin is unreachable', () => {
+  const dir = makeRepo();
+  git(dir, 'remote', 'set-url', 'origin', '/nonexistent');
+  assert.match(wt.create(dir).failed, /git fetch origin failed/);
+});
+
+test('rename returns the old root when the target folder already exists', () => {
+  const dir = makeRepo();
+  const { root } = wt.create(dir);
+  git(root, 'checkout', '-b', 'task/x');
+  fs.mkdirSync(path.join(dir, wt.DIR, 'task/x'), { recursive: true });
+  fs.writeFileSync(path.join(dir, wt.DIR, 'task/x', 'f'), 'x');
+  assert.equal(wt.rename(dir, root, 'task/x'), root);
+});
