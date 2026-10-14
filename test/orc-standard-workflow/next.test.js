@@ -49,13 +49,16 @@ test('slugify makes a safe branch name from any task text', () => {
   assert.ok(long.length <= 40 && !long.endsWith('-'));
 });
 
-test('a dirty tree stops the run before any branch is made', () => {
+test('prepare starts the branch from a detached HEAD and never switches or pulls', () => {
   const dir = project();
-  fs.writeFileSync(path.join(dir, 'dirty.txt'), 'x');
+  const base = git(dir, 'rev-parse', 'HEAD');
+  git(dir, 'checkout', '--detach');
+  fs.writeFileSync(path.join(dir, 'README.md'), 'local edit\n');
   const a = next(dir, '.orchestra/task.txt');
-  assert.equal(a.action, 'failed');
-  assert.match(a.reason, /dirty/);
-  assert.equal(git(dir, 'branch', '--show-current'), 'main');
+  assert.equal(a.skill, 'orc-standard-workflow:spec');
+  assert.equal(git(dir, 'branch', '--show-current'), 'task/add-a-discount');
+  assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'tmp/runs/task/add-a-discount/run.json'), 'utf8')).base, base);
+  assert.equal(fs.readFileSync(path.join(dir, 'README.md'), 'utf8'), 'local edit\n');
 });
 
 test('prepare makes the task branch and the run folder, then dispatches spec', () => {
@@ -148,20 +151,6 @@ test('a malformed stage result names the file', () => {
   const r = next(dir);
   assert.equal(r.action, 'failed');
   assert.match(r.reason, /Invalid result JSON in .*spec\.result\.json/);
-});
-
-test('a repo without origin/HEAD fails with the remedy', () => {
-  const dir = project();
-  git(dir, 'remote', 'set-head', 'origin', '-d');
-  const a = next(dir, '.orchestra/task.txt');
-  assert.equal(a.action, 'failed');
-  assert.match(a.reason, /git remote set-head origin -a/);
-});
-
-test('the dirty-tree failure names the dirty files', () => {
-  const dir = project();
-  fs.writeFileSync(path.join(dir, 'dirty.txt'), 'x');
-  assert.match(next(dir, '.orchestra/task.txt').reason, /dirty\.txt/);
 });
 
 function toPlanCheck(dir) {
@@ -287,12 +276,6 @@ test('a plan without tasks T1..Tn in order fails, then plan-check runs again', (
     assert.match(a.reason, /plan\.md has no tasks numbered T1, T2/);
     assert.equal(next(dir).skill, 'orc-standard-workflow:plan-check');
   }
-});
-
-test('the dirty-tree failure names a changed tracked file in full', () => {
-  const dir = project();
-  fs.writeFileSync(path.join(dir, 'README.md'), 'changed\n');
-  assert.match(next(dir, '.orchestra/task.txt').reason, /dirty: README\.md/);
 });
 
 test('a new run on a reused branch name ignores the old run folder', () => {

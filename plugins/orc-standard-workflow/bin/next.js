@@ -59,21 +59,9 @@ function branchExists(cwd, branch) {
   }
 }
 
+// orchestra starts every run in a fresh worktree on a detached HEAD at the base (S74). prepare only
+// names the branch and writes the run files; it never checks out, pulls or switches.
 function prepare(project, taskText) {
-  // Not through git(): its trim would cut the first character of the first line (` M file`).
-  const dirty = execFileSync('git', ['status', '--porcelain', '--untracked-files=normal'], { cwd: project, encoding: 'utf8' }).split('\n').filter(Boolean);
-  if (dirty.length) {
-    const files = dirty.slice(0, 5).map(line => line.slice(3)).join(', ') + (dirty.length > 5 ? ', …' : '');
-    return { action: 'failed', reason: `The working tree is dirty: ${files}. Commit, stash or ignore these, then run again.` };
-  }
-  let defaultBranch;
-  try {
-    defaultBranch = git(project, 'symbolic-ref', '--short', 'refs/remotes/origin/HEAD').replace(/^origin\//, '');
-  } catch {
-    return { action: 'failed', reason: 'The default branch is unknown: origin/HEAD is not set. Run `git remote set-head origin -a`, then run again.' };
-  }
-  git(project, 'checkout', defaultBranch);
-  git(project, 'pull', '--rebase');
   const base = git(project, 'rev-parse', 'HEAD');
   const slug = slugify(taskText);
   let branch = `task/${slug}`;
@@ -89,7 +77,6 @@ function prepare(project, taskText) {
   fs.writeFileSync(path.join(project, docs, 'task.md'), taskText.endsWith('\n') ? taskText : `${taskText}\n`);
   const run = { base, branch, spec: `${docs}/brief.md`, docs };
   fs.writeFileSync(path.join(project, runDir, 'run.json'), JSON.stringify(run, null, 2) + '\n');
-  return null;
 }
 
 function settings(project) {
@@ -182,8 +169,7 @@ function planTasks(file) {
 function next(project, taskFile) {
   const s = settings(project);
   if (taskFile !== undefined) {
-    const failed = prepare(project, fs.readFileSync(path.resolve(project, taskFile), 'utf8'));
-    if (failed) return failed;
+    prepare(project, fs.readFileSync(path.resolve(project, taskFile), 'utf8'));
   }
   const branch = git(project, 'branch', '--show-current');
   const runDir = `tmp/runs/${branch}`;

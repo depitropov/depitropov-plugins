@@ -70,6 +70,10 @@ one action as JSON on its last line:
 - `done`, `decide` (with `gate`, the step that asks, and `questions`; optional `result`, its result
   file) or `failed` (with `reason`). orchestra writes the report.
 
+Every run starts in its own git worktree, on a detached HEAD at the base. On the first call, create
+the task branch from HEAD and record HEAD as `base`. Never check out another ref, pull or switch
+branches: the worktree is the run's, and the user's checkout is never touched.
+
 The run folder `tmp/runs/<branch>/` holds the state and is git-ignored. The notes folder
 `docs/runs/<branch>/` holds what a human reads. Write `run.json` in the run folder with `base`,
 `branch`, `spec` and `docs`. Detail: `docs/DESIGN.md` §7 in the orchestra repo.

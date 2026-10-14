@@ -274,7 +274,7 @@ function dryRun(dir, label, declaration) {
       const stack = { plugin: 'check-stack', version: '0.0.0', dir: root, declaration: { slot: 'stack-skills', build: { run: 'true' } } };
       fs.mkdirSync(path.join(project, '.orchestra'));
       fs.writeFileSync(path.join(project, CONFIG), JSON.stringify({ workflow: { plugin: label }, 'stack-skills': { plugin: stack.plugin } }) + '\n');
-      for (const args of [['add', CONFIG], ['-c', 'core.hooksPath=/dev/null', 'commit', '-q', '-m', 'config']]) {
+      for (const args of [['add', CONFIG], ['-c', 'core.hooksPath=/dev/null', 'commit', '-q', '-m', 'config'], ['checkout', '-q', '--detach']]) {
         execFileSync('git', args, { cwd: project, env, stdio: 'ignore' });
       }
       const resolved = { orchestra: { dir: path.join(__dirname, '..') }, slots: { workflow: { plugin: label, version: '0.0.0', dir, declaration }, 'stack-skills': stack } };
