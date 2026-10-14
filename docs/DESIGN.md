@@ -18,7 +18,7 @@ All three plugins live in this repo (S30).
 
 | Plugin | Role | Holds |
 |---|---|---|
-| `orchestra` | Orchestrator | `orchestra:init`, `orchestra:run` (resolution and driver), the gate runner, the fixer, the select step, `orchestra check`, the schemas, the authoring skills |
+| `orchestra` | Orchestrator | `orchestra:init`, `orchestra:run` (resolution and driver), the gate runner, the fixer, the select step, `orchestra check`, the authoring skill `writing-plugins` |
 | `orc-standard-workflow` | Workflow | `next.js`, one skill per stage, its own gates, its `manifest` skill |
 | `orc-java-stack` | Stack Skills | `build`, its gates, fix guides, plan and code guides, its `manifest` skill |
 
@@ -36,7 +36,7 @@ default.
 user → orchestra:run "<task or file path>"
          reads .orchestra/config.json
          resolves each slot (section 5.2) → .orchestra/resolved.json
-         runs orchestra check on the config and resolved.json
+         runs orchestra check on the config and resolved.json (inside resolve.js)
          driver loop:
            node <workflow>/next.js                → prints the next action as JSON
              "dispatch"  → start a subagent that loads the named skill
@@ -87,7 +87,6 @@ it and acts on it. The plugin never runs its own gates or orders them.
 ```json
 {
   "slot": "stack-skills",
-  "params": [],
   "config": {
     "entity-pattern": { "type": "string", "default": "@Entity|@Embeddable|@MappedSuperclass" }
   },
@@ -115,20 +114,24 @@ it and acts on it. The plugin never runs its own gates or orders them.
 }
 ```
 
-A workflow's `orchestra.json` has `slot: workflow`, its `params`, its `config` keys and its own
+A workflow's `orchestra.json` has `slot: workflow`, its `config` keys and its own
 `gates` in the same format. It has no `build` and no `guides`.
 
 `{plugin}` is the plugin's folder and `{config.<key>}` is a config value. Both come from
-`resolved.json`. Skill names in the declaration are names inside the same plugin.
+`resolved.json`. Skill names in the declaration are names inside the same plugin. Every `config`
+key has a `type` (`string`, `number` or `boolean`) and a `default` of that type (S70).
 
 ## 5. `orchestra`
 
 ### 5.1 `orchestra:init`
 
-1. Asks which workflow and which Stack Skills plugin to use. It offers the plugins that have a
-   `manifest` skill.
-2. Writes `.orchestra/config.json`.
-3. Resolves the chosen plugins (5.2) and runs `orchestra check`. Shows the result.
+1. Finds the plugins from the `<plugin>:manifest` skills in its skill list. It asks the user when
+   it finds none (S70).
+2. Asks which plugin fills each slot.
+3. Writes `.orchestra/config.json` with only `plugin` per section, and adds the three `.gitignore`
+   lines.
+4. Runs `resolve.js`, which resolves the plugins and runs `orchestra check --project`. Shows the
+   result. It commits nothing.
 
 It is the only interactive skill in phase 1.
 
@@ -144,7 +147,7 @@ It is the only interactive skill in phase 1.
    not in the run folder. Git ignores it, and every run writes it again. `next.js` and the gate
    runner read only this file, never the plugins' install folders. `report.md` records the plugin
    versions.
-3. Runs `orchestra check` on the config against `resolved.json`.
+3. Runs `orchestra check` on the config against `resolved.json`, inside `resolve.js` (S70).
 4. Runs the **driver loop** (section 3). The driver loop and the action protocol belong to orchestra,
    not to each workflow (S52).
 5. Shows the status and the report path.
@@ -159,26 +162,29 @@ nothing (S63).
 
 ### 5.3 `orchestra check`
 
-A Node CLI, standard library only (S11, S28). It is the guarantee for every contract below. It
-exits non-zero on the first failed rule and prints the rule and the fix. It validates each
-declaration against the JSON Schema of its slot, in `orchestra/schemas/`. A project's `.gitignore` has `.orchestra/*`, `!.orchestra/config.json` and `tmp/`.
+A Node command, standard library only (S11, S28, S70). It is the guarantee for every contract
+below. `bin/check.js <plugin-folder>…` runs every rule. `bin/check.js --project <dir>` runs the
+config rules and the declaration rules of each resolved plugin. The rules are plain code in
+`lib/check.js`; there are no schema files. It lists every failure as
+`<where>: <problem>. Fix: <fix>.`, then exits non-zero. A project's `.gitignore` has `.orchestra/*`, `!.orchestra/config.json` and `tmp/`.
 
 | Target | Rules |
 |---|---|
 | Config | Every section's plugin is in `resolved.json`. Every other key is declared by that plugin, with the right type. Every name in `disable` and `gates` exists. |
-| Declaration | Valid against its slot schema. `slot` matches the slot it is used in. Every skill it names exists in the plugin. Every `phase` is one of the three standard phases. |
-| Workflow plugin | Has `next.js` and a `manifest` skill. `next.js --dry-run` prints a valid action. |
-| Stack Skills plugin | Has a `build` declaration and a `manifest` skill. Every tool gate with `fix: fixer` names a `guide`. |
+| Declaration | Only the keys of its slot; the gate keys and values of 6.1; every `{config.<key>}` declared; every config key typed with a default. `slot` matches the slot it is used in. Every skill it names exists in the plugin. Every `phase` is one of the three standard phases. |
+| Workflow plugin | Has `next.js` and a `manifest` skill. The dry run: `next.js` with a task, in a throwaway git repo with a bare remote, prints a valid action that is not `failed`. |
+| Stack Skills plugin | Has a `build` with `run` and `guide`, and a `manifest` skill. Every tool gate with `fix: fixer` names a `guide`. |
 | Every plugin | Pillar 4 greps: `SKILL.md` frontmatter has only `name` and `description`; no harness-specific words in shipped files; every manifest parses as JSON; the versions in both manifests match (S33). |
 
-It has two uses. An author runs it on a plugin folder. `orchestra:run` runs it on the config and
-`resolved.json` at the start of each run.
+It has two uses. An author runs it on a plugin folder. `resolve.js` runs the `--project` rules at
+the start of each run and in init.
 
 ### 5.4 Authoring skills
 
-`orchestra:writing-workflows` and `orchestra:writing-stack-skills` explain the two contracts
-(sections 7 and 9), the gate schema and the phases. Each ends with "run `orchestra check` on the
-plugin". The skill is the guide. The check is the guarantee.
+`orchestra:writing-plugins` is a short reference card: the slots, the `manifest` skill, the
+declaration and gate keys, the phases, the `next.js` actions. It ends with "run `orchestra check` on
+the plugin". The skill is the guide. The check is the guarantee. A test fails when a word of the key
+lists in `check.js` is missing from the skill (S70).
 
 ## 6. Gates, phases and the gate runner
 
@@ -276,7 +282,7 @@ it (S66).
 | Part | Rule |
 |---|---|
 | Entry | None of its own. `orchestra:run` runs its `next.js` through the driver loop (S51, S52). |
-| Declaration | `orchestra.json` with `slot: workflow`, its parameters, its config keys and its own gates. |
+| Declaration | `orchestra.json` with `slot: workflow`, its config keys and its own gates. |
 | Resolution | A `manifest` skill (5.2). |
 | Order | `next.js` in Node, standard library only (S10, S11). It prints actions of the orchestra protocol, including `phase`. |
 | Output | One status, `done`, `decide` or `failed`. orchestra writes `report.md` into the notes folder from the result files in the run folder, so no workflow repeats that logic (S55). |
@@ -421,9 +427,9 @@ Pillar 4 applies from the first commit (S33):
 ```
 plugins/
   orchestra/
-    skills/{init,run,fixer,triage,select,writing-workflows,writing-stack-skills}/SKILL.md
-    bin/{check.js,gates.js}
-    schemas/{workflow.json,stack-skills.json}
+    skills/{init,run,fixer,triage,select,writing-plugins}/SKILL.md
+    bin/{check.js,resolve.js,drive.js}
+    lib/{check.js,resolved.js,gates.js,runner.js,protocol.js,report.js,git.js}
   orc-standard-workflow/
     orchestra.json
     skills/{manifest,spec,plan,plan-check,code,logic-review}/SKILL.md
@@ -455,8 +461,7 @@ parallel gates, more than one stack per project.
 
 ## 15. Open points for the build plan
 
-- The exact action JSON of the protocol (`dispatch`, `phase`, `done`, `decide`, `failed`) and the
-  `--dry-run` output.
+- The exact action JSON of the protocol (`dispatch`, `phase`, `done`, `decide`, `failed`).
 - When run files are committed: with each stage, or once at the end and on every stop.
 - The final `orc-java-stack` gate list.
 - The sample Java repo and its task.
