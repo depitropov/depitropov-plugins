@@ -205,5 +205,6 @@ wording change needs no entry.
   - init reads the skill list in its context for `<plugin>:manifest` skills, and asks the user when it finds none. It writes only `plugin`; every other key takes its default.
   - A config key must declare a default, so a config with no values always works and `{config.<key>}` always expands.
   - `params` is removed from the declarations.
+  - From the final review of the branch: every slot needs a section in the config (a missing slot made the run fail after it had created the task branch), and `build.run` takes only `{plugin}`, because `buildStep` and `next.js` expand nothing else there.
 - **Cost and risk:** the sync test checks one direction only: a key that the runtime reads but `check.js` does not know is caught only by the `CLAUDE.md` rule. The dry run needs `git` on the path and takes about a second. init depends on the harness showing its skill list; the question to the user is the fallback.
 - **Where it lives:** `orchestra/lib/check.js`, `orchestra/bin/check.js`, `orchestra/lib/resolved.js`, `orchestra/lib/gates.js`, `orchestra/lib/git.js`, the skills `orchestra:init` and `orchestra:writing-plugins`, `test/packaging.test.js`, `CLAUDE.md`.
