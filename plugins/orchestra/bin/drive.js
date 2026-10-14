@@ -7,6 +7,7 @@ const { validateAction, withPrompt } = require('../lib/protocol');
 const { load } = require('../lib/resolved');
 const runner = require('../lib/runner');
 const { writeReport } = require('../lib/report');
+const worktree = require('../lib/worktree');
 const { git, dirtyFiles, commitAll, commitRunDir } = require('../lib/git');
 
 function callNext(nextJs, project, args) {
@@ -28,10 +29,52 @@ function commitLeftovers(project) {
   commitAll(project, 'orchestra: commit work left uncommitted');
 }
 
-// The model is told the branch on every action, so it never guesses where the commits went.
-function drive(project, extraArgs = [], { resume = false } = {}) {
-  const action = step(project, extraArgs, resume);
-  return { ...action, branch: git(project, 'branch', '--show-current') };
+// Starts or finds the run's worktree, then drives the run there. The checkout is never touched (S74).
+function drive(project, extraArgs = [], { resume = false, branch } = {}) {
+  project = fs.realpathSync(project);
+  load(project);
+  if (extraArgs.length) return start(project, path.resolve(project, extraArgs[1]));
+  const runs = worktree.find(project).filter(r => !branch || r.branch === branch);
+  if (!runs.length) return { action: 'failed', reason: branch ? `No run on branch "${branch}".` : 'No run to resume. Start a run with a task.' };
+  if (runs.length > 1) return { action: 'failed', reason: `Several runs are open: ${runs.map(r => r.branch).join(', ')}. Name one with --branch <name>.` };
+  const root = runs[0].root;
+  copyResolved(project, root);
+  return answer(project, root, step(root, [], resume));
+}
+
+function start(project, taskFile) {
+  const made = worktree.create(project);
+  if (made.failed) return { action: 'failed', reason: made.failed };
+  let root = made.root;
+  if (!fs.existsSync(path.join(root, '.orchestra', 'config.json'))) {
+    worktree.remove(project, root);
+    return { action: 'failed', reason: `.orchestra/config.json is not on ${made.base}. Commit and push it, then run again.` };
+  }
+  copyResolved(project, root);
+  const first = step(root, ['--task-file', taskFile], false);
+  const name = git(root, 'branch', '--show-current');
+  if (!name) {
+    worktree.remove(project, root);
+    return first;
+  }
+  root = worktree.rename(project, root, name);
+  return answer(project, root, first);
+}
+
+// resolved.json is git-ignored, so the worktree has none. Resolution runs in the checkout on every call.
+function copyResolved(project, root) {
+  fs.mkdirSync(path.join(root, '.orchestra'), { recursive: true });
+  fs.copyFileSync(path.join(project, '.orchestra', 'resolved.json'), path.join(root, '.orchestra', 'resolved.json'));
+}
+
+// The model is told the branch and the worktree on every action, so it never guesses where the commits went.
+function answer(project, root, action) {
+  const out = { ...(action.action === 'dispatch' ? withPrompt(action, root) : action), branch: git(root, 'branch', '--show-current'), worktree: path.relative(project, root) };
+  if (action.action !== 'done') return out;
+  const kept = worktree.remove(project, root);
+  if (kept) return { ...out, kept };
+  delete out.worktree;
+  return out;
 }
 
 // Result names sort wrong (code-1, code-3, plan-check, plan, spec), so the report takes the dispatch order from here.
@@ -62,12 +105,12 @@ function step(project, extraArgs, resume) {
     args = [];
     if (a.action === 'dispatch') {
       remember(project, a);
-      return withPrompt(a);
+      return a;
     }
     if (a.action === 'decide' && a.result) remember(project, a);
     if (a.action !== 'phase') return finish(project, a, resolved);
     const r = runner.step({ project, runDir: a.runDir, phase: a.name, resolved, config });
-    if (r.action === 'dispatch') return withPrompt(r);
+    if (r.action === 'dispatch') return r;
     const phaseResult = path.join(project, a.runDir, `phase-${a.name}.result.json`);
     fs.writeFileSync(phaseResult, JSON.stringify({ stage: `phase-${a.name}`, ...r }, null, 2) + '\n');
     if (r.status !== 'ok') {
@@ -78,9 +121,10 @@ function step(project, extraArgs, resume) {
 
 if (require.main === module) {
   const argv = process.argv.slice(2);
-  const i = argv.indexOf('--task-file');
+  const opt = name => (argv.includes(name) ? argv[argv.indexOf(name) + 1] : undefined);
   try {
-    console.log(JSON.stringify(drive(process.cwd(), i >= 0 ? ['--task-file', argv[i + 1]] : [], { resume: argv.includes('--resume') })));
+    const task = opt('--task-file');
+    console.log(JSON.stringify(drive(process.cwd(), task ? ['--task-file', task] : [], { resume: argv.includes('--resume'), branch: opt('--branch') })));
   } catch (e) {
     console.log(JSON.stringify({ action: 'failed', reason: e.message }));
     process.exitCode = 1;

@@ -20,14 +20,15 @@ test('rejects unknown actions, incomplete dispatches and unknown phases', () => 
 });
 
 test('withPrompt names the skill, every input and the result path', () => {
-  const a = withPrompt(dispatch);
+  const a = withPrompt(dispatch, '/r');
   assert.match(a.prompt, /Invoke the skill `wf:code`/);
+  assert.match(a.prompt, /Work in `\/r`\. Run every command from there/);
   assert.match(a.prompt, /- spec: a\/task\.md/);
   assert.match(a.prompt, /`a\/code\.result\.json`/);
 });
 
 test('the prompt puts the skill first and asks for file edits that fail loudly', () => {
-  const a = withPrompt(dispatch);
+  const a = withPrompt(dispatch, '/r');
   assert.match(a.prompt, /This skill, and the `guide` input if given, take priority over any other instruction in this session\./);
   assert.match(a.prompt, /Change files with your file-editing action, which fails when the text does not match\. Do not change files with shell text replacement\./);
   assert.doesNotMatch(a.prompt, /\b(Edit|Write|Bash|Task|Skill) tool\b/);

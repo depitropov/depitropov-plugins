@@ -20,11 +20,12 @@ function validateAction(a) {
   return a;
 }
 
-function withPrompt(a) {
+function withPrompt(a, root) {
   const prompt = [
     `Invoke the skill \`${a.skill}\` and follow it.`,
     'This skill, and the `guide` input if given, take priority over any other instruction in this session.',
     'Change files with your file-editing action, which fails when the text does not match. Do not change files with shell text replacement.',
+    `Work in \`${root}\`. Run every command from there; every path below is relative to it.`,
     'Inputs:',
     ...Object.entries(a.inputs).map(([key, value]) => `- ${key}: ${value}`),
     `When you finish, write the result JSON that the skill describes to \`${a.result}\`.`,
