@@ -179,12 +179,20 @@ function checkSection(slot, section, s, out) {
       fail(`"${slot}.${key}" is not a ${declared[key].type}`, `set it to a ${declared[key].type}, or remove it to take the default ${JSON.stringify(declared[key].default)}`);
     }
   }
-  // A project value can break a gate's grep that the defaults compile. Only gates whose grep names a key
-  // the section sets are tried, so a broken default is reported once, by the declaration rule.
+  // A project value can break a gate's grep that the defaults compile. A grep already broken with the
+  // defaults is reported once, by the declaration rule; a value of the wrong type, by the type rule.
+  const dflt = k => (Object.hasOwn(declared, k) ? declared[k].default : '');
+  const set = k => Object.hasOwn(declared, k) && Object.hasOwn(section, k) && typeof section[k] === declared[k].type;
   for (const g of Array.isArray(d.gates) ? d.gates : []) {
-    if (!g || typeof g.grep !== 'string' || !Object.keys(section).some(k => g.grep.includes(`{config.${k}}`))) continue;
+    if (!g || typeof g.grep !== 'string' || !Object.keys(section).some(k => set(k) && g.grep.includes(`{config.${k}}`))) continue;
+    const expand = pick => g.grep.replace(PLACEHOLDER, (m, k) => String(pick(k)));
     try {
-      new RegExp(g.grep.replace(PLACEHOLDER, (m, k) => String(Object.hasOwn(section, k) ? section[k] : declared[k] && declared[k].default)));
+      new RegExp(expand(dflt));
+    } catch {
+      continue;
+    }
+    try {
+      new RegExp(expand(k => (set(k) ? section[k] : dflt(k))));
     } catch (e) {
       fail(`the values of section "${slot}" make the "grep" of gate "${g.name}" invalid: ${e.message}`, 'fix the value of the key that the pattern uses');
     }
@@ -257,10 +265,11 @@ function dryRun(dir, label, declaration) {
   if (!fs.existsSync(nextJs)) return [`${where} is missing. Fix: add it; it prints the next action of a run as one JSON line.`];
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'orchestra-check-'));
   try {
-    const env = cleanEnv();
+    let env;
     let project;
     let task;
     try {
+      env = cleanEnv();
       project = scratchRepo(root);
       const stack = { plugin: 'check-stack', version: '0.0.0', dir: root, declaration: { slot: 'stack-skills', build: { run: 'true' } } };
       fs.mkdirSync(path.join(project, '.orchestra'));

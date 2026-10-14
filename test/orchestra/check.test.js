@@ -220,3 +220,23 @@ test('a SKILL.md with Windows line endings passes the frontmatter rule', () => {
   fs.writeFileSync(path.join(dir, 'skills/manifest/SKILL.md'), '---\r\nname: manifest\r\ndescription: d\r\n---\r\nBody\r\n');
   assert.deepEqual(checkPlugin(dir), []);
 });
+
+test('a grep broken with the defaults is reported once, by the declaration rule', () => {
+  const gate = grep => [{ name: 'g', phase: 'finish', kind: 'agent', skill: 's', grep }];
+  const cases = [
+    [stack({ config: { pat: { type: 'string', default: '(' } }, gates: gate('{config.pat}') }), '('],
+    [stack({ config: { pat: { type: 'string', default: 'x' } }, gates: gate('[{config.pat}') }), 'y'],
+  ];
+  for (const [d, value] of cases) {
+    const out = checkProject(project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', pat: value } }, { workflow: wf, 'stack-skills': d }));
+    assert.equal(out.length, 1, out.join(' | '));
+    assert.match(out[0], /^st\/orchestra\.json: gate "g" "grep" is not a valid regular expression/);
+  }
+});
+
+test('a config value of the wrong type is reported once, by the type rule', () => {
+  const d = stack({ config: { pat: { type: 'string', default: '@Entity' } }, gates: [{ name: 'g', phase: 'finish', kind: 'agent', skill: 's', grep: '{config.pat}' }] });
+  const out = checkProject(project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', pat: ['('] } }, { workflow: wf, 'stack-skills': d }));
+  assert.equal(out.length, 1, out.join(' | '));
+  assert.match(out[0], /"stack-skills\.pat" is not a string/);
+});
