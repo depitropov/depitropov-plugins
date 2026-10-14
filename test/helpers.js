@@ -13,6 +13,24 @@ function writeJson(file, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
 }
 
+// A plugin folder that passes the packaging rules: both manifests, a manifest skill, and a SKILL.md
+// for every skill the declaration names.
+function writePlugin(dir, name, declaration) {
+  writeJson(path.join(dir, 'plugin.json'), { name, version: '0.0.1' });
+  writeJson(path.join(dir, '.claude-plugin', 'plugin.json'), { name, version: '0.0.1' });
+  const skills = ['manifest'];
+  if (declaration) {
+    writeJson(path.join(dir, 'orchestra.json'), declaration);
+    const d = declaration;
+    skills.push(...[d.build && d.build.guide, ...Object.values(d.guides || {}), ...(d.gates || []).flatMap(g => [g.skill, g.guide])].filter(Boolean));
+  }
+  for (const s of skills) {
+    fs.mkdirSync(path.join(dir, 'skills', s), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'skills', s, 'SKILL.md'), `---\nname: ${s}\ndescription: Test skill.\n---\n`);
+  }
+  return dir;
+}
+
 function makeRepo() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'orchestra-'));
   const origin = path.join(root, 'origin.git');
@@ -32,4 +50,4 @@ function makeRepo() {
   return dir;
 }
 
-module.exports = { git, writeJson, makeRepo };
+module.exports = { git, writeJson, writePlugin, makeRepo };

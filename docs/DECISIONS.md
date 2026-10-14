@@ -187,3 +187,23 @@ wording change needs no entry.
 - **Where it lives:** `orc-standard-workflow/bin/next.js`, `orchestra/lib/runner.js`,
   `orchestra/lib/report.js`, `orc-java-stack/orchestra.json`, the skills `spec`, `plan-check` and
   `orchestra:fixer`, `docs/PORTING.md`.
+
+## S70: The contracts (plan 2)
+
+- **Date:** 2026-10-14
+- **Status:** decided
+- **Question:** `docs/DESIGN.md` §5.1, §5.3 and §5.4 were written before S56, and later decisions changed the declaration, the guides and the selection keys. What do `orchestra check`, `orchestra:init` and the authoring skills look like now, and how do the rules stay true as the plugins change?
+- **Options:**
+  1. Build §5 as written: JSON Schema files, a `--dry-run` flag in every workflow's `next.js`, two authoring skills, `check` stops on the first failure. Rejected: S11 allows no schema validator, so the schemas would be a second copy of the rules or a validator to maintain; the flag is a second code path in each workflow that only the check uses; two skills is more text than one author needs.
+  2. No shipped check: keep the rules in `test/packaging.test.js`. Rejected: S28 makes the check the guarantee of the contracts, and a plugin outside this repo would get no guarantee.
+  3. One rule set as plain code in `lib/check.js`, shipped and also run by the repo tests; a dry run that runs the real `next.js` in a throwaway repo; one short authoring skill kept in step by a test. Chosen.
+- **Evidence:** the grilling of 2026-10-14 (record: the Scope table of `docs/superpowers/plans/2026-10-14-orchestra-contracts.md`); the code facts checked that day: `test/packaging.test.js` already held the packaging rules; `orc-standard-workflow/bin/next.js` does `prepare` itself when it gets a task; no code read `params`; `config.disable` and `config.gates` are read by `orchestra/lib/gates.js`.
+- **Decision:**
+  - `check.js <plugin-folder>…` runs every rule; `check.js --project <dir>` runs the config rules and the declaration rules of each resolved plugin. Every failure is one line, `<where>: <problem>. Fix: <fix>.`, and all are listed.
+  - The dry run builds a git repo with a bare remote in the system temp folder, a config, a `resolved.json` with a stub Stack Skills slot (`build.run: true`), and a task file outside the repo. It runs `next.js --project <repo> --task-file <file>` and validates the printed action with the protocol's `validateAction`. `failed` fails the rule.
+  - `resolve.js` runs the project rules after it writes `resolved.json`, so a bad config stops the run before any subagent.
+  - init reads the skill list in its context for `<plugin>:manifest` skills, and asks the user when it finds none. It writes only `plugin`; every other key takes its default.
+  - A config key must declare a default, so a config with no values always works and `{config.<key>}` always expands.
+  - `params` is removed from the declarations.
+- **Cost and risk:** the sync test checks one direction only: a key that the runtime reads but `check.js` does not know is caught only by the `CLAUDE.md` rule. The dry run needs `git` on the path and takes about a second. init depends on the harness showing its skill list; the question to the user is the fallback.
+- **Where it lives:** `orchestra/lib/check.js`, `orchestra/bin/check.js`, `orchestra/lib/resolved.js`, `orchestra/lib/gates.js`, `orchestra/lib/git.js`, the skills `orchestra:init` and `orchestra:writing-plugins`, `test/packaging.test.js`, `CLAUDE.md`.
