@@ -5,6 +5,7 @@ const os = require('node:os');
 const { execFileSync } = require('node:child_process');
 const { PHASES, ACTIONS, validateAction } = require('./protocol');
 const { scratchRepo, cleanEnv } = require('./git');
+const { DIR } = require('./worktree');
 
 // The contract of a plugin declaration and of the project config. The skill writing-plugins explains
 // every word in these lists; a test fails when one is missing there.
@@ -231,6 +232,12 @@ function checkProject(project) {
       continue;
     }
     checkSection(slot, section, s, out);
+  }
+  // A run's worktree lives in the project (S74). Not ignored, it shows in the user's git status.
+  try {
+    execFileSync('git', ['check-ignore', '-q', `${DIR}/x`], { cwd: project, stdio: 'ignore' });
+  } catch {
+    out.push(`.gitignore: ${DIR}/ is not ignored. Fix: add the lines .orchestra/* and !.orchestra/config.json to .gitignore, or run orchestra init.`);
   }
   return out;
 }

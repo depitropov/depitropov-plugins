@@ -240,3 +240,12 @@ test('a config value of the wrong type is reported once, by the type rule', () =
   assert.equal(out.length, 1, out.join(' | '));
   assert.match(out[0], /"stack-skills\.pat" is not a string/);
 });
+
+test('the project must ignore the run worktrees', () => {
+  const both = { workflow: wf, 'stack-skills': st };
+  const dir = project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' } }, both);
+  fs.writeFileSync(path.join(dir, '.gitignore'), 'tmp/\n');
+  const out = checkProject(dir);
+  assert.equal(out.length, 1, out.join(' | '));
+  assert.match(out[0], /^\.gitignore: \.orchestra\/worktrees\/ is not ignored\. Fix: .+\.$/);
+});

@@ -58,6 +58,8 @@ fixed by orchestra, not by you.
 A project's `.orchestra/config.json` has one section per slot. orchestra owns three keys in it:
 `plugin`, `disable` (gate or guide names to turn off) and `gates`
 (`{ "<gate>": { "max_rounds": <n> } }`). Every other key must be one your `config` declares.
+`.gitignore` must ignore `.orchestra/*` except `.orchestra/config.json`: each run works in a worktree
+under `.orchestra/worktrees/`. orchestra check fails otherwise.
 
 ## A workflow: bin/next.js
 

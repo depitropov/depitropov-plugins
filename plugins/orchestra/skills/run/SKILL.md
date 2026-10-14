@@ -31,30 +31,35 @@ If it exits with an error, show the error and stop.
 
 ## 3. Drive
 
-When the user gave a task, tell them first what the start does: it checks out the default branch,
-pulls it from the remote with `git pull --rebase`, and switches to a new branch `task/<name>`.
+When the user gave a task, tell them first what the start does: it fetches `origin/<default>` and starts
+a new branch `task/<name>` in its own worktree, `.orchestra/worktrees/<branch>`. Their checkout, its
+branch and its files are not touched.
 
 Start the run:
 - If the user gave a task as text, write it to `.orchestra/task.txt` and run
   `node <orchestra>/bin/drive.js --task-file .orchestra/task.txt`.
 - If the user gave a file path, run `node <orchestra>/bin/drive.js --task-file <path>`.
-- If the user gave no task, this is a resume. Run `node <orchestra>/bin/drive.js --resume`.
+- If the user gave no task, this is a resume. Run `node <orchestra>/bin/drive.js --resume`, with
+  `--branch <name>` when the user names a branch. When it fails because several runs are open, show
+  the branches and ask which one.
 
 `drive.js` can run the project's full build before it prints, and a build can take many minutes.
 Run every `drive.js` command in the background and wait until it ends, or, when that is not
 possible, with the longest timeout your shell allows. Never stop it early and never start a second
 one while it runs.
 
-The command prints one JSON line. It always names the current `branch`. Tell the user the branch
-once, when the run starts. Act on its `action`:
+The command prints one JSON line. It names the run's `branch`, and `worktree`, the run's folder, while
+the run is open. Tell the user both once, when the run starts. Every path in the action is relative to
+`worktree`. Act on its `action`:
 
 - `dispatch`: dispatch a general-purpose subagent with a clean context. It must be able to read and
   edit files and run shell commands. Give it the `prompt` text exactly. Wait
   until it finishes. Then run `node <orchestra>/bin/drive.js` again, with no task.
-- `done`: tell the user the run is done, on which `branch`, and show the `report` path.
-- `failed`: show the `reason`, the `branch`, and the `report` path, if there is one.
-- `decide`: show each line of `questions` and the `report` path. The user answers in
-  `decisions.md` in the notes folder: a **new** section `## <gate>` at the end of the file, with
+- `done`: tell the user the run is done, on which `branch`, and that they read the report with
+  `git show <branch>:<report>`. If the action has `kept`, say the worktree `<worktree>` was kept and show `kept`.
+- `failed`: show the `reason`, the `branch`, and `<worktree>/<report>`, if there is one.
+- `decide`: show each line of `questions` and `<worktree>/<report>`. The user answers in
+  `decisions.md` in the notes folder inside `<worktree>`: a **new** section `## <gate>` at the end of the file, with
   one line per question: `- <question> → <answer>`. A `business-facts` stop counts these lines and
   stops again until every question has one. If the user gives the answers to you in the conversation, add that new section
   yourself: one line per question, `- <question> → <their answer>`, with the question copied from
@@ -65,8 +70,8 @@ Stop after `done`, `failed` or `decide`.
 
 ## Permitted actions
 
-- Do not edit project files yourself. Subagents do the work. The one exception: the user's answers
-  to a `decide`, written to `decisions.md` as above.
+- Do not edit project files yourself. Subagents do the work in the run's worktree. The one exception:
+  the user's answers to a `decide`, written to `decisions.md` inside the worktree as above.
 - Do not change the order, skip a dispatch or run a stage that was not printed.
 - Do not push and do not open a pull request.
 - If you cannot dispatch a subagent, stop the run. Tell the user that orchestra needs subagents:
