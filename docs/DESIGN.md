@@ -170,7 +170,7 @@ config rules and the declaration rules of each resolved plugin. The rules are pl
 
 | Target | Rules |
 |---|---|
-| Config | Every section's plugin is in `resolved.json`. Every other key is declared by that plugin, with the right type. Every name in `disable` and `gates` exists. |
+| Config | Every slot has a section, and every section's plugin is in `resolved.json`. Every other key is declared by that plugin, with the right type. Every name in `disable` and `gates` exists. |
 | Declaration | Only the keys of its slot; the gate keys and values of 6.1; every `{config.<key>}` declared; every config key typed with a default. `slot` matches the slot it is used in. Every skill it names exists in the plugin. Every `phase` is one of the three standard phases. |
 | Workflow plugin | Has `next.js` and a `manifest` skill. The dry run: `next.js` with a task, in a throwaway git repo with a bare remote, prints a valid action that is not `failed`. |
 | Stack Skills plugin | Has a `build` with `run` and `guide`, and a `manifest` skill. Every tool gate with `fix: fixer` names a `guide`. |

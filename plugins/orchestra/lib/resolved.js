@@ -6,7 +6,12 @@ const { checkProject } = require('./check');
 const FILE = path.join('.orchestra', 'resolved.json');
 
 function readJson(file) {
-  return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+  if (!fs.existsSync(file)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (e) {
+    throw new Error(`${file} is not valid JSON: ${e.message}. Fix: correct the JSON.`);
+  }
 }
 
 function pluginInfo(dir) {

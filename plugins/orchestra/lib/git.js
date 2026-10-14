@@ -47,8 +47,15 @@ function commitKeeping(cwd, message, keep) {
 
 const commitRunDir = (cwd, runDir, message) => commitPaths(cwd, message, [runDir]);
 
+// The environment of a calling git hook (GIT_INDEX_FILE, GIT_DIR) points at the user's repo. A scratch
+// repo must never see it.
+function cleanEnv() {
+  return Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')));
+}
+
 // A repo with a bare remote and one commit. orchestra check's dry run uses it, and so do the tests.
 function scratchRepo(root) {
+  const git = (cwd, ...args) => execFileSync('git', ['-c', 'core.hooksPath=/dev/null', ...args], { cwd, env: cleanEnv(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
   const origin = path.join(root, 'origin.git');
   const dir = path.join(root, 'work');
   git(root, 'init', '--bare', '-b', 'main', origin);
@@ -66,4 +73,4 @@ function scratchRepo(root) {
   return dir;
 }
 
-module.exports = { EXCLUDE, git, changedFiles, dirtyFiles, isClean, commitAll, commitKeeping, commitRunDir, scratchRepo };
+module.exports = { EXCLUDE, git, changedFiles, dirtyFiles, isClean, commitAll, commitKeeping, commitRunDir, scratchRepo, cleanEnv };

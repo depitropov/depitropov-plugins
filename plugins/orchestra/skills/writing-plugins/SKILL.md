@@ -30,8 +30,8 @@ check is the guarantee: run it when you finish (last section).
 | `build` | `stack-skills`, required | `run`: the full build and the tests. `guide`: its fix guide skill. `max_rounds`: fixer rounds, default 2. |
 | `guides` | `stack-skills` | `plan` and `code`: a skill with short rules for the planner and the coder. |
 
-In a command, `{plugin}` is the plugin's folder and `{config.<key>}` is a config value. The key
-must be declared under `config`.
+In a command, `{plugin}` is the plugin's folder. In a gate's `run` or `grep`, `{config.<key>}` is
+a config value; the key must be declared under `config`. The `build` command takes only `{plugin}`.
 
 ## A gate
 
@@ -67,7 +67,8 @@ one action as JSON on its last line:
 
 - `dispatch`: `skill`, `inputs`, `result` (the file the subagent writes) and `runDir`.
 - `phase`: `name` (one of the three phases) and `runDir`. orchestra runs that phase's gates.
-- `done`, `decide` (with `questions`) or `failed` (with `reason`). orchestra writes the report.
+- `done`, `decide` (with `gate`, the step that asks, and `questions`; optional `result`, its result
+  file) or `failed` (with `reason`). orchestra writes the report.
 
 The run folder `tmp/runs/<branch>/` holds the state and is git-ignored. The notes folder
 `docs/runs/<branch>/` holds what a human reads. Write `run.json` in the run folder with `base`,

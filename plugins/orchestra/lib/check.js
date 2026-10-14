@@ -4,7 +4,7 @@ const path = require('node:path');
 const os = require('node:os');
 const { execFileSync } = require('node:child_process');
 const { PHASES, ACTIONS, validateAction } = require('./protocol');
-const { git, scratchRepo } = require('./git');
+const { scratchRepo, cleanEnv } = require('./git');
 
 // The contract of a plugin declaration and of the project config. The skill writing-plugins explains
 // every word in these lists; a test fails when one is missing there.
@@ -77,6 +77,7 @@ function checkDeclaration(d, dir, where) {
         if (!BUILD_KEYS.includes(key)) fail(`unknown build key "${key}"`, `remove it; the allowed keys are ${BUILD_KEYS.join(', ')}`);
       }
       skill(b.guide, 'build "guide"');
+      for (const m of b.run.matchAll(PLACEHOLDER)) fail(`build "run" uses {config.${m[1]}}, but the build command expands only {plugin}`, 'write the value into the command');
       if (b.max_rounds !== undefined && !wholeNumber(b.max_rounds)) fail('build "max_rounds" is not a whole number of 1 or more', 'set it to 1 or more');
     }
     for (const [kind, name] of Object.entries(d.guides || {})) {
@@ -187,6 +188,10 @@ function checkProject(project) {
   if (config === undefined) return [`${CONFIG} is missing. Fix: run orchestra init.`];
   if (resolved === undefined) return ['.orchestra/resolved.json is missing. Fix: start orchestra run or orchestra init; both resolve the plugins first.'];
   if (!config || !resolved) return out;
+  if (!isObject(config)) return [`${CONFIG} is not a JSON object. Fix: run orchestra init.`];
+  for (const slot of SLOTS) {
+    if (!(slot in config)) out.push(`${CONFIG}: section "${slot}" is missing. Fix: add "${slot}": { "plugin": "<the ${slot} plugin>" }, or run orchestra init.`);
+  }
   const slots = resolved.slots || {};
   for (const [slot, section] of Object.entries(config)) {
     const fail = (problem, fix) => out.push(`${CONFIG}: ${problem}. Fix: ${fix}.`);
@@ -246,13 +251,15 @@ function dryRun(dir, label, declaration) {
     const stack = { plugin: 'check-stack', version: '0.0.0', dir: root, declaration: { slot: 'stack-skills', build: { run: 'true' } } };
     fs.mkdirSync(path.join(project, '.orchestra'));
     fs.writeFileSync(path.join(project, CONFIG), JSON.stringify({ workflow: { plugin: label }, 'stack-skills': { plugin: stack.plugin } }) + '\n');
-    git(project, 'add', CONFIG);
-    git(project, 'commit', '-m', 'config');
+    const env = cleanEnv();
+    for (const args of [['add', CONFIG], ['-c', 'core.hooksPath=/dev/null', 'commit', '-q', '-m', 'config']]) {
+      execFileSync('git', args, { cwd: project, env, stdio: 'ignore' });
+    }
     const resolved = { orchestra: { dir: path.join(__dirname, '..') }, slots: { workflow: { plugin: label, version: '0.0.0', dir, declaration }, 'stack-skills': stack } };
     fs.writeFileSync(path.join(project, '.orchestra', 'resolved.json'), JSON.stringify(resolved) + '\n');
     const task = path.join(root, 'task.txt');
     fs.writeFileSync(task, 'Dry run of orchestra check\n');
-    const printed = execFileSync(process.execPath, [nextJs, '--project', project, '--task-file', task], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 });
+    const printed = execFileSync(process.execPath, [nextJs, '--project', project, '--task-file', task], { encoding: 'utf8', env, stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 });
     const action = validateAction(JSON.parse(printed.trim().split('\n').pop()));
     if (action.action === 'failed') return [`${where}: the dry run ended with failed: ${action.reason}. Fix: make the first call of a new run work.`];
     return [];

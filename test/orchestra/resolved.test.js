@@ -46,3 +46,9 @@ test('fails when a plugin declares another slot, or a slot of the config has no 
 test('fails with the init hint when there is no config', () => {
   assert.throws(() => resolve(makeRepo(), {}, '/orc'), /Run orchestra init first/);
 });
+
+test('a broken JSON file names itself and the fix', () => {
+  const dir = project();
+  fs.writeFileSync(path.join(dir, '.orchestra/config.json'), '{ nope');
+  assert.throws(() => resolve(dir, {}, '/orc'), /config\.json is not valid JSON: .+\. Fix: correct the JSON\./);
+});

@@ -155,3 +155,30 @@ test('the command line lists the failures and exits 1, or passes and exits 0', (
   assert.match(execFileSync(process.execPath, [CHECK, good], { encoding: 'utf8' }), /All checks passed\./);
   assert.throws(() => execFileSync(process.execPath, [CHECK], { encoding: 'utf8', stdio: 'pipe' }), e => e.status === 1);
 });
+
+test('a config must be an object with a section for every slot', () => {
+  const config = { workflow: { plugin: 'wf' } };
+  const out = checkProject(project(config, { workflow: wf }));
+  assert.equal(out.length, 1, out.join(' | '));
+  assert.match(out[0], /section "stack-skills" is missing\. Fix: /);
+  const list = project([], {});
+  assert.match(checkProject(list).join('\n'), /config\.json is not a JSON object\. Fix: /);
+});
+
+test('the build command takes no config placeholder, because the runtime expands only {plugin}', () => {
+  const out = errors(stack({ build: { run: 'make {config.x}', guide: 'fix-build' } }));
+  assert.equal(out.length, 1, out.join(' | '));
+  assert.match(out[0], /build "run" uses \{config\.x\}/);
+});
+
+test('the dry run ignores the git variables of a calling hook', () => {
+  const user = makeRepo();
+  const before = execFileSync('git', ['ls-files'], { cwd: user, encoding: 'utf8' });
+  process.env.GIT_INDEX_FILE = path.join(user, '.git', 'index');
+  try {
+    assert.deepEqual(checkPlugin(path.join(__dirname, '../../plugins/orc-standard-workflow')), []);
+  } finally {
+    delete process.env.GIT_INDEX_FILE;
+  }
+  assert.equal(execFileSync('git', ['ls-files'], { cwd: user, encoding: 'utf8' }), before);
+});
