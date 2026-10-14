@@ -53,3 +53,14 @@ test('the run skill stops when it cannot dispatch a subagent, and never does a s
 test('skill examples use no names from the sample task', () => {
   for (const s of skills) assert.doesNotMatch(fs.readFileSync(s.file, 'utf8'), /PriceCalculator|VIP|50\.00|discount/i, s.file);
 });
+
+test('the skill writing-plugins explains every word of the contract that check.js knows', () => {
+  const check = require('../plugins/orchestra/lib/check');
+  const text = fs.readFileSync(path.join(PLUGINS, 'orchestra/skills/writing-plugins/SKILL.md'), 'utf8');
+  const words = new Set([
+    ...check.SLOTS, ...check.KINDS, ...check.FIXES, ...check.CONFIG_TYPES, ...Object.values(check.DECLARATION_KEYS).flat(),
+    ...check.GATE_KEYS, ...check.BUILD_KEYS, ...check.GUIDE_KINDS, ...check.SECTION_KEYS, ...check.PHASES, ...check.ACTIONS,
+  ]);
+  const quoted = [...text.matchAll(/`([^`]+)`/g)].map(m => m[1]).join('\n');
+  for (const w of words) assert.match(quoted, new RegExp(`(^|[^\\w-])${w}([^\\w-]|$)`, 'm'), `writing-plugins does not explain \`${w}\``);
+});

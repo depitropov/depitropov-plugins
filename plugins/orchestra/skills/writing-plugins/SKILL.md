@@ -1,0 +1,80 @@
+---
+name: writing-plugins
+description: Use when writing or changing a plugin that fills an orchestra slot — a workflow plugin or a Stack Skills plugin — its orchestra.json, its gates or its next.js.
+---
+
+# Writing an orchestra plugin
+
+A plugin fills one slot: `workflow` or `stack-skills`. orchestra reads the plugin's declaration
+and runs it. The plugin never runs or orders its own gates. This page is the reference. orchestra
+check is the guarantee: run it when you finish (last section).
+
+`<orchestra>` is the folder two levels above this skill's folder.
+
+## Every plugin
+
+- `plugin.json` and `.claude-plugin/plugin.json`, with the same `name` and `version`.
+- A `manifest` skill. It finds its own folder, goes two folders up, and answers with one line:
+  `PLUGIN_DIR=<that folder>`. Copy the one of `orc-standard-workflow`.
+- `orchestra.json` at the plugin root.
+- Each `SKILL.md` has only `name` and `description` in its frontmatter. Skill text names actions
+  ("dispatch a subagent", "invoke the skill"), never a harness's tool names.
+
+## orchestra.json
+
+| Key | Slot | Meaning |
+|---|---|---|
+| `slot` | both | `workflow` or `stack-skills`. |
+| `config` | both | Keys a project may set in its config section. Each is `{ "type": …, "default": … }`, with type `string`, `number` or `boolean`, and a default of that type. |
+| `gates` | both | The checks after the code. See "A gate". |
+| `build` | `stack-skills`, required | `run`: the full build and the tests. `guide`: its fix guide skill. `max_rounds`: fixer rounds, default 2. |
+| `guides` | `stack-skills` | `plan` and `code`: a skill with short rules for the planner and the coder. |
+
+In a command, `{plugin}` is the plugin's folder and `{config.<key>}` is a config value. The key
+must be declared under `config`.
+
+## A gate
+
+| Key | Meaning |
+|---|---|
+| `name` | Unique in the plugin. Not `build`. |
+| `phase` | `implementation-check` (is the code correct?), `conventions-check` (does it follow our conventions?) or `finish` (is the final state clean? nothing here may change behaviour). |
+| `kind` | `tool`: a command; exit code 0 passes. `agent`: a skill run by a subagent. |
+| `skill` | An `agent` gate's review skill. It fixes its own Patch findings. |
+| `run` | A `tool` gate's command. |
+| `fix` | For a `tool` gate: `self` (the tool fixes, orchestra commits), `fixer` (orchestra's fixer, with `guide`) or `none` (report only). |
+| `guide` | The fix guide skill for `fix: fixer`. |
+| `max_rounds` | Fixer rounds. Default 2. |
+| `files` | A glob, or a list of globs, on the changed paths. |
+| `grep` | A regular expression on the content of the changed files. |
+| `when` | A rule in words, judged on the diff. |
+| `always` | `true`: the gate runs on every run. |
+
+A gate needs at least one of `files`, `grep`, `when` or `always`. Inside a phase, the order is
+fixed by orchestra, not by you.
+
+## The project config
+
+A project's `.orchestra/config.json` has one section per slot. orchestra owns three keys in it:
+`plugin`, `disable` (gate or guide names to turn off) and `gates`
+(`{ "<gate>": { "max_rounds": <n> } }`). Every other key must be one your `config` declares.
+
+## A workflow: bin/next.js
+
+Node, standard library only. orchestra calls `node bin/next.js --project <dir>`, with
+`--task-file <file>` on the first call of a run. Each call decides from the files on disk and prints
+one action as JSON on its last line:
+
+- `dispatch`: `skill`, `inputs`, `result` (the file the subagent writes) and `runDir`.
+- `phase`: `name` (one of the three phases) and `runDir`. orchestra runs that phase's gates.
+- `done`, `decide` (with `questions`) or `failed` (with `reason`). orchestra writes the report.
+
+The run folder `tmp/runs/<branch>/` holds the state and is git-ignored. The notes folder
+`docs/runs/<branch>/` holds what a human reads. Write `run.json` in the run folder with `base`,
+`branch`, `spec` and `docs`. Detail: `docs/DESIGN.md` §7 in the orchestra repo.
+
+## Check
+
+Run `node <orchestra>/bin/check.js <your plugin folder>`. It lists every failed rule with its fix.
+For a workflow, it also runs your `next.js` with a task in a throwaway git repo and checks the first
+action.

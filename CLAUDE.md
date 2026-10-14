@@ -19,6 +19,10 @@ weighed options (after research, after a run's feedback, or when a port changes 
 a full entry in `docs/DECISIONS.md` under the same `S` number, in the format that file defines. Write
 both in the same commit as the change they decide.
 
+**Contracts.** When a change adds, renames or removes something a plugin may declare, or something
+orchestra reads from a declaration or the project config, update `plugins/orchestra/lib/check.js`
+and the skill `plugins/orchestra/skills/writing-plugins/SKILL.md` in the same change.
+
 **Guide.** `docs/guide.html` explains orchestra to people, in levels from the idea down to the code.
 At the end of every change to `plugins/` or to the docs above, tell the user which sections of the
 guide the change makes out of date, and offer to update them. When you update it, also update the
