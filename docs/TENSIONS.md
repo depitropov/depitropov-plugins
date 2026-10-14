@@ -90,6 +90,7 @@ record in `docs/DECISIONS.md` under the same `S` number.
 | S71 | Plan 5 (Codex) is paused: no Codex install is available, so no run can prove it. Done before the pause: the sc-agent-plugins inventory (`docs/PORTING.md`) and the Codex source research (R7). R7 finds that Codex reads the Claude Code plugin layout as it is, so the second catalog of DESIGN §11 is not needed for Codex. The Codex part of the phase 1 exit test (S34) waits for plan 5. | User decision |
 | S72 | The phase 1 exit test (S34) passes on Claude Code with the 0.10.0 plugins. In the sample repo, `orchestra:init` checked the config. The run `task/add-a-bulk-discount-to-pricecalculator-t` stopped on a `business-facts` decide, took the answers from `decisions.md`, resumed and ended `done` with a green final build. `orchestra check` passes on both plugins. Criteria 2, 4 and 5 are closed; criterion 3 (Codex) waits for plan 5 (S71). | Exit test run |
 | S73 | Phase 1 is closed on Claude Code. The Codex run (criterion 3 of S34) leaves phase 1 and becomes the done test of plan 5, which stays paused (S71). Pillar 4 stays. This narrows S34. Full record: `docs/DECISIONS.md`. | User decision |
+| S74 | Every run works in its own git worktree at `.orchestra/worktrees/<branch>`, inside the project and git-ignored, so a run never switches, pulls into or commits in the user's checkout. orchestra creates it detached at `origin/<default>` after a fetch; the workflow only creates its branch from that HEAD. Runs are found with `git worktree list`, with no state file; `--branch` picks one when several are open. On `done` the worktree is removed without force and the branch stays; on `decide` and `failed` it stays. The config comes from the base commit; only `resolved.json` is copied in. This narrows S17 and §8.3 (`prepare`) and closes O9. Research: R8. Full record: `docs/DECISIONS.md`. | User decision, R8 |
 
 ## Open (phase 1)
 
@@ -104,7 +105,6 @@ record in `docs/DECISIONS.md` under the same `S` number.
 | O6 | Precedence between PSK and SSK. Direction: resolution (S50) merges the PSK declaration over the Stack Skills declaration: gates, guides and build. The PSK wins. | With the PSK |
 | O7 | Does General Knowledge use the same contract as an SSK? | Next phase |
 | O8 | Adapters for external frameworks (Superpowers, minions, Matt Pocock's skills). Replaces the Executor idea. See "Backlog: adapters" below. | Paused, after phase 1 |
-| O9 | Run in a git worktree instead of the user's checkout, so a run never moves the user's branch or touches their files. | From the first real run |
 
 ## Backlog: adapters (O8)
 

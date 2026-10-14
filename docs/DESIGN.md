@@ -266,7 +266,7 @@ When a tool gate with `fix: fixer` fails:
 
 Every gate writes `<phase>.<gate>.result.json` (format in 8.2). The runner writes a checkpoint
 after each gate, so a stopped run resumes at the next gate. A gate that has finished never runs
-again (S46).
+again (S46). A stopped run keeps its worktree; a call without a task finds it with `git worktree list` (S74).
 
 The runner returns one phase result to `next.js`: `ok`, `decide` or `failed`.
 
@@ -286,7 +286,8 @@ it (S66).
 | Resolution | A `manifest` skill (5.2). |
 | Order | `next.js` in Node, standard library only (S10, S11). It prints actions of the orchestra protocol, including `phase`. |
 | Output | One status, `done`, `decide` or `failed`. orchestra writes `report.md` into the notes folder from the result files in the run folder, so no workflow repeats that logic (S55). |
-| State | Two folders, both derived from the branch, never passed (S15, S22). The **run folder** `tmp/runs/<branch>/` holds everything the orchestration uses: results, checkpoints, logs, `run.json`, `stages.json` (the order of the stage dispatches, for the report). Git ignores it. The **notes folder** `docs/runs/<branch>/` holds what a human reads: `task.md`, `brief.md`, `plan.md`, `decisions.md`, review notes (`plan-check.md`, `code.md`, `implementation-log.md`, `logic-review.md`) and `report.md`. It is committed and goes to the default branch with the PR (S54, S58). The workflow writes `run.json` with `base`, `branch`, `spec` (`<notes>/brief.md`, the file that holds the acceptance criteria) and `docs` (the notes folder). The gate runner reads it (S55). A resume works on the same machine only, because the run folder is not committed. |
+| State | Two folders, both derived from the branch, never passed (S15, S22). The **run folder** `tmp/runs/<branch>/` holds everything the orchestration uses: results, checkpoints, logs, `run.json`, `stages.json` (the order of the stage dispatches, for the report). Git ignores it. The **notes folder** `docs/runs/<branch>/` holds what a human reads: `task.md`, `brief.md`, `plan.md`, `decisions.md`, review notes (`plan-check.md`, `code.md`, `implementation-log.md`, `logic-review.md`) and `report.md`. It is committed and goes to the default branch with the PR (S54, S58). The workflow writes `run.json` with `base`, `branch`, `spec` (`<notes>/brief.md`, the file that holds the acceptance criteria) and `docs` (the notes folder). The gate runner reads it (S55). A resume works on the same machine only, because the run folder is not committed. Both folders are inside the run's worktree (S74). |
+| Worktree | orchestra starts every run in `.orchestra/worktrees/<branch>`, detached at the base. The workflow creates its branch there and never checks out, pulls or switches (S74). |
 | Mode | Headless or interactive is fixed by the workflow's author when the workflow is built. It is not a runtime setting (S12). |
 
 ## 8. `orc-standard-workflow`
@@ -344,10 +345,9 @@ its options. `evaluate` lists each Evaluate finding as one line with `file:line`
 
 This step is code in `next.js`, not prose (S17, S23).
 
-1. If the working tree is dirty, stop with `failed` and say why.
-2. Read the default branch from `origin/HEAD`. Check it out and run `git pull --rebase`.
-3. Create `task/<slug>`. The slug comes from the task text.
-4. Record the base commit (the HEAD before any work) in `tmp/runs/<branch>/run.json`, and write the task to `docs/runs/<branch>/task.md`.
+1. orchestra has already created the run's worktree, detached at `origin/<default>` (S74).
+2. Create `task/<slug>` from HEAD. The slug comes from the task text. Never check out, pull or switch.
+3. Record the base commit (the HEAD before any work) in `tmp/runs/<branch>/run.json`, and write the task to `docs/runs/<branch>/task.md`.
 
 Stages make one commit per plan task. Each gate's fixes are their own commit. The workflow never
 pushes and never opens a PR.

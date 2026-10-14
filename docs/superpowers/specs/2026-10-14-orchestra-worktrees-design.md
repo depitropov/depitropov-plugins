@@ -135,3 +135,8 @@ All three plugins move to 0.11.0, because the workflow contract changes.
 - R8 (done), S74 in `docs/TENSIONS.md` and `docs/DECISIONS.md`; O9 leaves "Later".
 - `docs/DESIGN.md` §6.6, §7, §8.3; `docs/CONTEXT.md`: **worktree**, **project root**, **run root**.
 - `docs/guide.html`: the sections this changes, the version and the last S number.
+
+## Amendments (planning)
+
+1. **The `report` path stays relative to the run root,** as today. A kept worktree is named by the new action key `worktree` (relative to the project root), so the user opens `<worktree>/<report>`. On `done` the worktree is gone, so the skill shows `git show <branch>:<report>`. The spec said "relative to the project root", which fails on `done`.
+2. **The config comes from the base commit.** `next.js` and the runner read `.orchestra/config.json` inside the worktree, which is the committed version at `origin/<default>`. `drive.js` copies only `.orchestra/resolved.json` (git-ignored) from the project root into the run root on every call. A config that is not on `origin/<default>` stops the start with a clear message.

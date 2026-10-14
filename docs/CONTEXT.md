@@ -22,5 +22,8 @@ The glossary of this project. Use these names and no others.
 | **Fix guide** | A skill, owned by the gate's declarer, that says how to fix one tool's findings. |
 | **Triage** | Sorting each finding of a judging stage or an agent gate into Decide, Patch, Evaluate or Noise. The contract is the skill `orchestra:triage`. |
 | **Guide** | Short write-time rules for the planner (`guides.plan`) or the coder (`guides.code`), declared by the Stack Skills. |
-| **Run folder** | `tmp/runs/<branch>/`. The orchestration state of one run: results, checkpoints, logs, `run.json`, `stages.json`. Git-ignored. |
-| **Notes folder** | `docs/runs/<branch>/`. What a human reads about one run: `task.md`, `brief.md`, `plan.md`, `decisions.md`, review notes, `report.md`. Committed. |
+| **Run folder** | `tmp/runs/<branch>/`. The orchestration state of one run: results, checkpoints, logs, `run.json`, `stages.json`. Git-ignored. Inside the run root. |
+| **Notes folder** | `docs/runs/<branch>/`. What a human reads about one run: `task.md`, `brief.md`, `plan.md`, `decisions.md`, review notes, `report.md`. Committed. Inside the run root. |
+| **Worktree** | The git worktree of one run, `.orchestra/worktrees/<branch>`. Git-ignored. Removed when the run is done; the branch stays. |
+| **Project root** | The user's checkout. orchestra reads `.orchestra/` there and never changes anything else. |
+| **Run root** | The run's worktree. Every stage, gate, build and commit of the run happens there. |

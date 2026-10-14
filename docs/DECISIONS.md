@@ -221,3 +221,30 @@ wording change needs no entry.
 - **Decision:** Phase 1 is closed on Claude Code. The Codex run is no longer a phase 1 criterion; it is the done test of plan 5. Pillar 4 (portability) stays: no harness-specific file enters a plugin.
 - **Cost and risk:** portability is not proven by a run. A Codex difference (skill names, subagent dispatch, the `manifest` skill's folder) can surface late, after more code depends on it. Watch for it when plan 5 resumes.
 - **Where it lives:** `docs/DESIGN.md` §13, `docs/TENSIONS.md`.
+
+## S74: Runs work in a git worktree
+
+- **Date:** 2026-10-14
+- **Status:** decided
+- **Question:** How does a run stay out of the user's checkout? In the first real run, a run moved the user's branch (O9).
+- **Options:**
+  1. Where the worktree lives.
+     - In the project, at `.orchestra/worktrees/<branch>`. Chosen. It is easy to find and it needs one git-ignore rule. The IDE may index it.
+     - In a sibling folder. The IDE ignores it, but it litters the parent folder and orchestra must guess a name.
+     - In the home folder. Nothing is near the project, and paths for several projects collide.
+  2. What happens on `done`.
+     - Remove the worktree and keep the branch. Chosen. No clutter; the report stays readable with `git show`.
+     - Keep it. Nothing is lost, but worktrees pile up.
+     - Keep it with a clean command. It adds a command for a job the run can do itself.
+  3. The base of the worktree.
+     - `origin/<default>` after a fetch. Chosen. It is the same base for every run. Unpushed local commits are not in the run.
+     - The local default branch, fast-forwarded. It touches the user's branch.
+     - The local branch as it is. It carries the user's half-done work into the run.
+  4. Who owns it.
+     - orchestra. Chosen. Every workflow gets the same safe start.
+     - The workflow. Each workflow must repeat the logic.
+     - A config option. It lets a project turn the safety off.
+- **Evidence:** R8, with the scratch-repo measurements in it.
+- **Decision:** As the S74 row in `docs/TENSIONS.md`. Two amendments came from planning. (1) The `report` path stays relative to the run root. A kept worktree is named by the action key `worktree`, relative to the project root. On `done` the skill reads the report with `git show <branch>:<report>`. A `done` action whose worktree git refused to remove carries `worktree` and `kept`. (2) The config comes from the base commit. `.orchestra/config.json` is read inside the worktree. `drive.js` copies only `.orchestra/resolved.json` from the project root on every call. A config that is not on `origin/<default>` stops the start. `create()` reads `origin/HEAD` before `git fetch`. A missing `origin/HEAD` fails with the hint "Run `git remote set-head origin -a`". Git 2.50's fetch would otherwise recreate it silently. `orchestra check --project` fails when `.orchestra/worktrees/` is not git-ignored.
+- **Cost and risk:** Unpushed local commits are not in a run. A fresh worktree has no untracked files (`.env`) and no build output. A run started in place before the upgrade cannot resume. IDEs may index the worktree. It is not run on Codex yet.
+- **Where it lives:** `plugins/orchestra/lib/worktree.js`, `plugins/orchestra/bin/drive.js`, `plugins/orchestra/lib/protocol.js`, `plugins/orchestra/lib/check.js`, `plugins/orc-standard-workflow/bin/next.js`, the skills `orchestra:run` and `orchestra:writing-plugins`.

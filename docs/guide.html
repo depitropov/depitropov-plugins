@@ -229,7 +229,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--line);
 <div class="shell">
 <nav class="rail" aria-label="Guide sections">
   <div class="brand">Orchestra</div>
-  <div class="ver">Field guide · plugins 0.10.0 · decisions to S73</div>
+  <div class="ver">Field guide · plugins 0.11.0 · decisions to S74</div>
   <ol>
     <li><a class="lvl" href="#l1"><span class="n">1</span> What it does</a>
       <ul><li><a href="#delivers">What it delivers</a></li><li><a href="#what">The result</a></li><li><a href="#why">Why use it</a></li><li><a href="#philosophy">Many gates, one workflow</a></li><li><a href="#explore">Explore a run</a></li></ul></li>
@@ -603,16 +603,16 @@ Evaluate
 
       <section class="xp-panel" data-step="1">
         <h4>Prepare</h4>
-        <div class="xp-meta"><span class="chip">plain code, no AI</span><span class="chip stopc">stops on a dirty tree</span></div>
+        <div class="xp-meta"><span class="chip">plain code, no AI</span><span class="chip">your checkout is not touched</span></div>
         <div data-depth="what">
-          <p>Orchestra starts from a fresh copy of your default branch and creates a new branch for the task. Your own work is safe: if you have changes that are not committed, the run stops and names the files.</p>
+          <p>Orchestra fetches your default branch and gives the run its own worktree, a separate folder with its own copy of the files. The new task branch lives there. Your checkout is not touched: your branch stays, and your uncommitted work stays where it is.</p>
         </div>
         <div data-depth="flow" hidden>
-          <ol class="xp-flow"><li class="s">tree clean?</li><li class="arrow">→</li><li>check out the default branch</li><li class="arrow">→</li><li>git pull --rebase</li><li class="arrow">→</li><li>create task/&lt;name&gt;</li><li class="arrow">→</li><li>record the base commit</li><li class="arrow">→</li><li>save the task text</li></ol>
-          <p>The default branch comes from <code>origin/HEAD</code>. A taken branch name gets <code>-2</code>, <code>-3</code>. The base commit is what every later review compares against.</p>
+          <ol class="xp-flow"><li class="s">fetch, then create the worktree at origin/&lt;default&gt;</li><li class="arrow">→</li><li>create task/&lt;name&gt; from HEAD</li><li class="arrow">→</li><li>record the base commit</li><li class="arrow">→</li><li>save the task text</li></ol>
+          <p>The default branch comes from <code>origin/HEAD</code>. The worktree is <code>.orchestra/worktrees/&lt;branch&gt;</code>. The workflow never checks out, pulls or switches. A taken branch name gets <code>-2</code>, <code>-3</code>. The base commit is what every later review compares against.</p>
         </div>
         <div data-depth="code" hidden>
-          <p><code>prepare()</code> in <code>orc-standard-workflow/bin/next.js</code>. It writes <code>tmp/runs/&lt;branch&gt;/run.json</code> (base, branch, brief path, notes folder) and <code>docs/runs/&lt;branch&gt;/task.md</code>.</p>
+          <p>Orchestra creates the worktree in <code>orchestra/lib/worktree.js</code>. <code>prepare()</code> in <code>orc-standard-workflow/bin/next.js</code> then runs inside it. It writes <code>tmp/runs/&lt;branch&gt;/run.json</code> (base, branch, brief path, notes folder) and <code>docs/runs/&lt;branch&gt;/task.md</code>.</p>
         </div>
       </section>
 
@@ -764,8 +764,8 @@ Evaluate
   <p>By hand, your project needs four things:</p>
   <ul>
     <li>The three plugins installed: <code>orchestra</code>, <code>orc-standard-workflow</code> and a stack plugin such as <code>orc-java-stack</code>.</li>
-    <li>A committed <code>.orchestra/config.json</code> that names the plugins (below).</li>
-    <li>A <code>.gitignore</code> with <code>.orchestra/*</code>, <code>!.orchestra/config.json</code> and <code>tmp/</code>.</li>
+    <li>A committed <code>.orchestra/config.json</code> that names the plugins (below). It must be on <code>origin/&lt;default&gt;</code>, because the run reads the config from there.</li>
+    <li>A <code>.gitignore</code> with <code>.orchestra/*</code>, <code>!.orchestra/config.json</code> and <code>tmp/</code>. The first line also hides the run worktrees, and <code>orchestra check</code> fails without it.</li>
     <li>An <code>origin/HEAD</code> that points to the default branch, and project instructions in <code>AGENTS.md</code>, not <code>CLAUDE.md</code>. In Claude Code, one <code>CLAUDE.md</code> turns off every <code>AGENTS.md</code>.</li>
   </ul>
 <pre><code>// .orchestra/config.json
@@ -777,7 +777,7 @@ Evaluate
 <pre><code>orchestra run "Add a VIP discount to the order total"   # start from text
 orchestra run docs/tasks/vip.md                          # start from a file
 orchestra run                                            # continue a stopped run</code></pre>
-  <p>Before it starts, orchestra tells you that it will check out the default branch, pull it, and create the task branch. A run can take a while, because the full build runs more than once.</p>
+  <p>Before it starts, orchestra tells you that it will fetch <code>origin/&lt;default&gt;</code> and work in <code>.orchestra/worktrees/&lt;branch&gt;</code>, on a new task branch. Your checkout is not touched. A run can take a while, because the full build runs more than once.</p>
 
   <h3 id="answer">Answer a question</h3>
   <p>A run stops for you only when a real decision is needed. The report lists each question with its options. You answer in a file, then run again.</p>
@@ -804,21 +804,21 @@ orchestra run                                            # continue a stopped ru
   </svg></div>
   <figcaption>The trigger is a count, not a flag. A step that stopped remembers how many answer sections it had seen. Only a new section restarts it, so editing an old answer never re-runs anything by accident.</figcaption>
   </figure>
-  <p>Add a <strong>new</strong> section at the end of <code>docs/runs/&lt;branch&gt;/decisions.md</code>, named after the step that asked. Write one line per question:</p>
+  <p>Add a <strong>new</strong> section at the end of <code>decisions.md</code> in the notes folder of the run's worktree, <code>.orchestra/worktrees/&lt;branch&gt;/docs/runs/&lt;branch&gt;/decisions.md</code>, named after the step that asked. Write one line per question:</p>
 <pre><code>## business-facts
 - the VIP discount rate → 10%
 - who counts as VIP → customers with 10 or more orders this year</code></pre>
-  <p>For business facts, every question needs its own line. When a line is missing, the run stops again with the same questions. Then run <code>orchestra run</code> with no task, on the task branch. You can also give the answers in the chat: orchestra writes the section for you, in your words.</p>
+  <p>For business facts, every question needs its own line. When a line is missing, the run stops again with the same questions. Then run <code>orchestra run</code> with no task. It finds the worktree itself; with two open runs, add <code>--branch</code>. You can also give the answers in the chat: orchestra writes the section for you, in your words.</p>
   <div class="note stopnote">
     <div class="label">Two rules</div>
-    <p>Text added to an old section is not read as an answer. Always add a new section. And do not change other files while a run is stopped: on resume, orchestra stops if it finds changed files, so your work is never mixed into the task.</p>
+    <p>Text added to an old section is not read as an answer. Always add a new section. And do not change files inside the run's worktree while a run is stopped: on resume, orchestra stops if it finds changed files, so your work is never mixed into the task. Your own checkout is separate and free to use.</p>
   </div>
 
   <h4>When a run fails</h4>
-  <p>A <code>failed</code> run shows the reason and the report. Fix the cause if it is yours (for example a dirty tree), then run <code>orchestra run</code> again. The failed step runs again. Steps that finished never run again.</p>
+  <p>A <code>failed</code> run shows the reason and the report. Fix the cause if it is yours (for example a config that is not on <code>origin/&lt;default&gt;</code>), then run <code>orchestra run</code> again. The failed step runs again. Steps that finished never run again.</p>
 
   <h3 id="readreport">Read the report</h3>
-  <p>The report is in <code>docs/runs/&lt;branch&gt;/report.md</code>, next to the brief, the plan and the review notes. Read these parts first:</p>
+  <p>The report is in <code>docs/runs/&lt;branch&gt;/report.md</code>, next to the brief, the plan and the review notes. While the run is stopped, open it in the worktree. When the run is <code>done</code>, the worktree is removed and the branch stays, so read it with <code>git show &lt;branch&gt;:docs/runs/&lt;branch&gt;/report.md</code>. Read these parts first:</p>
   <div class="tablewrap"><table>
     <thead><tr><th>Part</th><th>What to do with it</th></tr></thead>
     <tbody>
@@ -1130,7 +1130,7 @@ orchestra run                                            # continue a stopped ru
     <thead><tr><th>Guardrail</th><th>Protects against</th></tr></thead>
     <tbody>
       <tr><td>Code decides the order. The model runs only the step it is given.</td><td>Skipped or reordered steps.</td></tr>
-      <tr><td>A dirty tree stops a new run and names the files.</td><td>Your work mixed into a task.</td></tr>
+      <tr><td>The run works in its own worktree.</td><td>A run that moves your branch or touches your files.</td></tr>
       <tr><td>On resume, changed files stop the run. Nothing is committed.</td><td>Your edits committed by accident.</td></tr>
       <tr><td>No run without separate agents. The driver never does a step itself.</td><td>An agent judging its own work.</td></tr>
       <tr><td>No push, no branch change, no questions mid-step, for every agent.</td><td>Surprises outside the task branch.</td></tr>
@@ -1147,7 +1147,7 @@ orchestra run                                            # continue a stopped ru
   </table></div>
 
   <h3 id="files">Files</h3>
-  <p>A run keeps two folders, both named after the branch. What code needs to choose the next step stays in a git-ignored folder. What you read is committed.</p>
+  <p>A run keeps two folders, both named after the branch and both inside the run's worktree. What code needs to choose the next step stays in a git-ignored folder. What you read is committed.</p>
   <figure class="dg-fig"><div class="dg-scroll">
   <svg class="dg" viewBox="0 0 720 200" role="img" aria-label="Subagents write notes to docs/runs and a result JSON to tmp/runs. next.js and the gate runner read only tmp/runs. The human reads and answers in docs/runs. report.js reads tmp/runs and writes report.md into docs/runs.">
     <defs><marker id="a14" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
@@ -1261,6 +1261,7 @@ orchestra run                                            # continue a stopped ru
       <tr><td>S69</td><td>Every source part that the summaries lost is decided: a step that writes no result fails after two tries, another repo's need stops the run unless the task names that repo, and the report lists deviations and changed files.</td><td>The port inventory.</td></tr>
       <tr><td>S70</td><td>Every contract rule is plain code in <code>orchestra check</code>, which runs at the start of each run. A workflow is tested by a dry run of its real <code>next.js</code>. <code>orchestra init</code> writes only the plugin names.</td><td>The grilling of plan 2: one rule set, no schema files to keep in step.</td></tr>
       <tr><td>S72, S73</td><td>Phase 1 is closed on Claude Code. The Codex run moves to plan 5, which stays paused.</td><td>The exit test passed; no Codex install is available.</td></tr>
+      <tr><td>S74</td><td>Every run works in its own git worktree.</td><td>From the first real run: a run moved the user's branch (O9).</td></tr>
     </tbody>
   </table></div>
   <p>Each real run on a sample project fed back into the design. The first runs led to clearer errors, a skip for repeated builds, the Evaluate list in the report, the assumptions list, the business-fact stop, and the rebuilt logic review.</p>
@@ -1283,6 +1284,7 @@ orchestra run                                            # continue a stopped ru
       <tr><td><code>orchestra/lib/protocol.js</code></td><td>Checks each action and builds the agent prompt.</td></tr>
       <tr><td><code>orchestra/bin/resolve.js</code>, <code>lib/resolved.js</code></td><td>Find the plugins, write <code>.orchestra/resolved.json</code>, then run <code>orchestra check</code> on the config.</td></tr>
       <tr><td><code>orchestra/bin/check.js</code>, <code>lib/check.js</code></td><td>Every contract rule for a plugin and for the project config, and the dry run of a workflow's <code>next.js</code>.</td></tr>
+      <tr><td><code>orchestra/lib/worktree.js</code></td><td>Creates, renames, finds and removes the run's worktree, with plain git commands.</td></tr>
       <tr><td><code>orchestra/lib/git.js</code></td><td>Git helpers that skip the run folders.</td></tr>
     </tbody>
   </table></div>
@@ -1448,9 +1450,10 @@ orchestra run                                            # continue a stopped ru
       <tr><td>Gates selected by a rule in words</td><td><span class="pill later">later</span></td></tr>
       <tr><td><code>orchestra check</code>, the <code>orchestra init</code> setup, the <code>writing-plugins</code> reference</td><td><span class="pill built">built</span></td></tr>
       <tr><td>The phase 1 exit test: <code>orchestra init</code>, then a run that stops on a business fact and resumes to done, on Claude Code</td><td><span class="pill built">passed</span></td></tr>
+      <tr><td>Every run in its own git worktree</td><td><span class="pill built">built</span></td></tr>
       <tr><td>A tested run on Codex</td><td><span class="pill later">plan 5, paused</span></td></tr>
       <tr><td>Complexity (CRAP) and mutation testing gates</td><td><span class="pill later">phase 2</span></td></tr>
-      <tr><td>Project rules, the Curator, adapters for other AI frameworks, runs in a separate worktree</td><td><span class="pill later">later</span></td></tr>
+      <tr><td>Project rules, the Curator, adapters for other AI frameworks</td><td><span class="pill later">later</span></td></tr>
     </tbody>
   </table></div>
 
@@ -1478,7 +1481,7 @@ orchestra run                                            # continue a stopped ru
 </section>
 
 <footer>
-  This guide matches plugin version 0.10.0 and decisions up to S73. The sources of truth are <code>docs/DESIGN.md</code>, <code>docs/TENSIONS.md</code>, <code>docs/DECISIONS.md</code>, <code>docs/CONTEXT.md</code> and the code in <code>plugins/</code>.
+  This guide matches plugin version 0.11.0 and decisions up to S74. The sources of truth are <code>docs/DESIGN.md</code>, <code>docs/TENSIONS.md</code>, <code>docs/DECISIONS.md</code>, <code>docs/CONTEXT.md</code> and the code in <code>plugins/</code>.
 </footer>
 </main>
 </div>
