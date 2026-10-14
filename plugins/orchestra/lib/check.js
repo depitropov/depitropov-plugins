@@ -1,7 +1,10 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
-const { PHASES, ACTIONS } = require('./protocol');
+const os = require('node:os');
+const { execFileSync } = require('node:child_process');
+const { PHASES, ACTIONS, validateAction } = require('./protocol');
+const { git, scratchRepo } = require('./git');
 
 // The contract of a plugin declaration and of the project config. The skill writing-plugins explains
 // every word in these lists; a test fails when one is missing there.
@@ -209,7 +212,78 @@ function checkProject(project) {
   return out;
 }
 
+const HARNESS_WORDS = /Task tool|subagent_type|TodoWrite|Skill tool|claude -p/;
+
+function checkSkills(dir, label) {
+  const out = [];
+  const skillsDir = path.join(dir, 'skills');
+  const names = fs.existsSync(skillsDir) ? fs.readdirSync(skillsDir).filter(s => fs.existsSync(path.join(skillsDir, s, 'SKILL.md'))).sort() : [];
+  for (const s of names) {
+    const where = `${label}/skills/${s}/SKILL.md`;
+    const text = fs.readFileSync(path.join(skillsDir, s, 'SKILL.md'), 'utf8');
+    const m = text.match(/^---\n([\s\S]*?)\n---\n/);
+    if (!m) {
+      out.push(`${where}: it has no frontmatter. Fix: start it with ---, name, description, ---.`);
+    } else {
+      const keys = m[1].split('\n').filter(l => /^\S/.test(l)).map(l => l.split(':')[0]);
+      if (keys.join() !== 'name,description') out.push(`${where}: the frontmatter has the keys ${keys.join(', ')}. Fix: keep only name and description.`);
+      if (!new RegExp(`^name: ${s}$`, 'm').test(m[1])) out.push(`${where}: the frontmatter name is not "${s}". Fix: set name to the folder name.`);
+    }
+    const word = text.match(HARNESS_WORDS);
+    if (word) out.push(`${where}: it names a harness tool (${word[0]}). Fix: name the action instead, such as "dispatch a subagent" or "invoke the skill".`);
+  }
+  return out;
+}
+
+// Runs the workflow's next.js with a task in a throwaway repo, and validates the first action it prints.
+function dryRun(dir, label, declaration) {
+  const where = `${label}/bin/next.js`;
+  const nextJs = path.join(dir, 'bin', 'next.js');
+  if (!fs.existsSync(nextJs)) return [`${where} is missing. Fix: add it; it prints the next action of a run as one JSON line.`];
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'orchestra-check-'));
+  try {
+    const project = scratchRepo(root);
+    const stack = { plugin: 'check-stack', version: '0.0.0', dir: root, declaration: { slot: 'stack-skills', build: { run: 'true' } } };
+    fs.mkdirSync(path.join(project, '.orchestra'));
+    fs.writeFileSync(path.join(project, CONFIG), JSON.stringify({ workflow: { plugin: label }, 'stack-skills': { plugin: stack.plugin } }) + '\n');
+    git(project, 'add', CONFIG);
+    git(project, 'commit', '-m', 'config');
+    const resolved = { orchestra: { dir: path.join(__dirname, '..') }, slots: { workflow: { plugin: label, version: '0.0.0', dir, declaration }, 'stack-skills': stack } };
+    fs.writeFileSync(path.join(project, '.orchestra', 'resolved.json'), JSON.stringify(resolved) + '\n');
+    const task = path.join(root, 'task.txt');
+    fs.writeFileSync(task, 'Dry run of orchestra check\n');
+    const printed = execFileSync(process.execPath, [nextJs, '--project', project, '--task-file', task], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 });
+    const action = validateAction(JSON.parse(printed.trim().split('\n').pop()));
+    if (action.action === 'failed') return [`${where}: the dry run ended with failed: ${action.reason}. Fix: make the first call of a new run work.`];
+    return [];
+  } catch (e) {
+    return [`${where}: the dry run did not print a valid action: ${e.message.split('\n')[0]}. Fix: print one action of the orchestra protocol as JSON on the last line.`];
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+}
+
+function checkPlugin(dir) {
+  const out = [];
+  const a = parseJson(path.join(dir, 'plugin.json'), `${dir}/plugin.json`, out);
+  const b = parseJson(path.join(dir, '.claude-plugin', 'plugin.json'), `${dir}/.claude-plugin/plugin.json`, out);
+  if (a === undefined) out.push(`${dir}: plugin.json is missing. Fix: add it with "name" and "version".`);
+  if (b === undefined) out.push(`${dir}: .claude-plugin/plugin.json is missing. Fix: add it with the same "name" and "version" as plugin.json.`);
+  if (a && b && (!a.name || !a.version || a.name !== b.name || a.version !== b.version)) {
+    out.push(`${dir}: the two manifests differ or lack a name or version (${a.name} ${a.version}, ${b.name} ${b.version}). Fix: give both the same name and version.`);
+  }
+  const label = (a && a.name) || path.basename(dir);
+  out.push(...checkSkills(dir, label));
+  const d = parseJson(path.join(dir, 'orchestra.json'), `${label}/orchestra.json`, out);
+  if (d === undefined || d === null) return out;
+  const declaration = checkDeclaration(d, dir, `${label}/orchestra.json`);
+  out.push(...declaration);
+  if (!skillExists(dir, 'manifest')) out.push(`${label}: there is no manifest skill. Fix: add skills/manifest/SKILL.md; it answers PLUGIN_DIR=<folder>.`);
+  if (!declaration.length && d.slot === 'workflow') out.push(...dryRun(dir, label, d));
+  return out;
+}
+
 module.exports = {
   SLOTS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, GUIDE_KINDS, SECTION_KEYS, PHASES, ACTIONS,
-  parseJson, skillExists, checkDeclaration, checkProject,
+  parseJson, skillExists, checkDeclaration, checkProject, checkPlugin,
 };

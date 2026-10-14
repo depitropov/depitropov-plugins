@@ -1,6 +1,5 @@
 {
   "slot": "workflow",
-  "params": [],
   "config": {
     "tasks-per-coder": { "type": "number", "default": 2 }
   },

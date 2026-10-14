@@ -1,6 +1,5 @@
 {
   "slot": "stack-skills",
-  "params": [],
   "config": {},
   "build": { "run": "./mvnw -B -fae $(grep -q spotless-maven-plugin pom.xml 2>/dev/null && echo -Dspotless.check.skip=true) verify", "guide": "fix-build", "max_rounds": 3 },
   "guides": { "code": "code-guide" },

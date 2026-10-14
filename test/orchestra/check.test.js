@@ -112,3 +112,46 @@ test('an unresolved slot, a missing or broken config, and a declaration in the w
   assert.equal(swapped.length, 1, swapped.join(' | '));
   assert.match(swapped[0], /"slot" is stack-skills, but it fills the workflow slot/);
 });
+
+const { execFileSync } = require('node:child_process');
+const { checkPlugin } = require('../../plugins/orchestra/lib/check');
+const CHECK = path.join(__dirname, '../../plugins/orchestra/bin/check.js');
+
+test('plugin rules: the manifests, the frontmatter, harness words and the manifest skill', () => {
+  const dir = writePlugin(tmp('st-'), 'st', stack());
+  fs.rmSync(path.join(dir, 'skills/manifest'), { recursive: true });
+  writeJson(path.join(dir, '.claude-plugin/plugin.json'), { name: 'st', version: '9.9.9' });
+  fs.mkdirSync(path.join(dir, 'skills/extra'));
+  fs.writeFileSync(path.join(dir, 'skills/extra/SKILL.md'), '---\nname: extra\ndescription: d\nmodel: x\n---\nUse the Task tool.\n');
+  const out = checkPlugin(dir);
+  assert.equal(out.length, 4, out.join('\n'));
+  assert.match(out[0], /the two manifests differ/);
+  assert.match(out[1], /skills\/extra\/SKILL\.md: the frontmatter has the keys name, description, model/);
+  assert.match(out[2], /skills\/extra\/SKILL\.md: it names a harness tool \(Task tool\)/);
+  assert.match(out[3], /st: there is no manifest skill/);
+  for (const line of out) assert.match(line, /\. Fix: .+\.$/);
+});
+
+test('a plugin without orchestra.json gets only the packaging rules', () => {
+  const dir = writePlugin(tmp('orc-'), 'orc');
+  fs.rmSync(path.join(dir, 'skills/manifest'), { recursive: true });
+  assert.deepEqual(checkPlugin(dir), []);
+});
+
+test('the dry run reports a next.js that is missing, prints no action, or fails', () => {
+  const dir = writePlugin(tmp('wf-'), 'wf', { slot: 'workflow', gates: [] });
+  assert.match(checkPlugin(dir).join('\n'), /wf\/bin\/next\.js is missing\. Fix: /);
+  fs.mkdirSync(path.join(dir, 'bin'));
+  fs.writeFileSync(path.join(dir, 'bin/next.js'), 'console.log("hello")\n');
+  assert.match(checkPlugin(dir).join('\n'), /wf\/bin\/next\.js: the dry run did not print a valid action/);
+  fs.writeFileSync(path.join(dir, 'bin/next.js'), 'console.log(JSON.stringify({ action: "failed", reason: "boom" }))\n');
+  assert.match(checkPlugin(dir).join('\n'), /wf\/bin\/next\.js: the dry run ended with failed: boom/);
+});
+
+test('the command line lists the failures and exits 1, or passes and exits 0', () => {
+  const bad = writePlugin(tmp('st-'), 'st', { slot: 'stack-skills' });
+  assert.throws(() => execFileSync(process.execPath, [CHECK, bad], { encoding: 'utf8' }), e => e.status === 1 && /1 failed\./.test(e.stdout));
+  const good = writePlugin(tmp('st-'), 'st', stack());
+  assert.match(execFileSync(process.execPath, [CHECK, good], { encoding: 'utf8' }), /All checks passed\./);
+  assert.throws(() => execFileSync(process.execPath, [CHECK], { encoding: 'utf8', stdio: 'pipe' }), e => e.status === 1);
+});

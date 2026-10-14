@@ -14,54 +14,22 @@ const REFERENCED = ['orchestra/run', 'orchestra/fixer', 'orchestra/triage', 'orc
   'orc-standard-workflow/plan', 'orc-standard-workflow/plan-check', 'orc-standard-workflow/plan-conformance', 'orc-standard-workflow/code',
   'orc-standard-workflow/logic-review', 'orc-java-stack/manifest', 'orc-java-stack/fix-build'];
 
+const { checkPlugin } = require('../plugins/orchestra/lib/check');
+
+test('orchestra check passes on every plugin, and each plugin is named after its folder', () => {
+  for (const p of plugins) {
+    assert.deepEqual(checkPlugin(path.join(PLUGINS, p)), [], p);
+    assert.equal(JSON.parse(fs.readFileSync(path.join(PLUGINS, p, 'plugin.json'), 'utf8')).name, p);
+  }
+});
+
 test('every skill the code dispatches exists', () => {
   const have = skills.map(s => `${s.plugin}/${s.name}`);
   for (const r of REFERENCED) assert.ok(have.includes(r), `missing skill ${r}`);
 });
 
-test('SKILL.md frontmatter has only name and description, and name matches the folder', () => {
-  for (const s of skills) {
-    const text = fs.readFileSync(s.file, 'utf8');
-    const m = text.match(/^---\n([\s\S]*?)\n---\n/);
-    assert.ok(m, `${s.file}: no frontmatter`);
-    const keys = m[1].split('\n').filter(l => /^\S/.test(l)).map(l => l.split(':')[0]);
-    assert.deepEqual(keys, ['name', 'description'], s.file);
-    assert.match(m[1], new RegExp(`^name: ${s.name}$`, 'm'), s.file);
-  }
-});
-
-test('shipped files use no harness-specific words', () => {
-  const banned = /Task tool|subagent_type|TodoWrite|Skill tool|claude -p/;
-  for (const s of skills) assert.doesNotMatch(fs.readFileSync(s.file, 'utf8'), banned, s.file);
-});
-
 test('shipped skills carry no ship.cars names', () => {
   for (const s of skills) assert.doesNotMatch(fs.readFileSync(s.file, 'utf8'), /cars\.ship|SC[A-Z]\w*Utils|scValue|LITE-/, s.file);
-});
-
-test('both manifests of each plugin parse and have the same version', () => {
-  for (const p of plugins) {
-    const a = JSON.parse(fs.readFileSync(path.join(PLUGINS, p, 'plugin.json'), 'utf8'));
-    const b = JSON.parse(fs.readFileSync(path.join(PLUGINS, p, '.claude-plugin', 'plugin.json'), 'utf8'));
-    assert.equal(a.name, p);
-    assert.equal(a.version, b.version, p);
-  }
-});
-
-test('every skill and guide a declaration names is a skill in that plugin', () => {
-  for (const p of plugins) {
-    const file = path.join(PLUGINS, p, 'orchestra.json');
-    if (!fs.existsSync(file)) continue;
-    const d = JSON.parse(fs.readFileSync(file, 'utf8'));
-    const names = [
-      ...Object.values(d.guides || {}),
-      ...(d.build && d.build.guide ? [d.build.guide] : []),
-      ...(d.gates || []).flatMap(g => [g.skill, g.guide].filter(Boolean)),
-    ];
-    for (const name of names) {
-      assert.ok(fs.existsSync(path.join(PLUGINS, p, 'skills', name, 'SKILL.md')), `${p}: ${name} has no skill`);
-    }
-  }
 });
 
 test('every judging skill takes its triage from orchestra:triage, not from its own copy', () => {

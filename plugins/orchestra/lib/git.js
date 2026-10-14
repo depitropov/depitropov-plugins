@@ -1,4 +1,6 @@
 'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
 // tmp/ must be git-ignored by the project (S58). `git add` rejects an exclude for an ignored folder,
@@ -45,4 +47,23 @@ function commitKeeping(cwd, message, keep) {
 
 const commitRunDir = (cwd, runDir, message) => commitPaths(cwd, message, [runDir]);
 
-module.exports = { EXCLUDE, git, changedFiles, dirtyFiles, isClean, commitAll, commitKeeping, commitRunDir };
+// A repo with a bare remote and one commit. orchestra check's dry run uses it, and so do the tests.
+function scratchRepo(root) {
+  const origin = path.join(root, 'origin.git');
+  const dir = path.join(root, 'work');
+  git(root, 'init', '--bare', '-b', 'main', origin);
+  git(root, 'clone', origin, dir);
+  git(dir, 'symbolic-ref', 'HEAD', 'refs/heads/main');
+  git(dir, 'config', 'user.email', 'orchestra@example.com');
+  git(dir, 'config', 'user.name', 'orchestra');
+  git(dir, 'config', 'commit.gpgsign', 'false');
+  fs.writeFileSync(path.join(dir, '.gitignore'), '.orchestra/*\n!.orchestra/config.json\ntmp/\n');
+  fs.writeFileSync(path.join(dir, 'README.md'), 'sample\n');
+  git(dir, 'add', '-A');
+  git(dir, 'commit', '-m', 'init');
+  git(dir, 'push', '-u', 'origin', 'main');
+  git(dir, 'remote', 'set-head', 'origin', 'main');
+  return dir;
+}
+
+module.exports = { EXCLUDE, git, changedFiles, dirtyFiles, isClean, commitAll, commitKeeping, commitRunDir, scratchRepo };
