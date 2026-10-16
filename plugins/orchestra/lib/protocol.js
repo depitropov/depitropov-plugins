@@ -56,4 +56,15 @@ function withPrompt(a, root, guides = []) {
   return { ...a, prompt };
 }
 
-module.exports = { PHASES, TERMINAL, ACTIONS, ROLES, validateAction, roleError, guidesFor, withPrompt };
+// For an inline action: the main session runs the skill itself, so the prompt has no subagent rules.
+function inlinePrompt(a, root) {
+  return [
+    `Invoke the skill \`${a.skill}\` in this session and follow it. It may ask the user questions; ask them.`,
+    `Work in \`${root}\`. Run every command from there; every path below is relative to it.`,
+    'Inputs:',
+    ...Object.entries(a.inputs).map(([key, value]) => `- ${key}: ${value}`),
+    `When you finish, write the result JSON that the skill describes to \`${a.result}\`.`,
+  ].join('\n');
+}
+
+module.exports = { PHASES, TERMINAL, ACTIONS, ROLES, validateAction, roleError, guidesFor, withPrompt, inlinePrompt };

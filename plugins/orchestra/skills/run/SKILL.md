@@ -55,6 +55,10 @@ the run is open. Tell the user both once, when the run starts. Every path in the
 - `dispatch`: dispatch a general-purpose subagent with a clean context. It must be able to read and
   edit files and run shell commands. Give it the `prompt` text exactly. Wait
   until it finishes. Then run `node <orchestra>/bin/drive.js` again, with no task.
+- `inline`: do this one yourself, in this session, not in a subagent. orchestra prints it for a
+  Curator skill that may talk to the user. Follow the `prompt` text exactly: invoke the skill it
+  names, ask the user its questions, work only in `worktree`, and write the result file. Then run
+  `node <orchestra>/bin/drive.js` again, with no task.
 - `done`: tell the user the run is done, on which `branch`, and that they read the report with
   `git show <branch>:<report>`. If the action has `kept`, say the worktree `<worktree>` was kept and show `kept`. When the user has dealt with the files, they remove it with `git worktree remove <worktree>`.
 - `failed`: show the `reason`, the `branch`, and `<worktree>/<report>` when the action has them.
@@ -70,10 +74,11 @@ Stop after `done`, `failed` or `decide`.
 
 ## Permitted actions
 
-- Do not edit project files yourself. Subagents do the work in the run's worktree. The one exception:
-  the user's answers to a `decide`, written to `decisions.md` inside the worktree as above.
+- Do not edit project files yourself. Subagents do the work in the run's worktree. Two exceptions:
+  the user's answers to a `decide`, written to `decisions.md` inside the worktree as above, and the
+  work of an `inline` action.
 - Do not change the order, skip a dispatch or run a stage that was not printed.
 - Do not push and do not open a pull request.
 - If you cannot dispatch a subagent, stop the run. Tell the user that orchestra needs subagents:
   each stage runs in a fresh context, so a reviewer never judges work from its own context. Never
-  do a stage yourself.
+  do a stage yourself; an `inline` action is not a stage.

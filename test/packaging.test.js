@@ -48,6 +48,7 @@ test('the run skill stops when it cannot dispatch a subagent, and never does a s
   const text = fs.readFileSync(path.join(PLUGINS, 'orchestra', 'skills', 'run', 'SKILL.md'), 'utf8');
   assert.match(text, /cannot dispatch a subagent, stop the run/);
   assert.doesNotMatch(text, /invoke the skill named in `skill` yourself/);
+  assert.match(text, /- `inline`: do this one yourself, in this session, not in a subagent\./);
 });
 
 test('skill examples use no names from the sample task', () => {

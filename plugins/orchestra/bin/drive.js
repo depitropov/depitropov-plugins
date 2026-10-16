@@ -4,11 +4,12 @@ const fs = require('node:fs');
 const { isDeepStrictEqual } = require('node:util');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
-const { validateAction, withPrompt, guidesFor, roleError } = require('../lib/protocol');
+const { validateAction, withPrompt, inlinePrompt, guidesFor, roleError } = require('../lib/protocol');
 const { load } = require('../lib/resolved');
 const runner = require('../lib/runner');
 const { writeReport } = require('../lib/report');
 const worktree = require('../lib/worktree');
+const curator = require('../lib/curator');
 const { git, dirtyFiles, commitAll, commitRunDir } = require('../lib/git');
 
 function callNext(nextJs, project, args) {
@@ -88,7 +89,11 @@ function copyResolved(project, root) {
 
 // The model is told the branch and the worktree on every action, so it never guesses where the commits went.
 function answer(project, root, action) {
-  const prompted = action.action === 'dispatch' ? withPrompt(action, root, guidesFor(action.role, load(root), readConfig(root))) : action;
+  const prompts = {
+    dispatch: a => withPrompt(a, root, guidesFor(a.role, load(root), readConfig(root))),
+    inline: a => ({ ...a, prompt: inlinePrompt(a, root) }),
+  };
+  const prompted = prompts[action.action] ? prompts[action.action](action) : action;
   const out = { ...prompted, branch: git(root, 'branch', '--show-current'), worktree: path.relative(project, root) };
   if (action.action !== 'done') return out;
   const kept = worktree.remove(project, root);
@@ -126,8 +131,19 @@ function step(project, extraArgs, resume) {
     if (a.action === 'dispatch') {
       const bad = roleError(a, resolved.slots.workflow.declaration);
       if (bad) return finish(project, { action: 'failed', reason: bad, runDir: a.runDir }, resolved);
+      // ponytail: the held-back dispatch counts as one of the workflow's two dispatches of that stage; once per project.
+      const held = curator.setup(project, a.runDir, resolved);
+      if (held && held.action === 'failed') return finish(project, held, resolved);
+      if (held) {
+        remember(project, held);
+        return held;
+      }
       remember(project, a);
       return a;
+    }
+    if (a.action === 'done') {
+      const c = curator.curate(project, a.runDir, resolved);
+      if (c) return c.action === 'failed' ? finish(project, c, resolved) : c;
     }
     if (a.action === 'decide' && a.result) remember(project, a);
     if (a.action !== 'phase') return finish(project, a, resolved);

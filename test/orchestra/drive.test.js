@@ -14,15 +14,23 @@ const PLUGINS = path.join(__dirname, '../../plugins');
 const wt = (dir, a) => path.join(dir, a.worktree);
 const doneReport = (dir, a) => git(dir, 'show', `${a.branch}:${a.report}`);
 
-function project() {
+function project({ curator } = {}) {
   const dir = makeRepo();
   const st = fs.mkdtempSync(path.join(os.tmpdir(), 'st-'));
   writePlugin(st, 'st', { slot: 'stack-skills', build: { run: 'node -e "process.exit(0)"', guide: 'fix-build' }, gates: [] });
-  writeJson(path.join(dir, '.orchestra/config.json'), { workflow: { plugin: 'orc-standard-workflow' }, 'stack-skills': { plugin: 'st' } });
+  const config = { workflow: { plugin: 'orc-standard-workflow' }, 'stack-skills': { plugin: 'st' } };
+  const dirs = { workflow: path.join(PLUGINS, 'orc-standard-workflow'), 'stack-skills': st };
+  if (curator) {
+    const cur = fs.mkdtempSync(path.join(os.tmpdir(), 'cur-'));
+    writePlugin(cur, 'cur', { slot: 'curator', curate: 'curate', setup: { skill: 'setup', done: 'docs/curator/.setup' }, guides: { plan: 'plan-guide' } });
+    config.curator = { plugin: 'cur' };
+    dirs.curator = cur;
+  }
+  writeJson(path.join(dir, '.orchestra/config.json'), config);
   git(dir, 'add', '-A');
   git(dir, 'commit', '-m', 'config');
   git(dir, 'push');
-  resolve(dir, { workflow: path.join(PLUGINS, 'orc-standard-workflow'), 'stack-skills': st }, path.join(PLUGINS, 'orchestra'));
+  resolve(dir, dirs, path.join(PLUGINS, 'orchestra'));
   fs.writeFileSync(path.join(dir, '.orchestra/task.txt'), 'Add a discount\n');
   return dir;
 }
@@ -365,4 +373,52 @@ test('a run started in the checkout by orchestra 0.10 gets its own failure on re
   const a = drive(dir);
   assert.equal(a.action, 'failed');
   assert.match(a.reason, /The run on task\/old started in your checkout before orchestra 0\.11\.0 and cannot resume in a worktree\. Finish it with orchestra 0\.10, or start it again\./);
+});
+
+test('with a curator: setup runs first, plan gets the curator guide, curate runs on done and is last in the report', () => {
+  const dir = project({ curator: true });
+  const setup = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  assert.equal(setup.action, 'inline');
+  assert.equal(setup.skill, 'cur:setup');
+  assert.match(setup.prompt, /in this session/);
+  const root = wt(dir, setup);
+  fs.mkdirSync(path.join(root, 'docs/curator'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'docs/curator/.setup'), '');
+  git(root, 'add', 'docs/curator');
+  git(root, 'commit', '-m', 'docs(curator): setup');
+  writeJson(path.join(root, setup.result), { status: 'ok' });
+
+  let a = drive(dir);
+  assert.equal(a.skill, 'orc-standard-workflow:spec');
+  assert.doesNotMatch(a.prompt, /cur:plan-guide/);
+  writeJson(path.join(wt(dir, a), a.result), { stage: 'spec', status: 'ok' });
+  a = drive(dir);
+  assert.equal(a.skill, 'orc-standard-workflow:plan');
+  assert.match(a.prompt, /- `cur:plan-guide`/);
+  writeJson(path.join(wt(dir, a), a.result), { stage: 'plan', status: 'ok' });
+  a = drive(dir);
+  fs.writeFileSync(path.join(wt(dir, a), a.inputs.plan), '# Plan\n\n### T1 — a task\n');
+  writeJson(path.join(wt(dir, a), a.result), { stage: 'plan-check', status: 'ok' });
+  const code = drive(dir);
+  writeJson(path.join(wt(dir, code), code.result), { stage: 'code', status: 'ok' });
+  const review = toReview(dir);
+  writeJson(path.join(wt(dir, review), review.result), { stage: 'logic-review', status: 'ok' });
+
+  const curate = afterReview(dir);
+  assert.equal(curate.action, 'inline');
+  assert.equal(curate.skill, 'cur:curate');
+  assert.equal(curate.inputs.brief, 'docs/runs/task/add-a-discount/brief.md');
+  writeJson(path.join(wt(dir, curate), curate.result), { status: 'ok' });
+
+  const done = drive(dir);
+  assert.equal(done.action, 'done');
+  const rows = doneReport(dir, done).split('\n').filter(l => /^\| (setup|spec|curate|phase-finish) \|/.test(l)).map(l => l.split(' | ')[0].slice(2));
+  assert.deepEqual(rows, ['setup', 'spec', 'phase-finish', 'curate']);
+});
+
+test('without a curator no action is inline', () => {
+  const dir = project();
+  const a = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  assert.equal(a.action, 'dispatch');
+  assert.equal(a.skill, 'orc-standard-workflow:spec');
 });

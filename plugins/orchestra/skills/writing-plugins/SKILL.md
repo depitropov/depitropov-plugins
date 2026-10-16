@@ -69,6 +69,7 @@ A Curator keeps a project's direction docs current. orchestra knows only its dec
 - `curate` runs when the workflow is done, before the report. Its inputs are `base`, `brief` and
   `notes`. It commits its edits.
 - Each writes the result JSON `{ "status": "ok" }`, or `{ "status": "failed", "reason": "…" }`.
+- orchestra asks for each skill with an `inline` action, which the `orchestra:run` skill carries out in the main session. Only orchestra prints `inline`; a workflow's `next.js` never does.
 - Every skill of a Curator should also work by hand, with no run.
 
 ## The project config
