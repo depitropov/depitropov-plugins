@@ -45,6 +45,8 @@ test('the minimal setup copies the templates into docs/curator and writes the fl
   assert.match(text, /docs\/curator\/\.setup/);
   assert.match(text, /last/);
   assert.match(text, /never overwrite/i);
+  assert.match(text, /Do not copy `CONTEXT\.md`/);
+  assert.doesNotMatch(text, /`QUESTIONS\.md`,\s+`CONTEXT\.md`/);
 });
 
 test('the marketplace lists orc-curator', () => {

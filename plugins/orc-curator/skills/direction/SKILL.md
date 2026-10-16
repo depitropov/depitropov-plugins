@@ -64,7 +64,7 @@ Read these, and nothing more:
   research. Do not research again what is already researched.
 - **The real code** that the `## Now` rows touch. Search and read it. **Never reason about a
   structure that you assume**, and never assume that a constraint is satisfied without opening the
-  file. If there is code *at all* is also an input: ignore `docs/`, configuration and lock files.
+  file. Whether there is code at all is also an input: ignore `docs/`, configuration and lock files.
 - From `curate`: the diff evidence. It is evidence from the code, not a note.
 
 Then state back, in 8 lines or fewer: what `## Now` builds, what `## Next` will demand of it, which

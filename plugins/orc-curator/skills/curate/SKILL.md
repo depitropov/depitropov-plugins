@@ -158,6 +158,8 @@ goes straight to the result.
 
 When orchestra runs you, write `{ "status": "ok" }` to the result path after the commit. On an
 unreadable input or an error, write `{ "status": "failed", "reason": "<what>" }`.
+Before you write a `failed` result, discard your uncommitted edits under `docs/curator/` (restore
+them from the last commit), so that a rerun starts from the committed docs.
 
 Then tell the user the summary: the served row and where it went, the verdict counts
 (ADD, UPDATE, NOOP, question) with one line for each candidate, what you removed, the orphans, the

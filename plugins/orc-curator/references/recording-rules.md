@@ -17,6 +17,8 @@ add a row. A count breaks when anything is deleted, and it issues a live id agai
 **Ids are never reused**, also after a reversal or a deletion. They are permanent handles: anything
 that points at `D3` must still mean what it meant.
 
+An id inside an HTML comment, such as the examples of a template, does not count.
+
 A `Bn` **keeps its id when it moves between horizons.** A row that moves from `## Later` to `## Next`
 is the same row.
 

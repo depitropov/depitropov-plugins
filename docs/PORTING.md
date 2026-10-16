@@ -921,8 +921,8 @@ General notes:
 | DECISIONS append-only; a reversal is a new row naming what it reverses | `plugins/orc-curator/references/recording-rules.md` | ported | yes |
 | Every `Why` opens with `hard:` or `soft:`, a prefix, never a column; set at write time | `plugins/orc-curator/references/recording-rules.md` | ported | yes |
 | A `soft:` row is invited to be challenged; challenge makes a new row | `plugins/orc-curator/references/recording-rules.md` | ported | yes |
-| QUESTIONS never blocks; entries closed, never deleted | `plugins/orc-curator/references/recording-rules.md` | ported. Note: inside a run a question can still stop the run as a Decide; that is the Curator asking, not QUESTIONS.md blocking | yes |
-| Removal tiered by confidence: delete only on plain contradiction, else flag | `plugins/orc-curator/references/recording-rules.md`; a flag in a run is a Decide (S76) | ported | yes |
+| QUESTIONS never blocks; entries closed, never deleted | `plugins/orc-curator/references/recording-rules.md` | ported. Note: inside a run the Curator asks the user inline (S76); that is the Curator asking, not QUESTIONS.md blocking | yes |
+| Removal tiered by confidence: delete only on plain contradiction, else flag | `plugins/orc-curator/references/recording-rules.md`; in a run the Curator asks the user inline (S76) | ported | yes |
 
 #### skills/shape-project/SKILL.md
 
@@ -1101,7 +1101,7 @@ General notes:
 | Two cadences: batch of 3–5 (shape-product) vs one at a time (shape-tech, direction, specify); why the wrong one costs | `orc-curator` references/interview-cadence.md; `specify` leaves the list (orchestra's spec does not interview) | planned (Curator plan, S76: changed list) | yes |
 | Budget from `config.yml` `questions` (none/few/regular/many) and never exceed it | `orc-curator` references/interview-cadence.md; a Curator config key or a fixed default, the plan decides | planned (Curator plan, S76: no config.yml) | yes |
 | Rules in both cadences (real options and what they foreclose, multiple choice with a recommendation, deferral is an answer, do not ask what you can infer, say why, ask only what changes a write) | `orc-curator` references/interview-cadence.md | planned (Curator plan, S76) | yes |
-| Inside an orchestra run a question is a Decide | `orc-curator` references/interview-cadence.md (new line) | planned (Curator plan, S76) | yes |
+| Inside an orchestra run a question is a Decide | `orc-curator` references/interview-cadence.md (new line: the Curator asks the user inline, S76; no Decide) | planned (Curator plan, S76) | yes |
 | What an answer is for: it lands somewhere durable in the same run | `orc-curator` references/interview-cadence.md | planned (Curator plan, S76) | yes |
 
 #### skills/research/SKILL.md
@@ -1149,7 +1149,7 @@ General notes:
 | Shared policy, cited by five skills, no flow | `orc-curator` references | planned (Curator plan, S76) | yes |
 | Table: who can answer each type of question | `orc-curator` references | planned (Curator plan, S76) | yes |
 | The two failure modes | `orc-curator` references | planned (Curator plan, S76) | yes |
-| After the split: ask spends budget; research records nothing; a one-way door escalates | `orc-curator` references; in a run "ask" is a Decide | planned (Curator plan, S76) | yes |
+| After the split: ask spends budget; research records nothing; a one-way door escalates | `orc-curator` references; in a run the Curator asks the user inline (S76) | planned (Curator plan, S76) | yes |
 
 #### references/right-sizing.md
 
@@ -1158,7 +1158,7 @@ General notes:
 | Rule 1: ceremony is set by the caller, never raised by the callee | `orc-curator` references | planned (Curator plan, S76) | yes |
 | Rule 2: offer the other tier once, then proceed | — | n/a (orchestra has one tier per workflow; tiers are minions' `quick`/`feature`) | no |
 | "Too small" and "too big for one plan" signals (≈ 7 commits, several `Bn` constraints) | — | n/a (orc-standard-workflow has no epic or quick tier; note for the workflow, not the Curator) | no |
-| "Too big for a light pass": a purpose change needs full ceremony and a human | `orc-curator:direction` verdict "purpose change" → a Decide | planned (Curator plan, S76) | yes |
+| "Too big for a light pass": a purpose change needs full ceremony and a human | `orc-curator:direction` Step 3 verdict "purpose change": stop and name it, escalate to `orc-curator:setup` | ported (changed, S76: no Decide; direction names it and the user decides) | yes |
 | Research depth: mode and budget, both set by the caller | `orc-curator:research` | planned (Curator plan, S76) | yes |
 
 #### skills/specify/SKILL.md
@@ -1169,27 +1169,27 @@ The parts that read the direction docs become `orc-curator:spec-guide`, pushed b
 |---|---|---|---|
 | Step 1.6: read DIRECTION to see if the request must satisfy `Cn`s of several `Bn` (epic signal) | — | n/a (orc-standard-workflow has no epic; plan-check judges size) | no |
 | Step 2: BACKLOG bookkeeping: match the request to a `Bn` (judgement, do not stretch) | `orc-curator:spec-guide`: the brief names `Serves: Bn` or `Serves: new` | ported (S76, Curator plan 2) | yes |
-| Step 2: move the matched row to Now, or add a new Now row | `orc-curator:curate` at the end of the run (ships the row, or adds it as shipped) | planned (Curator plan, S76: spec only reads) | yes |
-| Step 2: create BACKLOG from the template if missing | `orc-curator:setup` | planned (Curator plan, S76) | yes |
-| Step 2: a row keeps its `Bn` when it moves | `orc-curator` references (id rules) | planned (Curator plan, S76) | yes |
+| Step 2: move the matched row to Now, or add a new Now row | `orc-curator:curate` Step 3 (the served row, shipped at the end of the run) | ported (changed, S76: no run moves a row to Now; curate ships the served row, or adds it as shipped) | yes |
+| Step 2: create BACKLOG from the template if missing | `orc-curator:setup` Step 1 (copies the template when the file is missing) | ported (S76, Curator plan 2) | yes |
+| Step 2: a row keeps its `Bn` when it moves | `orc-curator` `references/recording-rules.md` "Ids"; `orc-curator:curate` Step 3 keeps the `Bn` when it ships a row | ported (S76, Curator plan 2) | yes |
 | Step 2: epic phases touch no row | — | n/a (no epic) | no |
 | Step 3: read BACKLOG Vision plus the row's section; skip Later | `orc-curator:spec-guide` | ported (S76, Curator plan 2) | yes |
 | Step 3: read PRODUCT for why, not what (`Why it's shaped this way`, `Deliberately not`) | `orc-curator:spec-guide` | ported (S76, Curator plan 2) | yes |
 | Step 3: read TECH | `orc-curator:spec-guide` | ported (S76, Curator plan 2) | yes |
 | Step 3: read CONTEXT; spec in its words | `orc-curator:spec-guide`, path `docs/curator/CONTEXT.md` | ported (S76, Curator plan 2) | yes |
 | Step 4: split gaps: ask or research (ask-vs-research) | `orc-curator:spec-guide` rules 6 and 7 (a `Question` line, or a `business fact:` line); "ask" is the business-facts stop of orc-standard-workflow | ported (S76: the stop already exists; the guide adds the split only; no `ask-vs-research` reference, research is out of the spec stage) | yes |
-| Step 4: a one-way door escalates to shape-tech inside the interview | `orc-curator:spec-guide`: name it as a business fact, the run stops with a Decide; `orc-curator:curate` routes the answer to TECH | partial (S76: the guide names the business fact; `curate` routes the answer to TECH, Task 4) | yes |
+| Step 4: a one-way door escalates to shape-tech inside the interview | `orc-curator:spec-guide` rule 7: a `business fact:` line, the run stops for a human; `orc-curator:curate` Step 5 routes the answer to DECISIONS and TECH | ported (changed, S76: the guide names the business fact; curate records the answer) | yes |
 | Step 4: research at a tiny budget, three-part bar, `deep` only | — | dropped (S76: the spec stage stays headless and fast; the Curator researches in direction and shape-tech) | yes |
-| Step 4: other research-shaped gaps become an open `Qn` | `orc-curator:spec-guide`: list them in the brief; `orc-curator:curate` files the `Qn` | partial (S76: the guide lists the gaps; `curate` files the `Qn`, Task 4) | yes |
+| Step 4: other research-shaped gaps become an open `Qn` | `orc-curator:spec-guide` rule 6 lists them as `Question` lines; `orc-curator:curate` Step 5 files the `Qn` | ported (changed, S76: the guide lists the gaps; curate files the `Qn`) | yes |
 | Step 4: never derive cross-feature pressure; that is direction's | `orc-curator:spec-guide` | ported (S76, Curator plan 2) | yes |
-| Step 5: an answer that settles a domain term goes to CONTEXT at once | `orc-curator:curate` writes the term at the end; the brief records the word | planned (Curator plan, S76: single writer at the end) | yes |
-| Step 5: record the word the user gave, never one you concluded | `orc-curator:spec-guide` and `orc-curator:curate` | partial (S76: the guide is done; `curate` is Task 4) | yes |
+| Step 5: an answer that settles a domain term goes to CONTEXT at once | `orc-curator:curate` Step 5 (CONTEXT row) writes the term at the end of the run; `orc-curator:spec-guide` rule 9 | ported (changed, S76: single writer at the end of the run) | yes |
+| Step 5: record the word the user gave, never one you concluded | `orc-curator:spec-guide` rule 9; `orc-curator:curate` Step 4 (verify against the code) | ported (S76, Curator plan 2) | yes |
 | Step 6: Out of scope list, explicit non-goals | orc-standard-workflow brief | n/a (the brief already has it) | no |
-| Step 7.1: a product rationale goes to PRODUCT `Why it's shaped this way` plus a `Dn` (`soft:` usually) | `orc-curator:curate` reads the brief and `decisions.md` | planned (Curator plan, S76) | yes |
-| Step 7.2: deferred wants go to BACKLOG Next or Later; not non-goals | `orc-curator:spec-guide` lists them in the brief; `orc-curator:curate` adds the rows | partial (S76: the guide lists them; `curate` adds the rows, Task 4) | yes |
-| Step 7.2: a new Next row owes a sweep; set no flag, it is computable | `orc-curator:curate` runs the sweep | planned (Curator plan, S76) | yes |
-| Step 7.3: `Qn` format, next id is highest plus one, answered entries counted | `orc-curator` references (id rules) | planned (Curator plan, S76) | yes |
-| Step 7.4: commit list of direction docs, vibe only | `orc-curator:curate` commit on the task branch | planned (Curator plan, S76) | yes |
+| Step 7.1: a product rationale goes to PRODUCT `Why it's shaped this way` plus a `Dn` (`soft:` usually) | `orc-curator:curate` Step 5 (rows "the why behind a choice" and "a product rationale") | ported (changed, S76: curate reads the brief and `decisions.md`) | yes |
+| Step 7.2: deferred wants go to BACKLOG Next or Later; not non-goals | `orc-curator:spec-guide` rule 5 lists them as `Deferred` lines; `orc-curator:curate` Step 5 adds the rows | ported (S76, Curator plan 2) | yes |
+| Step 7.2: a new Next row owes a sweep; set no flag, it is computable | `orc-curator:curate` Step 6 (DIRECTION) invokes `orc-curator:direction` with `Caller: curate`; `direction` Step 2 computes what is owed | ported (changed, S76: curate calls the sweep; no flag) | yes |
+| Step 7.3: `Qn` format, next id is highest plus one, answered entries counted | `orc-curator` `references/recording-rules.md` "Ids"; `orc-curator:curate` Step 5 (QUESTIONS rows: `## Qn — <question> · open`, `· answered → Dn`) | ported (S76, Curator plan 2) | yes |
+| Step 7.4: commit list of direction docs, vibe only | `orc-curator:curate` Step 8: one commit `docs(curator): curate <branch or range>` | ported (changed, S76: one commit at the end of the run) | yes |
 | Step 7.6: return block lines Deferred wants, Researched, Open questions filed, Escalated, Constraints owed, Worth reopening | brief sections that `orc-curator:curate` reads | partial (S76: Researched dropped with spec research) | yes |
 | Hard gate: never design; cross-feature invariants are shape-tech's | `orc-curator:spec-guide` | ported (S76, Curator plan 2) | yes |
 | Hard gate: never record a research finding as if the user said it | `orc-curator:spec-guide` | ported (S76, Curator plan 2) | yes |
@@ -1235,16 +1235,16 @@ The parts that read the direction docs become `orc-curator:plan-guide`, pushed b
 | Three layers: workflow, step, agent | — | n/a (orchestra has its own layers) | no |
 | Skills grouped: long-term decide, short-term comply; no skill does both | `orc-curator` README; guides read, Curator skills write | planned (Curator plan, S76) | yes |
 | Flow A: init → shape-project → shape-product → shape-tech → [backlog] → direction | `orc-curator:setup` | planned (Curator plan, S76) | yes |
-| Flow B: feature … → curate → direction | orchestra run → `orc-curator:curate` (runs the sweep) | planned (Curator plan, S76) | yes |
+| Flow B: feature … → curate → direction | orchestra run → `orc-curator:curate` (Step 6 runs the sweep through `orc-curator:direction`) | ported (changed, S76: curate runs inline at the end of the run) | yes |
 | Flow C: backlog → repair → direction | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| What direction decides per row: the verdict ladder with examples | `orc-curator:direction`, README | planned (Curator plan, S76) | yes |
+| What direction decides per row: the verdict ladder with examples | `orc-curator:direction` Step 3 (the verdict ladder); README not written yet | partial (S76: the ladder ships in direction; the README examples wait for the README) | yes |
 | Modes: maintain vs vibe | — | dropped (S76: a project without a Curator is "maintain") | no |
-| Four files, four tenses, no fact in two | `orc-curator` references | planned (Curator plan, S76) | yes |
-| CONTEXT is the dictionary, at the repo root, edited in place | `docs/curator/CONTEXT.md` | planned (Curator plan, S76: subfolder, not the repo root) | yes |
-| The PRODUCT test: would deleting one backlog row make it false? | `orc-curator:curate` | planned (Curator plan, S76) | yes |
+| Four files, four tenses, no fact in two | `orc-curator` `references/recording-rules.md` "Where a fact goes" | ported (changed, S76: six files) | yes |
+| CONTEXT is the dictionary, at the repo root, edited in place | `docs/curator/CONTEXT.md`; `orc-curator` `references/glossary.md`; `orc-curator:curate` Step 5 creates it on the first domain term | ported (changed, S76: subfolder, not the repo root; created lazily) | yes |
+| The PRODUCT test: would deleting one backlog row make it false? | `orc-curator:curate` Step 5; `references/recording-rules.md` | ported (S76, Curator plan 2) | yes |
 | Horizons are confidence, not dates; Later read by nobody | `orc-curator` references | planned (Curator plan, S76) | yes |
 | Several rows in Now are intent; STATE names the one in flight | — | n/a (no STATE; a run's brief names its row) | no |
-| Constraints: forward pressure, examples, `from Bn`, Evaluated ledger | `orc-curator:direction` | planned (Curator plan, S76) | yes |
+| Constraints: forward pressure, examples, `from Bn`, Evaluated ledger | `orc-curator:direction` Steps 2 to 4 | ported (S76, Curator plan 2) | yes |
 | Two skills split by cadence: shape-tech rare, direction constant | `orc-curator` README | planned (Curator plan, S76) | yes |
 | backlog: plain words, no flags; hand-editing is fine | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
 | Two roots (state, knowledge), mode-dependent git rules | `docs/curator/` only | dropped (S76: one fixed folder; run state is orchestra's) | no |
@@ -1253,7 +1253,7 @@ The parts that read the direction docs become `orc-curator:plan-guide`, pushed b
 | Configuration keys | — | n/a (see templates/config.yml block) | no |
 | The hooks (guard, journal writer, session start, reconcile reminder) | — | dropped (S76: hooks and journal dropped) | no |
 | The knowledge layer: curator routes to native surfaces, ledger | — | dropped (S76: waits for PSK) | yes |
-| The knowledge layer: the subtract half (PRODUCT, Vision, DIRECTION) | `orc-curator:curate` | planned (Curator plan, S76) | yes |
+| The knowledge layer: the subtract half (PRODUCT, Vision, DIRECTION) | `orc-curator:curate` Step 6 | ported (S76, Curator plan 2) | yes |
 | Skills and agents list | — | n/a (lists minions' tiers and steps) | no |
 | Learn more: design docs are dated records | — | n/a | no |
 
@@ -1263,11 +1263,11 @@ The parts that read the direction docs become `orc-curator:plan-guide`, pushed b
 |---|---|---|---|
 | What this is: skills, no build | — | n/a | no |
 | Hooks have real tests | — | dropped (S76: no hooks) | no |
-| `references/`: shared policy, cited by path, never invoked; two readers or more; never flow; must ship | `orc-curator/references/` | planned (Curator plan, S76) | yes |
+| `references/`: shared policy, cited by path, never invoked; two readers or more; never flow; must ship | `orc-curator/references/` | partial (S76: recording-rules and glossary ship; interview-cadence, ask-vs-research and right-sizing wait) | yes |
 | Use update-minions before a change; CONTRACTS records who reads and writes | this repo's `CLAUDE.md` contract rule and this file | n/a (this repo has its own rules) | no |
 | Fluid, not frozen; three failure modes (a new gate, a "never revisit" rule, a flag to remember) | `orc-curator` README; review rule for Curator skills | planned (Curator plan, S76) | yes |
 | Artifact convention: knowledge root, state root; pre-existing artifacts are resumable state | `docs/curator/` | partial (S76: one folder; resume is orchestra's) | yes |
-| CONTEXT outside both roots | `docs/curator/CONTEXT.md` | planned (Curator plan, S76: subfolder) | yes |
+| CONTEXT outside both roots | `docs/curator/CONTEXT.md` | ported (changed, S76: subfolder) | yes |
 | Testing with skill-creator, `*-workspace/` | — | n/a | no |
 
 #### docs/CONTRACTS.md
@@ -1277,35 +1277,35 @@ The parts that read the direction docs become `orc-curator:plan-guide`, pushed b
 | A matrix of who adds, updates, removes and reads each artifact; checked, not trusted | the "owner" line in each `orc-curator` skill; `test/` checks it by grep | planned (Curator plan, S76) | yes |
 | Verified-on dates and phase history | — | n/a (history) | no |
 | Regenerate the reference list by grep | `test/orc-curator/` | planned (Curator plan, S76) | yes |
-| Repo-root row: CONTEXT (adds specify and curator, edited in place, curator removes, never blocks) | `orc-curator:curate` writes, guides read | planned (Curator plan, S76: specify's write moves to curate) | yes |
+| Repo-root row: CONTEXT (adds specify and curator, edited in place, curator removes, never blocks) | `orc-curator:curate` writes, guides read | ported (changed, S76: curate writes, guides read; the file is created lazily on the first term) | yes |
 | Knowledge-root rows: PRODUCT, BACKLOG, DIRECTION Constraints and Evaluated, DECISIONS, QUESTIONS, TECH, research | writers and readers in `orc-curator` skills and guides | planned (Curator plan, S76) | yes |
 | Rows: knowledge-ledger, config.yml, DEBUG.md | — | dropped (S76: ledger waits for PSK; no config; DEBUG is minions' debugger's) | no |
 | Plugin-shipped references table (five files, readers) | `orc-curator/references/` | planned (Curator plan, S76) | yes |
 | State-root rows (STATE, journal, feedback) | — | dropped (S76: no hooks, no journal; orchestra keeps state) | no |
 | Feature-folder rows (SPEC, PLAN, EPIC, CURATE) | — | n/a (orchestra notes folder) | no |
-| Invariant: DIRECTION has three writers and one author | `orc-curator:direction`, `curate`, `backlog` | planned (Curator plan, S76) | yes |
+| Invariant: DIRECTION has three writers and one author | `orc-curator:direction`, `curate`; `backlog` is not written yet | partial (S76: two of the three writers ship; `backlog` is planned) | yes |
 | Invariant: direction and shape-tech split by cadence | `orc-curator` README | planned (Curator plan, S76) | yes |
 | Invariant: DIRECTION migration for old projects | — | n/a (no old orc-curator projects) | no |
 | Invariant: a reshape run of shape-project ends with the sweep | `orc-curator:setup` | planned (Curator plan, S76) | yes |
 | Invariant: init owns bootstrap and handoff | orchestra checks the setup marker and calls `setup` | planned (Curator plan, S76: other mechanism) | yes |
 | Invariant: flat skills tree; README carries the flows | `orc-curator` README | planned (Curator plan, S76) | yes |
 | Invariant: plan inline, no planner agent; epic gate in plan | — | n/a (orc-standard-workflow) | no |
-| Invariant: `hard:`/`soft:` set at write time, read by name | `orc-curator` references (recording rules) | planned (Curator plan, S76) | yes |
+| Invariant: `hard:`/`soft:` set at write time, read by name | `orc-curator` references (recording rules) | ported (S76, Curator plan 2) | yes |
 | Invariant: specify may research at a tiny budget | — | dropped (S76: see specify Step 4) | yes |
 | Invariant: research is a tool; `wide` anti-anchoring is structural; evidence is not authority | `orc-curator:research` | planned (Curator plan, S76) | yes |
 | Invariant: discipline packs; comments hardwired | — | n/a (Stack Skills own comment review) | no |
 | Invariant: `Dn` citable in code, `Tn`/`ACn`/`Cn`/`Bn` not | `orc-curator:code-guide` (role `code`) | ported (S76, Curator plan 2) | yes |
 | Invariant: explainer reach; explainer vs research split | — | n/a (no explainer) | no |
-| Invariant: direction coverage is derived, never flagged | `orc-curator:direction` | planned (Curator plan, S76) | yes |
-| Invariant: movement inside Now/Next is no trigger | `orc-curator:direction` | planned (Curator plan, S76) | yes |
-| Invariant: curator's Direction verdict carries diff evidence only | `orc-curator:curate` | planned (Curator plan, S76) | yes |
-| Invariant: curate invokes direction unconditionally after a ship | `orc-curator:curate` | planned (Curator plan, S76) | yes |
+| Invariant: direction coverage is derived, never flagged | `orc-curator:direction` | ported (S76, Curator plan 2) | yes |
+| Invariant: movement inside Now/Next is no trigger | `orc-curator:direction` | ported (S76, Curator plan 2) | yes |
+| Invariant: curator's Direction verdict carries diff evidence only | `orc-curator:curate` | ported (S76, Curator plan 2) | yes |
+| Invariant: curate invokes direction unconditionally after a ship | `orc-curator:curate` | ported (S76, Curator plan 2) | yes |
 | Invariant: backlog ends in a sweep, except Later-only changes; reads no TECH, no code | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
 | Invariant: shape-project calls four skills in a fixed order | `orc-curator:setup` | planned (Curator plan, S76) | yes |
 | Invariant: one judgement owner per file | `orc-curator` README | planned (Curator plan, S76) | yes |
 | Invariant: mode gating is not uniform | — | dropped (S76: no modes) | no |
 | Invariant: agents never write STATE; workflow guard on `Workflow` | — | n/a (no STATE) | no |
-| Invariant: ids never reused; next id is highest plus one; `Bn` keeps its id | `orc-curator` references | planned (Curator plan, S76) | yes |
+| Invariant: ids never reused; next id is highest plus one; `Bn` keeps its id | `orc-curator` references | ported (S76, Curator plan 2) | yes |
 | Invariant: hooks tests and STATE fields | — | dropped (S76: no hooks) | no |
 | Invariant: `SPEC.md ## Unknowns` is gone | — | n/a | no |
 | Invariant: Now/Next names in two files | — | n/a (no STATE.md) | no |
@@ -1321,18 +1321,18 @@ The parts that read the direction docs become `orc-curator:plan-guide`, pushed b
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Count constraints owed, satisfied, orphaned | `orc-curator:direction` report; the curate result in `report.md` | planned (Curator plan, S76: other mechanism) | yes |
-| Compute coverage owed (Now/Next row with no Evaluated row); never look for a flag | `orc-curator:direction` | planned (Curator plan, S76) | yes |
+| Count constraints owed, satisfied, orphaned | `orc-curator:direction` return block (`Coverage:`); the curate summary | ported (changed, S76: other mechanism; the summary goes to the user, not to a file) | yes |
+| Compute coverage owed (Now/Next row with no Evaluated row); never look for a flag | `orc-curator:direction` Step 3 "First: what is owed" | ported (S76, Curator plan 2) | yes |
 | The rest: STATE report, next action | — | n/a (no STATE; orchestra reports runs) | no |
 
 #### skills/init/SKILL.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Copy the doc templates (PRODUCT, TECH, DECISIONS, DIRECTION, QUESTIONS, BACKLOG) | `orc-curator:setup`, into `docs/curator/` | planned (Curator plan, S76) | yes |
+| Copy the doc templates (PRODUCT, TECH, DECISIONS, DIRECTION, QUESTIONS, BACKLOG) | `orc-curator:setup` Step 1, into `docs/curator/` | ported (changed, S76: CONTEXT.md is created by curate on the first domain term, not copied) | yes |
 | A one-paragraph product sketch into PRODUCT | `orc-curator:setup` (through shape-product) | planned (Curator plan, S76) | yes |
 | DIRECTION empty until the backlog has a Now | `orc-curator:setup` | planned (Curator plan, S76) | yes |
-| Do not pre-populate the backlog or plan anything | `orc-curator:setup` | planned (Curator plan, S76) | yes |
+| Do not pre-populate the backlog or plan anything | `orc-curator:setup` (copies templates, writes no row) | ported (S76, Curator plan 2) | yes |
 | The rest: config interview, state root, ledger, journal, gitignore, maintain mode | — | dropped (S76: no config, no hooks, no modes; orchestra:init owns setup of orchestra) | no |
 
 #### skills/reconcile/SKILL.md, skills/code/SKILL.md, skills/review/SKILL.md, skills/verify/SKILL.md, skills/plan-review/SKILL.md, skills/quick/SKILL.md, skills/quick-code/SKILL.md, skills/quick-plan/SKILL.md
@@ -1371,7 +1371,7 @@ The parts that read the direction docs become `orc-curator:plan-guide`, pushed b
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
 | `mode` | — | dropped (S76: no modes) | no |
-| `questions` budget | — | dropped (S76: a Curator question in a run is a Decide; by hand the skills ask in their own cadence) | no |
+| `questions` budget | — | dropped (S76: a Curator question in a run is asked inline; by hand the skills ask in their own cadence) | no |
 | `auto`, `guard`, `branch`, `loops`, `tdd`, `skills.*`, `journal.*` | — | n/a (orchestra and the workflow own these; guard and journal dropped, S76) | no |
 | `docs.knowledge`, `curate.*` | — | dropped (S76: the code-knowledge half waits for PSK; the slot is the on/off switch) | no |
 
