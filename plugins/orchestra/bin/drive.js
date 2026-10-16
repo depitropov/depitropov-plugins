@@ -110,6 +110,14 @@ function remember(project, a) {
   if (!list.includes(name)) fs.writeFileSync(file, JSON.stringify([...list, name]) + '\n');
 }
 
+function setupAction(project, runDir, resolved) {
+  const held = curator.setup(project, runDir, resolved);
+  if (!held) return null;
+  if (held.action === 'failed') return finish(project, held, resolved);
+  remember(project, held);
+  return held;
+}
+
 function step(project, extraArgs, resume) {
   const resolved = load(project);
   if (resume) {
@@ -124,6 +132,12 @@ function step(project, extraArgs, resume) {
   }
   const config = JSON.parse(fs.readFileSync(path.join(project, '.orchestra', 'config.json'), 'utf8'));
   const nextJs = path.join(resolved.slots.workflow.dir, 'bin', 'next.js');
+  // On a running run, setup is checked before next.js, so a held-back dispatch never uses up the stage's dispatch count.
+  const runDir = path.join('tmp', 'runs', git(project, 'branch', '--show-current'));
+  if (!extraArgs.length && fs.existsSync(path.join(project, runDir, 'run.json'))) {
+    const held = setupAction(project, runDir, resolved);
+    if (held) return held;
+  }
   let args = extraArgs;
   for (;;) {
     const a = validateAction(callNext(nextJs, project, args));
@@ -131,13 +145,9 @@ function step(project, extraArgs, resume) {
     if (a.action === 'dispatch') {
       const bad = roleError(a, resolved.slots.workflow.declaration);
       if (bad) return finish(project, { action: 'failed', reason: bad, runDir: a.runDir }, resolved);
-      // ponytail: the held-back dispatch counts as one of the workflow's two dispatches of that stage; once per project.
-      const held = curator.setup(project, a.runDir, resolved);
-      if (held && held.action === 'failed') return finish(project, held, resolved);
-      if (held) {
-        remember(project, held);
-        return held;
-      }
+      // ponytail: on the start call only, the held-back dispatch counts as one of the workflow's two dispatches of that stage; once per project.
+      const held = setupAction(project, a.runDir, resolved);
+      if (held) return held;
       remember(project, a);
       return a;
     }

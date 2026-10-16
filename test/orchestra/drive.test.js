@@ -422,3 +422,23 @@ test('without a curator no action is inline', () => {
   assert.equal(a.action, 'dispatch');
   assert.equal(a.skill, 'orc-standard-workflow:spec');
 });
+
+test('a failed setup retries without a false spec failure, then the spec dispatches', () => {
+  const dir = project({ curator: true });
+  const setup = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  assert.equal(setup.action, 'inline');
+  const root = wt(dir, setup);
+  writeJson(path.join(root, setup.result), { status: 'failed', reason: 'user said no' });
+  const failed = drive(dir);
+  assert.equal(failed.action, 'failed');
+  assert.equal(failed.reason, 'user said no');
+  assert.equal(drive(dir).action, 'inline');
+  fs.mkdirSync(path.join(root, 'docs/curator'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'docs/curator/.setup'), '');
+  git(root, 'add', 'docs/curator');
+  git(root, 'commit', '-m', 'docs(curator): setup');
+  writeJson(path.join(root, setup.result), { status: 'ok' });
+  const a = drive(dir);
+  assert.equal(a.action, 'dispatch');
+  assert.equal(a.skill, 'orc-standard-workflow:spec');
+});
