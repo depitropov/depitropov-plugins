@@ -23,6 +23,8 @@ test('the spec guide asks for the Direction section of the brief', () => {
   assert.match(text, /- Deferred:/);
   assert.match(text, /- Question:/);
   assert.match(text, /never Later/i);
+  assert.match(text, /never stops the run/);
+  assert.match(text, /business fact: <what is missing> — options:/);
 });
 
 test('the plan guide makes DIRECTION binding and keeps the plan to this task', () => {
@@ -30,6 +32,7 @@ test('the plan guide makes DIRECTION binding and keeps the plan to this task', (
   assert.match(text, /docs\/curator\/DIRECTION\.md/);
   assert.match(text, /binding where it applies/);
   assert.match(text, /context, never scope/);
+  assert.match(text, /`Warning:` line under `## Approach`/);
   assert.match(text, /Never write a `Bn`, `Cn`, `Dn` or `Qn`/);
 });
 
