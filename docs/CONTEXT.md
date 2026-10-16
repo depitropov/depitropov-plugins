@@ -18,6 +18,7 @@ The glossary of this project. Use these names and no others.
 | **Gate** | One check that runs in a phase. It is a `tool` (a command) or an `agent` (a skill run by a subagent). The workflow or the Stack Skills declares it. The declarer owns its command, selection, fix guide and round limit. |
 | **Gate runner** | The orchestra code that runs one phase: selects the gates, orders them, runs them, loops the fixer, and returns `ok`, `decide` or `failed`. |
 | **Build** | The full build and test run with coverage. A required declaration of the Stack Skills, not a gate. The gate runner runs it first in `implementation-check` and last in `finish`. |
+| **Measure** | An optional declaration of the Stack Skills: a command that measures the shape of the changed code against the run's base commit, and a skill with the stack's clean-code rules. A gate that asks for it gets both as inputs. |
 | **Fixer** | The orchestra subagent that fixes a failed tool gate. It uses orchestra's generic fixer procedure plus the gate's fix guide. |
 | **Fix guide** | A skill, owned by the gate's declarer, that says how to fix one tool's findings. |
 | **Triage** | Sorting each finding of a judging stage or an agent gate into Decide, Patch, Evaluate or Noise. The contract is the skill `orchestra:triage`. |

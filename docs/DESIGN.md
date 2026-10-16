@@ -14,13 +14,15 @@ workflow does not know the stack. It calls the stack plugin through a fixed cont
 
 ## 2. Plugins
 
-All three plugins live in this repo (S30).
+All plugins live in this repo (S30).
 
 | Plugin | Role | Holds |
 |---|---|---|
 | `orchestra` | Orchestrator | `orchestra:init`, `orchestra:run` (resolution and driver), the gate runner, the fixer, the select step, `orchestra check`, the authoring skill `writing-plugins` |
 | `orc-standard-workflow` | Workflow | `next.js`, one skill per stage, its own gates, its `manifest` skill |
 | `orc-java-stack` | Stack Skills | `build`, its gates, fix guides, plan and code guides, its `manifest` skill |
+| `orc-ts-stack` | Stack Skills | build, its fix guide, measure and its rules skill, its manifest skill |
+| `clean-code` | Standalone | A copy of mentorano's clean-code for use outside orchestra (S75). Not a slot plugin |
 
 `orc-java-stack` here is the personal, generic rewrite. The ship.cars version lives in a second repo. The `orc-` prefix marks every plugin made to work with orchestra and keeps it apart from plugins with the same base name, such as the ship.cars `java-stack` (S56).
 Commits are copied between the two repos, and the ship.cars repo may diverge (S3).
@@ -114,6 +116,8 @@ it and acts on it. The plugin never runs its own gates or orders them.
 }
 ```
 
+A Stack Skills declaration may also have `measure`: `{ "run": "<command>", "rules": "<skill>" }`. `{plugin}` and `{base}` (the run's base commit) expand in its `run` (S75).
+
 A workflow's `orchestra.json` has `slot: workflow`, its `config` keys and its own
 `gates` in the same format. It has no `build` and no `guides`.
 
@@ -203,6 +207,7 @@ and the round limit (S47).
 | selection | `files`, `grep`, `when`, `always` | When it runs |
 | `max_rounds` | a number | Fixer rounds for a tool gate. Default 2 |
 | `guide` | a skill name | The fix guide for `fix: fixer` |
+| `measure` | true or absent | An agent gate gets the stack's measure command and rules skill as inputs (S75) |
 
 An agent gate always fixes its own Patch findings, in one round, and never re-reviews its own fixes
 (S14). A tool gate passes or fails by its exit code.
@@ -319,8 +324,9 @@ The workflow's own gates, in phase 1:
 |---|---|---|---|
 | `plan-conformance` | `implementation-check` | agent | Every plan task done, every named test present, no undeclared change of direction, nothing outside the brief's scope; detail inside a task is not a deviation (S67). Reads the plan and the implementation log. No correctness verdict (S66) |
 | `logic-review` | `implementation-check` | agent | Correctness, and a test for every criterion and behavioural assumption that fails on a wrong version (S25, S66). Reads the brief and `decisions` only, never the plan |
+| `clean-code` | `implementation-check` | agent | The shape of the changed code (the stack's measure) and the clean-code rules 1–13; warns when the stack has no measure (S75) |
 
-A generic bug hunter and a generic architecture reviewer are candidates for later.
+A generic bug hunter is a candidate for later.
 
 ### 8.2 Results
 
@@ -384,6 +390,7 @@ orchestra writes it (S55). Steps are in run order. An empty phase shows "ok (no 
 | `gates` | no | The stack's gates (6.1). |
 | `guides.plan` | no | Short rules for the planner and the plan checker, 5–15 per area (R3). |
 | `guides.code` | no | Short rules for the coder, 5–15 per area (R3). |
+| `measure` | no | The shape measurement and the stack's clean-code rules for a gate that asks for them (S75). |
 | `manifest` skill | yes | Resolution (5.2). |
 
 The stack plugin declares what and where. It never declares an order or a loop. Every gate skill
@@ -411,6 +418,13 @@ Gates, one skill each (S68):
 crap4java and mutate4java come in phase 2 as tool gates in `implementation-check`. They are data
 only and need no change in the workflow.
 
+### 10.1 `orc-ts-stack`
+
+Empty at the start (S75): `build` is `npm ci && npm test` with the fix guide `fix-build`; no gates,
+no guides. Its `measure` runs mentorano's `measure.py` (copied to `scripts/`) against `{base}`, and
+its `rules` skill `clean-code-typescript` holds the TypeScript and React rules. The measure needs
+Python 3.11 or later and the project's own `typescript@5`.
+
 ## 11. Packaging
 
 Pillar 4 applies from the first commit (S33):
@@ -432,11 +446,16 @@ plugins/
     lib/{check.js,resolved.js,gates.js,runner.js,protocol.js,report.js,git.js}
   orc-standard-workflow/
     orchestra.json
-    skills/{manifest,spec,plan,plan-check,code,logic-review}/SKILL.md
+    skills/{manifest,spec,plan,plan-check,code,logic-review,clean-code}/SKILL.md
     bin/next.js
   orc-java-stack/
     orchestra.json
     skills/{manifest,plan-guide,code-guide,fix-build,<one per gate>,<one fix guide per tool gate>}/SKILL.md
+  orc-ts-stack/
+    orchestra.json
+    scripts/{measure.py,languages.py,shape.py,compare.py,revisions.py,measure-ts.mjs}
+    skills/{manifest,fix-build,clean-code-typescript}/SKILL.md
+  clean-code/            standalone copy of mentorano's clean-code
 scripts/gen-manifests.js
 .claude-plugin/marketplace.json
 .agents/plugins/marketplace.json
