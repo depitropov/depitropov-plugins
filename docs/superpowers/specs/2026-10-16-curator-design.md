@@ -17,7 +17,7 @@ Success: on the sample repo, with `orc-curator` in the `curator` slot:
 2. The brief names the backlog row it serves.
 3. The plan prompt lists `orc-curator:plan-guide`.
 4. At `done`, `curate` moves the row to Shipped and commits on the task branch.
-5. A judgement call stops the run with a Decide, and the resume applies the answer and ends `done`.
+5. A judgement call is asked in the session, and the run applies the answer and ends `done`.
 
 ## Decisions taken in the brainstorm
 
@@ -31,7 +31,7 @@ Success: on the sample repo, with `orc-curator` in the `curator` slot:
 | 6 | How the stages get the docs | Guides by role, pushed by orchestra. The workflow knows roles, not the Curator. |
 | 7 | Who calls curate (O3) | orchestra, on the workflow's `done`, from the declared `curate` skill. |
 | 8 | Who writes the docs in a run | `curate` alone, at the end. Spec only reads. Accepted losses: Now no longer means "in progress", and the product answers of a failed run stay in its notes folder. |
-| 9 | Questions in a run | Allowed. Every judgement call becomes a Decide. Sure edits are committed. |
+| 9 | Questions in a run | Allowed. `setup` and `curate` run inline in the main session and ask the user directly. Sure edits are committed with the answered ones. |
 | 10 | New `Cn` constraints | `curate` runs the direction sweep. Sure `Cn` rows are committed; the others are questions. |
 | 11 | Setup | The Curator declares a flag file. Every run checks it; a missing flag runs `setup`. |
 | 12 | What the slot contract requires | `curate` and `setup`. `guides` are optional. `backlog` is plugin-only. |
@@ -76,14 +76,23 @@ The guard has two sides:
 - Resolution invokes `orc-curator:manifest` like any slot plugin.
 - `orchestra:init` asks for the Curator as an optional third choice.
 
+### The `inline` action
+
+`setup` and `curate` run in the main session, not in a subagent. They interview the user, and they
+may start subagents (`research` in `wide` mode). `setup` comes before the first stage and `curate`
+after the last gate, so neither fills the context of a stage.
+
+`drive.js` returns a new action for them, `inline`, with `skill`, `inputs`, `result` and the
+worktree. The `orchestra:run` skill invokes the skill in the main session, works in the worktree,
+and writes the result JSON that the skill describes. Then it calls `drive.js` again. The workflow's
+`next.js` never prints `inline`; only `drive.js` does.
+
 ### Setup
 
 After `next.js` has created the task branch and before the first stage is dispatched, `drive.js`
-checks the curator's `setup.done` file in the run root. When it is missing, `drive.js` returns a new
-action, `setup`, with the skill and the worktree. The `orchestra:run` skill invokes that skill in the
-main session, because it interviews the user, and works in the worktree. The skill commits the docs
-and the flag on the task branch. Then `orchestra:run` calls `drive.js` again, which checks the flag
-again.
+checks the curator's `setup.done` file in the run root. When it is missing, `drive.js` returns an
+`inline` action for the setup skill. The skill commits the docs and the flag on the task branch. On
+the next call `drive.js` checks the flag again.
 
 The check runs on every call, so a Curator added after `orchestra:init` gets its setup on the next
 run. A run that starts before the setup branch is merged runs setup again (O10).
@@ -91,14 +100,16 @@ run. A run that starts before the setup branch is merged runs setup again (O10).
 ### Curate at the end
 
 When `next.js` prints `done` and the curator slot is filled:
-1. `drive.js` dispatches `<curator>:curate` once, in the worktree, with the inputs `base`, `brief`
-   (`run.spec`), `notes` and, after a stop, `decisions`. The result is
-   `tmp/runs/<branch>/curate.result.json`.
-2. `ok`: the subagent has committed its edits. `drive.js` goes on to the report and the worktree
-   removal, as today. The report lists the curate stage.
-3. `decide`: the run stops with the questions, as a stage's Decide does. The resume dispatches
-   `curate` again with `decisions` (the `- <question> → <answer>` lines).
-4. `failed`: the run fails with the reason. The worktree is kept.
+1. `drive.js` returns an `inline` action for `<curator>:curate`, with the inputs `base`, `brief`
+   (`run.spec`) and `notes`. The result is `tmp/runs/<branch>/curate.result.json`.
+2. `ok`: curate has committed its edits. `drive.js` goes on to the report and the worktree removal,
+   as today. The report lists the curate stage.
+3. `failed`: the run fails with the reason. The worktree is kept. A resume runs curate again.
+
+When the user stops the session in the middle of curate, the result file is missing, and the resume
+runs curate again from the start. Its uncommitted edits stay in the worktree, so the resume's
+dirty-files check (S63) stops first and names them. The user discards them, and curate starts from
+the committed docs.
 
 ## The `orc-curator` plugin
 
@@ -113,7 +124,7 @@ When `next.js` prints `done` and the curator slot is filled:
 | `research` | main session | `research/` notes only | `research` |
 | `backlog` | by hand | BACKLOG and the fallout (orphan `Cn`, Vision, `Dn` reversals, `Qn`); runs direction | `backlog` |
 | `direction` | by hand, or from curate, setup and backlog | DIRECTION, QUESTIONS | `direction` |
-| `curate` | subagent at `done`, or by hand on a commit range | every doc, as the single writer of a run | `agents/curator.md`, `skills/curate` |
+| `curate` | main session at `done`, or by hand on a commit range | every doc, as the single writer of a run | `agents/curator.md`, `skills/curate` |
 | `spec-guide` | role `spec` | — | the direction-doc parts of `specify` |
 | `plan-guide` | role `plan` | — | the direction-doc parts of `plan` |
 | `code-guide` | role `code` | — | CONTEXT names; the code-citation rule of `CONTRACTS.md` |
@@ -152,11 +163,9 @@ recording-rules, glossary, interview-cadence, ask-vs-research, right-sizing.
 7. Maintains DIRECTION: it marks constraints satisfied, retires them, deletes orphans and flags a cap
    overflow. Then it runs the direction sweep for the rows that owe a verdict.
 
-Sure edits are committed in one commit. Each removal that needs judgement, each sweep verdict that
-needs the user, and each contradiction is a question in the result's `decide` list.
-
-A subagent cannot interview the user or start subagents. So in a run, a sweep verdict that needs
-`research` or `shape-tech` becomes a question that names the skill to run by hand.
+Each removal that needs judgement, each sweep verdict that needs the user, and each contradiction is
+a question to the user, one at a time. A sweep verdict that needs `research` or `shape-tech` runs that
+skill. All edits, sure and answered, are committed in one commit at the end.
 
 ## Porting
 
@@ -166,7 +175,7 @@ status. Each port task names its source files, and its review compares the targe
 ## Plans
 
 1. **The orchestra contract**: roles and guides by role (with the Stack Skills move), the `curator`
-   slot in `check.js`, the `setup` action, the curate dispatch at `done`, `orchestra:init`,
+   slot in `check.js`, the `inline` action, setup and curate at their points, `orchestra:init`,
    `orchestra:run`, `writing-plugins`. It is tested with a stub Curator under `test/`.
 2. **Curate and direction**: the `orc-curator` plugin with `manifest`, `curate`, `direction`, the
    three guides, the templates and `recording-rules`.
