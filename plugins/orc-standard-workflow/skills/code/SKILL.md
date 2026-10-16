@@ -13,13 +13,12 @@ description: Implements a range of plan tasks of one orc-standard-workflow run, 
 - `base`: the commit before any work.
 - `build`: for reference only: the command that builds the project and runs all tests. orchestra runs it after you.
 - `notes`: the run's notes folder.
-- `guide` (optional): a skill with short rules for writing code in this stack.
 - `decisions` (optional): the human's answers. The brief already holds them; read this only when
   the brief and the plan leave a value open.
 
 ## Procedure
 
-1. If `guide` is given, invoke it and follow its rules.
+1. Follow the rules of every guide that your dispatch prompt lists. They are short rules for writing code in this stack.
 2. If `<notes>/implementation-log.md` exists, read it. It says what earlier coders did.
 3. For each task from `T<from>` to `T<to>`, in order:
    1. Read the task in `plan`, and the acceptance criteria it covers in `spec`. Read the code it

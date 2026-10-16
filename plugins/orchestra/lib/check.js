@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const { execFileSync } = require('node:child_process');
-const { PHASES, ACTIONS, validateAction } = require('./protocol');
+const { PHASES, ACTIONS, ROLES, validateAction } = require('./protocol');
 const { scratchRepo, cleanEnv } = require('./git');
 const { DIR } = require('./worktree');
 
@@ -13,11 +13,10 @@ const SLOTS = ['workflow', 'stack-skills'];
 const KINDS = ['tool', 'agent'];
 const FIXES = ['self', 'fixer', 'none'];
 const CONFIG_TYPES = ['string', 'number', 'boolean'];
-const DECLARATION_KEYS = { workflow: ['slot', 'config', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'measure', 'guides', 'gates'] };
+const DECLARATION_KEYS = { workflow: ['slot', 'config', 'roles', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'measure', 'guides', 'gates'] };
 const GATE_KEYS = ['name', 'phase', 'kind', 'skill', 'run', 'fix', 'guide', 'max_rounds', 'files', 'grep', 'when', 'always', 'measure'];
 const BUILD_KEYS = ['run', 'guide', 'max_rounds'];
 const MEASURE_KEYS = ['run', 'rules'];
-const GUIDE_KINDS = ['plan', 'code'];
 const SECTION_KEYS = ['plugin', 'disable', 'gates'];
 const CONFIG = '.orchestra/config.json';
 
@@ -70,6 +69,14 @@ function checkDeclaration(d, dir, where) {
       if (!Object.hasOwn(config, m[1])) fail(`${what} uses {config.${m[1]}}, which "config" does not declare`, `declare "${m[1]}" under "config" or fix the name`);
     }
   };
+  if (d.guides !== undefined && !isObject(d.guides)) fail('"guides" is not an object', 'write { "<role>": "<guide skill>" }');
+  for (const [role, name] of Object.entries(isObject(d.guides) ? d.guides : {})) {
+    if (!ROLES.includes(role)) fail(`unknown guide role "${role}"`, `use one of ${ROLES.join(', ')}`);
+    skill(name, `guide "${role}"`);
+  }
+  if (d.roles !== undefined && (!Array.isArray(d.roles) || !d.roles.every(r => ROLES.includes(r)) || new Set(d.roles).size !== d.roles.length)) {
+    fail(`"roles" is ${JSON.stringify(d.roles)}`, `list the role of each of your stages once, from ${ROLES.join(', ')}`);
+  }
   if (d.slot === 'stack-skills') {
     const b = d.build;
     if (!isObject(b) || typeof b.run !== 'string') {
@@ -81,10 +88,6 @@ function checkDeclaration(d, dir, where) {
       skill(b.guide, 'build "guide"');
       for (const m of b.run.matchAll(PLACEHOLDER)) fail(`build "run" uses {config.${m[1]}}, but the build command expands only {plugin}`, 'write the value into the command');
       if (b.max_rounds !== undefined && !wholeNumber(b.max_rounds)) fail('build "max_rounds" is not a whole number of 1 or more', 'set it to 1 or more');
-    }
-    for (const [kind, name] of Object.entries(d.guides || {})) {
-      if (!GUIDE_KINDS.includes(kind)) fail(`unknown guide "${kind}"`, `use one of ${GUIDE_KINDS.join(', ')}`);
-      skill(name, `guide "${kind}"`);
     }
     if (d.measure !== undefined) {
       const m = d.measure;
@@ -248,6 +251,21 @@ function checkProject(project) {
     }
     checkSection(slot, section, s, out);
   }
+  // A guide is given by role. A guide for a role the workflow has no stage for never reaches a stage (S76).
+  const wf = slots.workflow;
+  if (wf && isObject(wf.declaration) && wf.declaration.slot === 'workflow' && isObject(config.workflow) && config.workflow.plugin === wf.plugin) {
+    const roles = Array.isArray(wf.declaration.roles) ? wf.declaration.roles : [];
+    for (const slot of SLOTS) {
+      const s = slots[slot];
+      const section = config[slot];
+      if (!s || !isObject(section) || section.plugin !== s.plugin || !isObject(s.declaration) || !isObject(s.declaration.guides)) continue;
+      const off = Array.isArray(section.disable) ? section.disable : [];
+      for (const [role, name] of Object.entries(s.declaration.guides)) {
+        if (!ROLES.includes(role) || roles.includes(role) || off.includes(name)) continue;
+        out.push(`${CONFIG}: ${s.plugin} declares a "${role}" guide, but the workflow ${wf.plugin} has no ${role} stage. Fix: add "${name}" to "${slot}.disable", or choose a workflow with a ${role} stage.`);
+      }
+    }
+  }
   // A run's worktree lives in the project (S74). Not ignored, it shows in the user's git status.
   try {
     execFileSync('git', ['check-ignore', '-q', `${DIR}/x`], { cwd: project, stdio: 'ignore' });
@@ -340,6 +358,6 @@ function checkPlugin(dir) {
 }
 
 module.exports = {
-  SLOTS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, MEASURE_KEYS, GUIDE_KINDS, SECTION_KEYS, PHASES, ACTIONS,
+  SLOTS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, MEASURE_KEYS, ROLES, SECTION_KEYS, PHASES, ACTIONS,
   parseJson, skillExists, checkDeclaration, checkProject, checkPlugin,
 };

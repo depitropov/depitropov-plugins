@@ -59,7 +59,7 @@ test('the skill writing-plugins explains every word of the contract that check.j
   const text = fs.readFileSync(path.join(PLUGINS, 'orchestra/skills/writing-plugins/SKILL.md'), 'utf8');
   const words = new Set([
     ...check.SLOTS, ...check.KINDS, ...check.FIXES, ...check.CONFIG_TYPES, ...Object.values(check.DECLARATION_KEYS).flat(),
-    ...check.GATE_KEYS, ...check.BUILD_KEYS, ...check.MEASURE_KEYS, ...check.GUIDE_KINDS, ...check.SECTION_KEYS, ...check.PHASES, ...check.ACTIONS,
+    ...check.GATE_KEYS, ...check.BUILD_KEYS, ...check.MEASURE_KEYS, ...check.ROLES, ...check.SECTION_KEYS, ...check.PHASES, ...check.ACTIONS,
   ]);
   const quoted = [...text.matchAll(/`([^`]+)`/g)].map(m => m[1]).join('\n');
   for (const w of words) assert.match(quoted, new RegExp(`(^|[^\\w-])${w}([^\\w-]|$)`, 'm'), `writing-plugins does not explain \`${w}\``);

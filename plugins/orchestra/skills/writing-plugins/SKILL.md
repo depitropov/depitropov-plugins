@@ -24,12 +24,13 @@ check is the guarantee: run it when you finish (last section).
 
 | Key | Slot | Meaning |
 |---|---|---|
-| `slot` | both | `workflow` or `stack-skills`. |
+| `slot` | all | `workflow`, `stack-skills` or `curator`. |
 | `config` | both | Keys a project may set in its config section. Each is `{ "type": …, "default": … }`, with type `string`, `number` or `boolean`, and a default of that type. |
 | `gates` | both | The checks after the code. See "A gate". |
 | `build` | `stack-skills`, required | `run`: the full build and the tests. `guide`: its fix guide skill. `max_rounds`: fixer rounds, default 2. |
 | `measure` | `stack-skills` | The shape measurement for a gate that asks for it. `run`: a command that measures the changed code against `{base}`, the run's base commit, and prints its verdict. `rules`: optional, a skill with the stack's clean-code rules. A stack with no `measure` gives the gate no measurement. |
-| `guides` | `stack-skills` | `plan` and `code`: a skill with short rules for the planner and the coder. |
+| `guides` | `stack-skills`, `curator` | `{ "<role>": "<skill>" }`: a guide, a skill with short write-time rules, for the stages of one role. The roles are `spec`, `plan` and `code`. orchestra lists the guides of a stage's role in its prompt. A project turns one off with `disable`. |
+| `roles` | `workflow` | The roles of its stages, each once: `spec`, `plan`, `code`. orchestra check fails when a slot plugin declares a guide for a role that is not here. |
 
 In a command, `{plugin}` is the plugin's folder. In a gate's `run` or `grep`, `{config.<key>}` is
 a config value; the key must be declared under `config`. The `build` command takes only `{plugin}`.
@@ -70,7 +71,7 @@ Node, standard library only. orchestra calls `node bin/next.js --project <dir>`,
 `--task-file <file>` on the first call of a run. Each call decides from the files on disk and prints
 one action as JSON on its last line:
 
-- `dispatch`: `skill`, `inputs`, `result` (the file the subagent writes) and `runDir`.
+- `dispatch`: `skill`, `inputs`, `result` (the file the subagent writes) and `runDir`. Optional `role`: the stage's role, one of your `roles`. orchestra adds that role's guides to the prompt; a role you did not declare fails the run.
 - `phase`: `name` (one of the three phases) and `runDir`. orchestra runs that phase's gates.
 - `done`, `decide` (with `gate`, the step that asks, and `questions`; optional `result`, its result
   file) or `failed` (with `reason`). orchestra writes the report.

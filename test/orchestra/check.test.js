@@ -35,7 +35,11 @@ test('each broken declaration rule gives one line with the rule and its fix', ()
     [{ slot: 'stack-skills' }, /no "build" with a "run" command/],
     [stack({ config: { n: { type: 'number' } } }), /config key "n" has no number default/],
     [stack({ config: { disable: { type: 'string', default: '' } } }), /config key "disable" is reserved/],
-    [stack({ guides: { review: 'x' } }), /unknown guide "review"/],
+    [stack({ guides: { review: 'x' } }), /unknown guide role "review"/],
+    [stack({ guides: 'plan-guide' }), /"guides" is not an object/],
+    [{ slot: 'workflow', roles: ['spec', 'review'] }, /"roles" is \["spec","review"\]/],
+    [{ slot: 'workflow', roles: ['plan', 'plan'] }, /"roles" is \["plan","plan"\]/],
+    [{ slot: 'workflow', guides: { plan: 'x' } }, /unknown key "guides" for slot workflow/],
     [stack({ measure: { rules: 'x' } }), /"measure" has no "run" command/],
     [stack({ measure: { run: 'm', every: 1 } }), /unknown measure key "every"/],
     [stack({ measure: { run: 'm {config.n}' } }), /measure "run" uses \{config\.n\}/],
@@ -71,7 +75,7 @@ test('the measure rules skill must exist in skills/', () => {
   assert.ok(out.some(l => /measure "rules" names skill "rules-ts"/.test(l)), out.join(' | '));
 });
 
-const wf = { slot: 'workflow', config: { 'tasks-per-coder': { type: 'number', default: 2 } }, gates: [] };
+const wf = { slot: 'workflow', config: { 'tasks-per-coder': { type: 'number', default: 2 } }, roles: ['spec', 'plan', 'code'], gates: [] };
 const st = stack({ guides: { code: 'code-guide' }, gates: [{ name: 'fmt', phase: 'finish', kind: 'tool', run: 'x', always: true }] });
 
 function project(config, declarations) {
@@ -85,6 +89,14 @@ function project(config, declarations) {
   writeJson(path.join(dir, '.orchestra/resolved.json'), { orchestra: { dir: '/orc' }, slots });
   return dir;
 }
+
+test('a guide for a role the workflow has no stage for fails, unless the config disables it', () => {
+  const noCode = { ...wf, roles: ['spec', 'plan'] };
+  const out = checkProject(project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' } }, { workflow: noCode, 'stack-skills': st }));
+  assert.deepEqual(out, ['.orchestra/config.json: st declares a "code" guide, but the workflow wf has no code stage. Fix: add "code-guide" to "stack-skills.disable", or choose a workflow with a code stage.']);
+  const off = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', disable: ['code-guide'] } };
+  assert.deepEqual(checkProject(project(off, { workflow: noCode, 'stack-skills': st })), []);
+});
 
 test('a valid project config passes', () => {
   const config = {

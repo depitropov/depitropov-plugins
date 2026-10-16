@@ -73,6 +73,7 @@ test('prepare makes the task branch and the run folder, then dispatches spec', (
   assert.deepEqual(a, {
     action: 'dispatch',
     skill: 'orc-standard-workflow:spec',
+    role: 'spec',
     inputs: { task: `${docs}/task.md`, notes: docs },
     result: `${runDir}/spec.result.json`,
     runDir,
@@ -91,18 +92,18 @@ test('spec, plan and plan-check run in order with their inputs', () => {
   assert.equal(checked(dir, check, 1).skill, 'orc-standard-workflow:code');
 });
 
-test('plan and plan-check get the plan guide, code gets the code guide, unless disabled', () => {
-  const guides = { plan: 'plan-guide', code: 'code-guide' };
-  const dir = project({ guides });
-  const plan = pass(dir, next(dir, '.orchestra/task.txt'));
-  assert.equal(plan.inputs.guide, 'st:plan-guide');
+test('spec, plan, plan-check and code carry their role, and no guide input', () => {
+  const dir = project({ guides: { plan: 'plan-guide', code: 'code-guide' } });
+  const spec = next(dir, '.orchestra/task.txt');
+  assert.equal(spec.role, 'spec');
+  const plan = pass(dir, spec);
+  assert.equal(plan.role, 'plan');
+  assert.equal(plan.inputs.guide, undefined);
   const check = pass(dir, plan);
-  assert.equal(check.inputs.guide, 'st:plan-guide');
-  assert.equal(checked(dir, check, 1).inputs.guide, 'st:code-guide');
-
-  const off = project({ guides, disable: ['plan-guide', 'code-guide'] });
-  const plan2 = pass(off, next(off, '.orchestra/task.txt'));
-  assert.equal(plan2.inputs.guide, undefined);
+  assert.equal(check.role, 'plan');
+  const code = checked(dir, check, 1);
+  assert.equal(code.role, 'code');
+  assert.equal(code.inputs.guide, undefined);
 });
 
 test('a second run of the same task gets its own branch', () => {

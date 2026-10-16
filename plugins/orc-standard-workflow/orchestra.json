@@ -1,5 +1,6 @@
 {
   "slot": "workflow",
+  "roles": ["spec", "plan", "code"],
   "config": {
     "tasks-per-coder": { "type": "number", "default": 2 }
   },

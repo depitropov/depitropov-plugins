@@ -84,17 +84,12 @@ function settings(project) {
   const config = readJson(path.join(project, '.orchestra', 'config.json')) || {};
   const stack = resolved && resolved.slots['stack-skills'];
   if (!stack) throw new Error('No resolved stack-skills slot. orchestra run resolves the slots first.');
-  const disabled = (config['stack-skills'] || {}).disable || [];
-  const guide = kind => {
-    const name = (stack.declaration.guides || {})[kind];
-    return name && !disabled.includes(name) ? { guide: `${stack.plugin}:${name}` } : {};
-  };
   const declared = resolved.slots.workflow.declaration.config['tasks-per-coder'].default;
   const perCoder = (config.workflow || {})['tasks-per-coder'] ?? declared;
   if (!Number.isInteger(perCoder) || perCoder < 1) {
     throw new Error(`workflow.tasks-per-coder in .orchestra/config.json must be a whole number of 1 or more, not ${JSON.stringify(perCoder)}.`);
   }
-  return { build: stack.declaration.build.run.replace(/\{plugin\}/g, stack.dir), guide, perCoder };
+  return { build: stack.declaration.build.run.replace(/\{plugin\}/g, stack.dir), perCoder };
 }
 
 function writeJson(file, data) {
@@ -121,7 +116,7 @@ function answerLines(docsAbs, name) {
 
 // One step of the workflow: dispatch it, or stop on its result. Returns null when the step is done.
 // A Decide result records how many answers existed when it stopped (`seen`). Only a new answer starts the step again.
-function stage(ctx, name, inputs, skill = name) {
+function stage(ctx, name, inputs, { skill = name, role } = {}) {
   const result = `${ctx.runDir}/${name}.result.json`;
   const file = path.join(ctx.project, result);
   const answers = countAnswers(path.join(ctx.project, ctx.run.docs), name);
@@ -143,7 +138,7 @@ function stage(ctx, name, inputs, skill = name) {
     if (lost) return { action: 'failed', reason: lost.reason, runDir: ctx.runDir };
     const decisionsFile = `${ctx.run.docs}/decisions.md`;
     const decisions = fs.existsSync(path.join(ctx.project, decisionsFile)) ? { decisions: decisionsFile } : {};
-    return { action: 'dispatch', skill: `orc-standard-workflow:${skill}`, inputs: { ...inputs, ...decisions }, result, runDir: ctx.runDir };
+    return { action: 'dispatch', skill: `orc-standard-workflow:${skill}`, ...(role ? { role } : {}), inputs: { ...inputs, ...decisions }, result, runDir: ctx.runDir };
   }
   if (res.status === 'failed') return { action: 'failed', reason: res.reason || `Stage ${name} failed. See ${result}.`, runDir: ctx.runDir };
   if (res.status === 'decide') {
@@ -178,7 +173,7 @@ function next(project, taskFile) {
   const ctx = { project, runDir, run };
   const notes = run.docs;
   const plan = `${notes}/plan.md`;
-  const specStep = stage(ctx, 'spec', { task: `${notes}/task.md`, notes });
+  const specStep = stage(ctx, 'spec', { task: `${notes}/task.md`, notes }, { role: 'spec' });
   if (specStep) return specStep;
   const facts = openFacts(path.join(project, run.spec));
   if (facts.length) {
@@ -190,11 +185,11 @@ function next(project, taskFile) {
     if (!answered) return { action: 'decide', gate: 'business-facts', questions: facts, result, runDir };
   }
   const steps = [
-    ['plan', { spec: run.spec, notes, ...s.guide('plan') }],
-    ['plan-check', { spec: run.spec, plan, notes, ...s.guide('plan') }],
+    ['plan', { spec: run.spec, notes }],
+    ['plan-check', { spec: run.spec, plan, notes }],
   ];
   for (const [name, inputs] of steps) {
-    const a = stage(ctx, name, inputs);
+    const a = stage(ctx, name, inputs, { role: 'plan' });
     if (a) return a;
   }
   const total = planTasks(path.join(project, plan));
@@ -207,7 +202,7 @@ function next(project, taskFile) {
   }
   for (let from = 1; from <= total; from += s.perCoder) {
     const to = Math.min(from + s.perCoder - 1, total);
-    const a = stage(ctx, `code-${from}`, { spec: run.spec, plan, from, to, base: run.base, build: s.build, notes, ...s.guide('code') }, 'code');
+    const a = stage(ctx, `code-${from}`, { spec: run.spec, plan, from, to, base: run.base, build: s.build, notes }, { skill: 'code', role: 'code' });
     if (a) return a;
   }
   for (const phase of PHASES) {

@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const { isDeepStrictEqual } = require('node:util');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
-const { validateAction, withPrompt } = require('../lib/protocol');
+const { validateAction, withPrompt, guidesFor, roleError } = require('../lib/protocol');
 const { load } = require('../lib/resolved');
 const runner = require('../lib/runner');
 const { writeReport } = require('../lib/report');
@@ -88,7 +88,8 @@ function copyResolved(project, root) {
 
 // The model is told the branch and the worktree on every action, so it never guesses where the commits went.
 function answer(project, root, action) {
-  const out = { ...(action.action === 'dispatch' ? withPrompt(action, root) : action), branch: git(root, 'branch', '--show-current'), worktree: path.relative(project, root) };
+  const prompted = action.action === 'dispatch' ? withPrompt(action, root, guidesFor(action.role, load(root), readConfig(root))) : action;
+  const out = { ...prompted, branch: git(root, 'branch', '--show-current'), worktree: path.relative(project, root) };
   if (action.action !== 'done') return out;
   const kept = worktree.remove(project, root);
   if (kept) return { ...out, kept };
@@ -123,6 +124,8 @@ function step(project, extraArgs, resume) {
     const a = validateAction(callNext(nextJs, project, args));
     args = [];
     if (a.action === 'dispatch') {
+      const bad = roleError(a, resolved.slots.workflow.declaration);
+      if (bad) return finish(project, { action: 'failed', reason: bad, runDir: a.runDir }, resolved);
       remember(project, a);
       return a;
     }

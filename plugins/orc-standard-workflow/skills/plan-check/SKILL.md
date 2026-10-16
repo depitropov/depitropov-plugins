@@ -13,14 +13,12 @@ problems are still cheap. You fix what you can in the two files. You do not writ
 - `spec`: the brief.
 - `plan`: the plan.
 - `notes`: the run's notes folder. Your findings file goes here.
-- `guide` (optional): a skill with short rules for planning in this stack.
 - `decisions` (optional): the human's answers. They settle the questions they answer; do not raise
   those again.
 
 ## Procedure
 
-1. Read `spec` and `plan`. If `decisions` is given, read it first. If `guide` is given, invoke it
-   and use its rules as the reference.
+1. Read `spec` and `plan`. If `decisions` is given, read it first. Use the rules of every guide that your dispatch prompt lists as the reference.
 2. If `decisions` has `## plan-check` sections, write each of their answers into the documents first
    (the `## business-facts` answers are already in the brief: the plan stage wrote them). Put the
    value into the

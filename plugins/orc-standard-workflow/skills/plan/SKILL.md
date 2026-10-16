@@ -12,12 +12,11 @@ ask the user.
 
 - `spec`: the brief, with the acceptance criteria.
 - `notes`: the run's notes folder. You write `plan.md` here.
-- `guide` (optional): a skill with short rules for planning in this stack.
 - `decisions` (optional): the human's answers to open business facts and earlier questions.
 
 ## Procedure
 
-1. Read `spec`. If `guide` is given, invoke it and follow its rules.
+1. Read `spec`. Follow the rules of every guide that your dispatch prompt lists.
 2. If `decisions` is given, read it. For each answered business fact, change the brief: remove the
    `business fact:` line from Assumptions and write the value into the acceptance criterion it
    belongs to, as a fact. Write only the value: add no example inputs or outputs that the brief
