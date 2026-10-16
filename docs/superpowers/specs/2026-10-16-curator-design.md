@@ -153,7 +153,8 @@ recording-rules, glossary, interview-cadence, ask-vs-research, right-sizing.
 `curate` reads the brief, the notes folder, the diff from `base`, and every doc. Then it:
 1. Moves the `Serves` row to Shipped, or adds the work as a Shipped row for `Serves: new`. When the
    row was dropped while the run was open, it asks: add it as shipped, or record the work with no
-   row.
+   row. A `Serves` row found in Later is shipped too. Before it adds a row for `Serves: new`, it
+   checks Now, Next and Later and asks the user on a match, so no row is duplicated.
 2. Turns the deferred work of the brief into Next or Later rows.
 3. Updates PRODUCT: it adds what became true and removes what the diff made false. It rewrites the
    Vision prose that the diff made real, or that promised a row that is now dropped or in Later.

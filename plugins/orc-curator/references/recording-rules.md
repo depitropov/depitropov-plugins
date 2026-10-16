@@ -69,13 +69,13 @@ forbidden is to edit the row. A challenge makes a **new** row, so anything that 
 still means what it meant.
 
 **`QUESTIONS.md` never blocks.** It is a thinking space. Never refuse to go on because an entry is
-open, and never tell the user that they must close one first. (Inside a run, a question can still stop
-the run as a Decide. That is the Curator that asks. It is not `QUESTIONS.md` that blocks.) Entries are
+open, and never tell the user that they must close one first. (Inside a run, the Curator asks the user
+a question directly. That is the Curator that asks. It is not `QUESTIONS.md` that blocks.) Entries are
 **closed, never deleted**: change the heading and extend the prose with how it was settled.
 
 ## Removal
 
 An artifact whose writers only add fills up with plans. Every knowledge file needs something that
 subtracts. Removal is **tiered by confidence**: delete outright only when the evidence plainly
-contradicts the sentence. Otherwise flag it for the user. (In a run, a flag is a Decide.) Adding a
+contradicts the sentence. Otherwise flag it for the user. (In a run, the Curator asks the user.) Adding a
 row cannot undo a deletion.

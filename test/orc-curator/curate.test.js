@@ -46,3 +46,9 @@ test('it never writes code knowledge and carries no minions state', () => {
   assert.doesNotMatch(text, /knowledge-ledger|promote_threshold|\.claude\/rules|STATE\.md|config\.yml|\.minions|\/minions:|journal/);
   assert.match(text, /Do not change files outside `docs\/curator\/`/);
 });
+
+test('DECISIONS stays append-only, and a rerun can finish and write its result', () => {
+  assert.match(text, /except `docs\/curator\/DECISIONS\.md`[^]*new `Dn`/);
+  assert.match(text, /except the result file/);
+  assert.match(text, /nothing to commit/i);
+});

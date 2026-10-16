@@ -67,7 +67,7 @@ The candidates come from the diff, the brief (`Deferred`, `Question`, its out-of
 | Verdict | When |
 |---|---|
 | **ADD** | it is new and passes the checks below |
-| **UPDATE** | it refines a fact that exists. Edit that entry in place |
+| **UPDATE** | it refines a fact that exists. Edit that entry in place, except in `docs/curator/DECISIONS.md` |
 | **NOOP** | it is already there, correct and complete, or it fails a check. Give the reason. A NOOP is a verdict, not a silence |
 | **question** | it contradicts an existing entry, or the change needs judgement. Ask the user (Step 7). Never overwrite in silence |
 
@@ -81,7 +81,9 @@ Before you give a verdict:
 3. **Verify.** Ground each claim in the code. Open the file. Never trust prose or memory.
 4. **Prune test.** "Would removing this line cause a mistake later?" If not, do not write it.
 
-Never append blindly. Edit the entry or section that owns the fact, in place.
+Never append blindly. Edit the entry or section that owns the fact, in place, except `docs/curator/DECISIONS.md`:
+it is append-only. A refinement or a reversal is a new `Dn` whose `Why` names the row it reverses.
+Never edit or delete a `Dn`.
 
 ## Step 5: Route each ADD or UPDATE to one doc
 
@@ -135,7 +137,9 @@ is any:
 
 Do not report what the sweep can count: a moved row, a missing `## Evaluated` row, an orphan. Never
 write a `Cn` yourself; the sweep writes it. It does not commit when you call it. Read its return
-block and keep its `Coverage:` line for the summary.
+block and keep its `Coverage:` line for the summary. When it returns `Result: blocked` or
+`needs-input`, tell the user the reason from its return block, ask the user the open question when
+there is one, and go on with the rest of curate. Never fail curate for it.
 
 ## Step 7: Questions
 
@@ -147,6 +151,8 @@ and the option you recommend. Apply each answer before the next question.
 
 Commit all sure edits and all applied answers under `docs/curator/` in one commit:
 `docs(curator): curate <branch or range>`. Use only read-only git commands before it. Never push.
+When there is nothing to commit, skip the commit; it is not an error. A rerun after the commit then
+goes straight to the result.
 
 ## Step 9: Result and summary
 
@@ -160,5 +166,5 @@ say that nothing was pushed.
 
 ## Permitted actions
 
-Do not change files outside `docs/curator/`. Do not push. The only skill you invoke is
+Do not change files outside `docs/curator/`, except the result file that the prompt names. Do not push. The only skill you invoke is
 `orc-curator:direction`.
