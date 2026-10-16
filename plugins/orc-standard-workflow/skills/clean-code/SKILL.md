@@ -24,8 +24,8 @@ description: Reviews the shape of the changed code and the clean-code rules — 
      measured, also when it says it found no files to measure. Any other exit code is a
      broken measurement: record one Evaluate finding with the first error line of the output, and
      go on with the rules.
-   - Without `measure`: record one Evaluate finding with this text: `No shape measurement: the Stack
-     Skills plugin declares no measure. The review used the rules only.` Go on with the rules, and
+   - Without `measure`: record one Evaluate finding with this text:
+     `No shape measurement: the Stack Skills plugin declares no measure. The review used the rules only.` Go on with the rules, and
      judge rule 3 by reading.
 3. Each measured row with one of these verdicts is a finding against rule 3:
 
@@ -55,7 +55,7 @@ description: Reviews the shape of the changed code and the clean-code rules — 
 9. If there is an open Decide finding (one that `decisions` does not answer), stop here. Do not fix
    anything. Write the result with `"status": "decide"`.
 10. Otherwise fix every Patch finding and every answered Decide. A fix changes the shape, never the
-    behaviour: extract, rename, flatten, delete dead code. Run only the tests of the files you
+    behaviour: extract, rename, flatten, delete dead code. Never change a threshold or add a suppression to make a row pass. Run only the tests of the files you
     changed. Never pipe a test command: the pipe hides the exit code. With `measure`, run it once
     more and give its `VERDICT` line under Patched; undo a fix that makes a row worse. Commit once:
     `refactor(clean-code): <summary>`. orchestra commits `notes` itself: do not stage files under
@@ -124,14 +124,15 @@ branches. Do not ask the user; a question goes into `decide`.
     reads as a sentence; no logic in a test that needs its own test.
 11. **The core works without the UI and the IO.** A handler, a component or a template asks a domain
     function for each decision and translates the answer into HTML, JSON or text. It does not
-    compute the rule itself. A correct import direction does not excuse a copy: an adapter that
+    compute the rule itself. Formatting is the adapter's job (dates, currency, labels, a greyed
+    button); the decision behind the formatting is not. A correct import direction does not excuse a copy: an adapter that
     computes what a domain function already gives is wrong, and so is a domain function that only
     the tests call while the adapter keeps its own copy.
 12. **Dependencies point inward.** A domain module does not import the ORM, the HTTP framework or a
     client library, does not take the framework's request object, and does not read an environment
-    variable. It defines an interface; the adapter implements it. A stable platform facility, such
+    variable. It defines an interface; the adapter implements it, and the caller injects it. A stable platform facility, such
     as the standard library, is not a finding. Judge by the imports, not by the folder name.
 13. **A simple typed value crosses a boundary.** No ORM row or entity, no request schema, no free map
     whose keys the receiver must know. The adapter translates. An error crosses in the form the inner
     module defines: the adapter turns an outside failure into a domain error, and a domain error into
-    a transport error.
+    a transport error. A domain module never names a transport or framework error type.
