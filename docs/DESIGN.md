@@ -118,8 +118,9 @@ it and acts on it. The plugin never runs its own gates or orders them.
 
 A Stack Skills declaration may also have `measure`: `{ "run": "<command>", "rules": "<skill>" }`. `{plugin}` and `{base}` (the run's base commit) expand in its `run` (S75).
 
-A workflow's `orchestra.json` has `slot: workflow`, its `config` keys and its own
-`gates` in the same format. It has no `build` and no `guides`.
+A workflow's `orchestra.json` has `slot: workflow`, its `config` keys, its `roles` (the roles of
+its stages: `spec`, `plan`, `code`) and its own `gates` in the same format. It has no `build` and
+no `guides`. `guides` maps a role to a skill (S76).
 
 `{plugin}` is the plugin's folder and `{config.<key>}` is a config value. Both come from
 `resolved.json`. Skill names in the declaration are names inside the same plugin. Every `config`
@@ -131,7 +132,7 @@ key has a `type` (`string`, `number` or `boolean`) and a `default` of that type 
 
 1. Finds the plugins from the `<plugin>:manifest` skills in its skill list. It asks the user when
    it finds none (S70).
-2. Asks which plugin fills each slot.
+2. Asks which plugin fills each slot. The `curator` slot is optional (S76).
 3. Writes `.orchestra/config.json` with only `plugin` per section, and adds the three `.gitignore`
    lines.
 4. Runs `resolve.js`, which resolves the plugins and runs `orchestra check --project`. Shows the
@@ -153,7 +154,9 @@ It is the only interactive skill in phase 1.
    versions.
 3. Runs `orchestra check` on the config against `resolved.json`, inside `resolve.js` (S70).
 4. Runs the **driver loop** (section 3). The driver loop and the action protocol belong to orchestra,
-   not to each workflow (S52).
+   not to each workflow (S52). The driver loop also prints `inline` for the Curator: its `setup`
+   before the first stage while the `done` file is missing, and its `curate` when the workflow is
+   done. `orchestra:run` carries out an `inline` action in the main session (S76).
 5. Shows the status and the report path.
 
 Arguments that the workflow declares are forwarded unread (S41). `orchestra:run --help` lists
@@ -294,6 +297,7 @@ it (S66).
 | State | Two folders, both derived from the branch, never passed (S15, S22). The **run folder** `tmp/runs/<branch>/` holds everything the orchestration uses: results, checkpoints, logs, `run.json`, `stages.json` (the order of the stage dispatches, for the report). Git ignores it. The **notes folder** `docs/runs/<branch>/` holds what a human reads: `task.md`, `brief.md`, `plan.md`, `decisions.md`, review notes (`plan-check.md`, `code.md`, `implementation-log.md`, `logic-review.md`) and `report.md`. It is committed and goes to the default branch with the PR (S54, S58). The workflow writes `run.json` with `base`, `branch`, `spec` (`<notes>/brief.md`, the file that holds the acceptance criteria) and `docs` (the notes folder). The gate runner reads it (S55). A resume works on the same machine only, because the run folder is not committed. Both folders are inside the run's worktree (S74). |
 | Worktree | orchestra starts every run in `.orchestra/worktrees/<branch>`, detached at the base. The workflow creates its branch there and never checks out, pulls or switches (S74). |
 | Mode | Headless or interactive is fixed by the workflow's author when the workflow is built. It is not a runtime setting (S12). |
+| Roles | `roles` in `orchestra.json`; each dispatch of a stage with a role carries `role`. orchestra adds the guides of that role to the prompt and fails a role the workflow did not declare (S76). |
 
 ## 8. `orc-standard-workflow`
 
@@ -304,10 +308,10 @@ The rewrite of be-coding-agent (S19). It is stack-agnostic (S27) and headless (S
 | # | Stage | Runs as | Reads | Writes | Notes |
 |---|---|---|---|---|---|
 | 0 | prepare | code in `next.js` | — | branch, run folder | Git policy, see 8.3 (S23) |
-| 1 | spec | subagent | `task.md` | `brief.md` | Given-when-then acceptance criteria. An open business fact is a `business fact:` line |
-| 2 | plan | subagent | `brief.md`, `decisions.md` | `plan.md`; answered business facts into `brief.md` | No code. Loads the stack's plan guide |
-| 3 | plan-check | subagent | `brief.md`, `plan.md` | both patched, `plan-check.md` | Fresh agent (S26). Checks the brief and the plan together. Loads the stack's plan guide. Writes answers from `decisions` into the brief and the plan. Raises a business fact only when neither the brief nor `decisions` gives it (S63). `next.js` counts the plan's tasks `### T1`…`### Tn`; a plan with no tasks in order runs plan-check again |
-| 4 | code | subagent per chunk of `tasks-per-coder` tasks | `brief.md`, `plan.md` | commits, `implementation-log.md`, `code.md` | One commit per task. Loads the stack's code guide |
+| 1 | spec | subagent | `task.md` | `brief.md` | Given-when-then acceptance criteria. An open business fact is a `business fact:` line. Role `spec` |
+| 2 | plan | subagent | `brief.md`, `decisions.md` | `plan.md`; answered business facts into `brief.md` | No code. Role `plan`: gets the plan guides |
+| 3 | plan-check | subagent | `brief.md`, `plan.md` | both patched, `plan-check.md` | Fresh agent (S26). Checks the brief and the plan together. Role `plan`: gets the plan guides. Writes answers from `decisions` into the brief and the plan. Raises a business fact only when neither the brief nor `decisions` gives it (S63). `next.js` counts the plan's tasks `### T1`…`### Tn`; a plan with no tasks in order runs plan-check again |
+| 4 | code | subagent per chunk of `tasks-per-coder` tasks | `brief.md`, `plan.md` | commits, `implementation-log.md`, `code.md` | One commit per task. Role `code`: gets the code guides |
 | 5 | implementation-check | gate runner | — | commits, results | Phase, section 6 |
 | 6 | conventions-check | gate runner | — | commits, results | Phase, section 6 |
 | 7 | finish | gate runner | — | commits, results | Phase, section 6 |
@@ -316,7 +320,7 @@ The rewrite of be-coding-agent (S19). It is stack-agnostic (S27) and headless (S
 
 After the spec, `next.js` reads the brief. Each `business fact:` line stops the run with `decide` until `decisions.md` has a `## business-facts` section (S63).
 
-A guide is on when the stack plugin declares it, unless `disable` lists it (S53, S40).
+A guide is on when a slot plugin declares it for the stage's role, unless `disable` lists it (S53, S40, S76).
 
 The workflow's own gates, in phase 1:
 
@@ -388,14 +392,25 @@ orchestra writes it (S55). Steps are in run order. An empty phase shows "ok (no 
 |---|---|---|
 | `build` | yes | The full build and tests, with coverage. Its fix guide and round limit (6.3). |
 | `gates` | no | The stack's gates (6.1). |
-| `guides.plan` | no | Short rules for the planner and the plan checker, 5–15 per area (R3). |
-| `guides.code` | no | Short rules for the coder, 5–15 per area (R3). |
+| `guides` | no | `{ "<role>": "<skill>" }`: short rules for the stages of one role, 5–15 per area (R3, S76). |
 | `measure` | no | The shape measurement and the stack's clean-code rules for a gate that asks for them (S75). |
 | `manifest` skill | yes | Resolution (5.2). |
 
 The stack plugin declares what and where. It never declares an order or a loop. Every gate skill
 can also be invoked by hand on any branch. Each finding cites `file:line` and the rule it breaks
 (R3).
+
+## 9a. The Curator contract
+
+| Part | Required | Meaning |
+|---|---|---|
+| `curate` | yes | The skill that updates the direction docs when the workflow is done. Runs inline in the main session; inputs `base`, `brief`, `notes`; it commits its edits. |
+| `setup` | yes | `{ skill, done }`. The skill runs inline before the first stage while the file `done` is missing; it writes `done` last. |
+| `guides` | no | As for Stack Skills; listed before the Stack Skills guides. |
+| `manifest` skill | yes | Resolution (5.2). |
+
+The `curator` section of the config is optional. The design of the Curator plugin itself is in
+`docs/superpowers/specs/2026-10-16-curator-design.md` (S76).
 
 ## 10. `orc-java-stack` in phase 1
 
