@@ -4,7 +4,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { readJson } = require('./resolved');
 const { git, changedFiles, isClean, commitKeeping } = require('./git');
-const { collect, select, buildStep, plan } = require('./gates');
+const { collect, select, buildStep, measureInputs, plan } = require('./gates');
 
 function writeJson(file, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
@@ -155,7 +155,7 @@ function agentStep(s, ctx, state, save) {
   const send = () => {
     state.seen[s.name] = answers;
     save();
-    const inputs = { spec: ctx.run.spec, base: ctx.run.base, notes: ctx.run.docs };
+    const inputs = { spec: ctx.run.spec, base: ctx.run.base, notes: ctx.run.docs, ...(s.measure ? measureInputs(ctx.resolved, ctx.run.base) : {}) };
     // Every answer is part of the requirements, so every gate reads them (S66). Only a new answer for this gate restarts it.
     const decisionsFile = `${ctx.run.docs}/decisions.md`;
     if (fs.existsSync(path.join(ctx.project, decisionsFile))) inputs.decisions = decisionsFile;

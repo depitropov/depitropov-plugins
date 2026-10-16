@@ -28,10 +28,12 @@ check is the guarantee: run it when you finish (last section).
 | `config` | both | Keys a project may set in its config section. Each is `{ "type": …, "default": … }`, with type `string`, `number` or `boolean`, and a default of that type. |
 | `gates` | both | The checks after the code. See "A gate". |
 | `build` | `stack-skills`, required | `run`: the full build and the tests. `guide`: its fix guide skill. `max_rounds`: fixer rounds, default 2. |
+| `measure` | `stack-skills` | The shape measurement for a gate that asks for it. `run`: a command that measures the changed code against `{base}`, the run's base commit, and prints its verdict. `rules`: optional, a skill with the stack's clean-code rules. A stack with no `measure` gives the gate no measurement. |
 | `guides` | `stack-skills` | `plan` and `code`: a skill with short rules for the planner and the coder. |
 
 In a command, `{plugin}` is the plugin's folder. In a gate's `run` or `grep`, `{config.<key>}` is
 a config value; the key must be declared under `config`. The `build` command takes only `{plugin}`.
+The `measure` command takes only `{plugin}` and `{base}`.
 
 ## A gate
 
@@ -49,6 +51,7 @@ a config value; the key must be declared under `config`. The `build` command tak
 | `grep` | A regular expression on the content of the changed files. |
 | `when` | A rule in words, judged on the diff. |
 | `always` | `true`: the gate runs on every run. |
+| `measure` | `true`: an `agent` gate gets the stack's `measure` command and its `rules` skill as the inputs `measure` and `rules`. |
 
 A gate needs at least one of `files`, `grep`, `when` or `always`. Inside a phase, the order is
 fixed by orchestra, not by you.

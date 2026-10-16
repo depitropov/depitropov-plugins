@@ -13,9 +13,10 @@ const SLOTS = ['workflow', 'stack-skills'];
 const KINDS = ['tool', 'agent'];
 const FIXES = ['self', 'fixer', 'none'];
 const CONFIG_TYPES = ['string', 'number', 'boolean'];
-const DECLARATION_KEYS = { workflow: ['slot', 'config', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'guides', 'gates'] };
-const GATE_KEYS = ['name', 'phase', 'kind', 'skill', 'run', 'fix', 'guide', 'max_rounds', 'files', 'grep', 'when', 'always'];
+const DECLARATION_KEYS = { workflow: ['slot', 'config', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'measure', 'guides', 'gates'] };
+const GATE_KEYS = ['name', 'phase', 'kind', 'skill', 'run', 'fix', 'guide', 'max_rounds', 'files', 'grep', 'when', 'always', 'measure'];
 const BUILD_KEYS = ['run', 'guide', 'max_rounds'];
+const MEASURE_KEYS = ['run', 'rules'];
 const GUIDE_KINDS = ['plan', 'code'];
 const SECTION_KEYS = ['plugin', 'disable', 'gates'];
 const CONFIG = '.orchestra/config.json';
@@ -85,6 +86,18 @@ function checkDeclaration(d, dir, where) {
       if (!GUIDE_KINDS.includes(kind)) fail(`unknown guide "${kind}"`, `use one of ${GUIDE_KINDS.join(', ')}`);
       skill(name, `guide "${kind}"`);
     }
+    if (d.measure !== undefined) {
+      const m = d.measure;
+      if (!isObject(m) || typeof m.run !== 'string') {
+        fail('"measure" has no "run" command', 'write "measure": { "run": "<command that measures the changed code against {base}>", "rules": "<rules skill>" }, or remove it');
+      } else {
+        for (const key of Object.keys(m)) {
+          if (!MEASURE_KEYS.includes(key)) fail(`unknown measure key "${key}"`, `remove it; the allowed keys are ${MEASURE_KEYS.join(', ')}`);
+        }
+        for (const p of m.run.matchAll(PLACEHOLDER)) fail(`measure "run" uses {config.${p[1]}}, but the measure command expands only {plugin} and {base}`, 'write the value into the command');
+        if (m.rules !== undefined) skill(m.rules, 'measure "rules"');
+      }
+    }
   }
   if (d.gates !== undefined && !Array.isArray(d.gates)) {
     fail('"gates" is not a list', 'make it a list of gate objects');
@@ -126,6 +139,8 @@ function checkDeclaration(d, dir, where) {
     }
     if (g.when !== undefined && typeof g.when !== 'string') fail(`${at} "when" is not text`, 'write the rule in words');
     if (g.always !== undefined && typeof g.always !== 'boolean') fail(`${at} "always" is not true or false`, 'set it to true, or remove it');
+    if (g.measure !== undefined && typeof g.measure !== 'boolean') fail(`${at} "measure" is not true or false`, 'set it to true, or remove it');
+    else if (g.measure && g.kind !== 'agent') fail(`${at} asks for "measure" but is not an agent gate`, 'remove "measure"; only an agent gate gets the measure command');
     if (!g.always && g.files === undefined && g.grep === undefined && g.when === undefined) {
       fail(`${at} has no selection rule, so it never runs`, 'add "files", "grep", "when" or "always": true');
     }
@@ -325,6 +340,6 @@ function checkPlugin(dir) {
 }
 
 module.exports = {
-  SLOTS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, GUIDE_KINDS, SECTION_KEYS, PHASES, ACTIONS,
+  SLOTS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, MEASURE_KEYS, GUIDE_KINDS, SECTION_KEYS, PHASES, ACTIONS,
   parseJson, skillExists, checkDeclaration, checkProject, checkPlugin,
 };

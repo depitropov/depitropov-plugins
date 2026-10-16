@@ -15,10 +15,12 @@ test('a valid declaration passes', () => {
   assert.deepEqual(errors(stack({
     config: { 'entity-pattern': { type: 'string', default: '@Entity' } },
     guides: { code: 'code-guide' },
+    measure: { run: 'python3 "{plugin}/m.py" --base {base}', rules: 'rules-ts' },
     gates: [
       { name: 'ops', phase: 'implementation-check', kind: 'agent', skill: 'review-ops', files: ['**/*.java', '**/*.sql'] },
       { name: 'entities', phase: 'conventions-check', kind: 'agent', skill: 'review-entities', grep: '{config.entity-pattern}' },
       { name: 'fmt', phase: 'finish', kind: 'tool', run: 'fmt {plugin}', fix: 'fixer', guide: 'fix-fmt', max_rounds: 1, always: true },
+      { name: 'shape', phase: 'implementation-check', kind: 'agent', skill: 'review-shape', always: true, measure: true },
     ],
   })), []);
   assert.deepEqual(errors({ slot: 'workflow', config: { n: { type: 'number', default: 2 } }, gates: [] }), []);
@@ -34,6 +36,12 @@ test('each broken declaration rule gives one line with the rule and its fix', ()
     [stack({ config: { n: { type: 'number' } } }), /config key "n" has no number default/],
     [stack({ config: { disable: { type: 'string', default: '' } } }), /config key "disable" is reserved/],
     [stack({ guides: { review: 'x' } }), /unknown guide "review"/],
+    [stack({ measure: { rules: 'x' } }), /"measure" has no "run" command/],
+    [stack({ measure: { run: 'm', every: 1 } }), /unknown measure key "every"/],
+    [stack({ measure: { run: 'm {config.n}' } }), /measure "run" uses \{config\.n\}/],
+    [{ slot: 'workflow', measure: { run: 'm' } }, /unknown key "measure" for slot workflow/],
+    [stack({ gates: [tool({ measure: true })] }), /gate "a" asks for "measure" but is not an agent gate/],
+    [stack({ gates: [{ name: 'a', phase: 'finish', kind: 'agent', skill: 's', always: true, measure: 'yes' }] }), /gate "a" "measure" is not true or false/],
     [stack({ gates: [{ name: 'a', phase: 'later', kind: 'agent', skill: 's', always: true }] }), /gate "a" has phase "later"/],
     [stack({ gates: [tool({ run: undefined })] }), /gate "a" is a tool gate with no "run"/],
     [stack({ gates: [tool({ fix: 'fixer' })] }), /gate "a" uses the fixer but names no guide/],
@@ -56,6 +64,11 @@ test('a skill the declaration names must exist in skills/', () => {
   const d = stack({ gates: [{ name: 'a', phase: 'finish', kind: 'agent', skill: 'review-a', always: true }] });
   const out = checkDeclaration(d, tmp('empty-'), 'st/orchestra.json');
   assert.deepEqual(out.map(l => l.match(/names skill "([\w-]+)"/)[1]), ['fix-build', 'review-a']);
+});
+
+test('the measure rules skill must exist in skills/', () => {
+  const out = checkDeclaration(stack({ measure: { run: 'm', rules: 'rules-ts' } }), tmp('empty-'), 'st/orchestra.json');
+  assert.ok(out.some(l => /measure "rules" names skill "rules-ts"/.test(l)), out.join(' | '));
 });
 
 const wf = { slot: 'workflow', config: { 'tasks-per-coder': { type: 'number', default: 2 } }, gates: [] };

@@ -92,6 +92,16 @@ function select(gates, changed, readFile) {
   });
 }
 
+// The stack's shape measurement, for an agent gate that asks for it (S75). {base} is the run's base commit.
+function measureInputs(resolved, base) {
+  const stack = resolved.slots['stack-skills'];
+  const m = stack && stack.declaration.measure;
+  if (!m) return {};
+  const inputs = { measure: m.run.replace(/\{plugin\}/g, stack.dir).replace(/\{base\}/g, base) };
+  if (m.rules) inputs.rules = `${stack.plugin}:${m.rules}`;
+  return inputs;
+}
+
 function buildStep(resolved) {
   const stack = resolved.slots['stack-skills'];
   const build = stack && stack.declaration.build;
@@ -114,4 +124,4 @@ function plan(phase, gates, build) {
   return order.flatMap(kind => (kind === 'build' ? [build] : gates.filter(g => g.kind === kind)));
 }
 
-module.exports = { PHASE_ORDER, globToRegExp, collect, select, buildStep, plan };
+module.exports = { PHASE_ORDER, globToRegExp, collect, select, buildStep, measureInputs, plan };

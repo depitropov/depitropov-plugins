@@ -248,3 +248,39 @@ wording change needs no entry.
 - **Decision:** As the S74 row in `docs/TENSIONS.md`. Two amendments came from planning. (1) The `report` path stays relative to the run root. A kept worktree is named by the action key `worktree`, relative to the project root. On `done` the skill reads the report with `git show <branch>:<report>`. A `done` action whose worktree git refused to remove carries `worktree` and `kept`. (2) The config comes from the base commit. `.orchestra/config.json` is read inside the worktree. `drive.js` copies only `.orchestra/resolved.json` from the project root on every call. A config that is not on `origin/<default>` stops the start. `create()` reads `origin/HEAD` before `git fetch`. A missing `origin/HEAD` fails with the hint "Run `git remote set-head origin -a`". Git 2.50's fetch would otherwise recreate it silently. `orchestra check --project` fails when `.orchestra/worktrees/` is not git-ignored.
 - **Cost and risk:** Unpushed local commits are not in a run. A fresh worktree has no untracked files (`.env`) and no build output. A run started in place before the upgrade cannot resume. IDEs may index the worktree. It is not run on Codex yet.
 - **Where it lives:** `plugins/orchestra/lib/worktree.js`, `plugins/orchestra/bin/drive.js`, `plugins/orchestra/lib/protocol.js`, `plugins/orchestra/lib/check.js`, `plugins/orc-standard-workflow/bin/next.js`, the skills `orchestra:run` and `orchestra:writing-plugins`.
+
+## S75: Clean code as a workflow gate, measured by the Stack Skills
+
+- **Date:** 2026-10-16
+- **Status:** decided
+- **Question:** S68 left clean code for later, "at workflow level". mentorano's clean-code plugin
+  has language-agnostic rules but measures only Python and TypeScript. Where does each part go, and
+  who measures the code of a stack?
+- **Options:**
+  A. Port the scripts into the workflow as they are. Smallest change, but a Java run measures
+     nothing, and the workflow learns two languages.
+  B. One multi-language measurer (for example `lizard`) inside the workflow. Stack-free, but a new
+     install on every machine, no compare mode, and nesting depth only through an extension.
+  C. The Stack Skills plugin declares the measurement; the workflow gate uses it. The workflow never
+     learns a parser, like `build`. Costs a contract change (`check.js`, `writing-plugins`).
+- **Evidence:** The mentorano source (`docs/PORTING.md`, section "ai-marketplace-mentorano"): the
+  rules section of `SKILL.md` names no language; `languages.py` accepts only `.py`, `.ts` and `.tsx`;
+  `boundaries.py` reads only Python and knows FastAPI layer names. An agent gate gets `base` as an
+  input, a tool gate does not (`lib/gates.js` expands only `{plugin}` and `{config.<key>}`), and the
+  verdicts need judgement (a renamed function shows as `new-over`; a flat `switch` over complexity
+  10 is not split).
+- **Decision:** C. The gate `clean-code` in `orc-standard-workflow`, `implementation-check`, an agent
+  gate that fixes its Patch findings, with the comment rule kept. Stack Skills key `measure`
+  (`run`, `rules`) and gate key `measure`. New `orc-ts-stack`: build `npm ci && npm test`, the
+  measure and the TypeScript rules. Java declares no measure, so its runs show a warning. The
+  mentorano plugin is copied whole to `plugins/clean-code` for use outside orchestra.
+- **Cost and risk:** One more subagent per run, on every stack. The comment rule overlaps the Java
+  `comments` gate in `finish`; watch for double findings. The TS measure needs Python 3.11 or later
+  and the project's own `typescript@5`; without them the gate reviews with the rules only. The
+  scripts exist twice (`plugins/clean-code`, `plugins/orc-ts-stack/scripts`); a test keeps them
+  identical. The thresholds are the defaults of `measure.py`; a project that wants others needs a
+  config key, not built yet.
+- **Where it lives:** `plugins/orchestra/lib/{check,gates,runner}.js`,
+  `plugins/orchestra/skills/writing-plugins/SKILL.md`, `plugins/orc-standard-workflow/orchestra.json`,
+  `plugins/orc-standard-workflow/skills/clean-code/SKILL.md`, `plugins/orc-ts-stack/`,
+  `plugins/clean-code/`, `docs/PORTING.md`.

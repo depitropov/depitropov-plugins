@@ -11,12 +11,12 @@ const runner = require('../../plugins/orchestra/lib/runner');
 const ORCHESTRA = path.join(__dirname, '../../plugins/orchestra');
 const OK = 'node -e "process.exit(0)"';
 
-function setup({ build = OK, maxRounds = 1, stackGates = [], workflowGates = [] } = {}) {
+function setup({ build = OK, maxRounds = 1, stackGates = [], workflowGates = [], measure } = {}) {
   const dir = makeRepo();
   const plugins = fs.mkdtempSync(path.join(os.tmpdir(), 'plugins-'));
   const mk = (name, declaration) => writePlugin(path.join(plugins, name), name, declaration);
   const wf = mk('wf', { slot: 'workflow', gates: workflowGates });
-  const st = mk('st', { slot: 'stack-skills', build: { run: build, guide: 'fix-build', max_rounds: maxRounds }, gates: stackGates });
+  const st = mk('st', { slot: 'stack-skills', build: { run: build, guide: 'fix-build', max_rounds: maxRounds }, ...(measure && { measure }), gates: stackGates });
   const config = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' } };
   writeJson(path.join(dir, '.orchestra/config.json'), config);
   git(dir, 'add', '-A');
@@ -34,6 +34,7 @@ function setup({ build = OK, maxRounds = 1, stackGates = [], workflowGates = [] 
   fs.mkdirSync(path.join(dir, docs), { recursive: true });
   return {
     dir,
+    base,
     runDir,
     docs,
     step: phase => runner.step({ project: dir, runDir, phase, resolved, config }),
@@ -273,4 +274,28 @@ test('a fixer with no result is dispatched twice, then the build fails; a resume
   assert.match(r.reason, /wrote no result after 2 dispatches/);
   fs.writeFileSync(path.join(t.dir, 'fixed'), '');
   assert.equal(t.step('implementation-check').status, 'ok');
+});
+
+const cleanCode = { name: 'clean-code', phase: 'implementation-check', kind: 'agent', skill: 'clean-code', always: true, measure: true };
+
+test('a gate that asks for the measure gets the expanded command and the qualified rules skill', () => {
+  const t = setup({ workflowGates: [cleanCode], measure: { run: 'python3 "{plugin}/m.py" --base {base}', rules: 'rules-ts' } });
+  const a = t.step('implementation-check');
+  assert.equal(a.skill, 'wf:clean-code');
+  assert.match(a.inputs.measure, /^python3 ".+\/st\/m\.py" --base [0-9a-f]{40}$/);
+  assert.ok(a.inputs.measure.endsWith(t.base));
+  assert.equal(a.inputs.rules, 'st:rules-ts');
+});
+
+test('with no measure in the stack, the gate gets no measure inputs', () => {
+  const t = setup({ workflowGates: [cleanCode] });
+  const a = t.step('implementation-check');
+  assert.equal(a.inputs.measure, undefined);
+  assert.equal(a.inputs.rules, undefined);
+});
+
+test('a gate that does not ask for the measure gets no measure inputs', () => {
+  const t = setup({ workflowGates: [logicReview], measure: { run: 'm {base}', rules: 'rules-ts' } });
+  const a = t.step('implementation-check');
+  assert.deepEqual(Object.keys(a.inputs).sort(), ['base', 'notes', 'spec']);
 });
