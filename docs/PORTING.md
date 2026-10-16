@@ -774,8 +774,10 @@ Source: `~/Projects-other/ai-marketplace-mentorano/plugins/clean-code`, version 
 | Rules, TypeScript shape (strict, unions, Props, hooks, query keys, dependency arrays, one job, explicit states, eslint-disable reason, early return, tests) | TS rules 1–11 | ported | yes |
 | Layer defaults, direction, feature grouping, smell table | "Layers of a React app"; Phase 1 and 3 references become gate rules 11 and 13 | ported | yes |
 | `console.log`, `as any`, `@ts-ignore` not listed | the "Not listed" paragraph | ported | yes |
+| Layer defaults: run the project's dependency checker | "Layers of a React app": its result wins over this list; the build runs it when the project has one | ported (other mechanism) | yes |
 | Measuring: the command | the stack's `measure` (S75) | ported (other mechanism) | yes |
 | Measuring: the `typescript` package, TS 7, what counts as a function, test files | "Reading the measurement" | ported | yes |
+| Measuring: the install command `npm install --no-save typescript@5` | "Reading the measurement" names `typescript@5`; the script's own error message prints the command | ported (other mechanism) | yes |
 | Two greps | "Two searches", tied to TS rules 4 and 5 | ported | yes |
 | A hit in an untouched file is context | "Two searches", last line | ported | yes |
 | What not to do: no `helpers.ts`, one URL-state owner, create the hook, fix the dependency source, do not silence `exhaustive-deps` | TS rules 12, 13, 4, 6 | ported | yes |
