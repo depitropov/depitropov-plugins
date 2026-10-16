@@ -57,8 +57,9 @@ description: Reviews the shape of the changed code and the clean-code rules — 
    anything. Write the result with `"status": "decide"`.
 10. Otherwise fix every Patch finding and every answered Decide. A fix changes the shape, never the
     behaviour: extract, rename, flatten, delete dead code. Never change a threshold or add a
-    suppression to make a row pass. Run only the tests of the files you changed. Never pipe a test command: the pipe hides the exit code. With `measure`, run it once
-    more and give its `VERDICT` line under Patched; undo a fix that makes a row worse. Commit once:
+    suppression to make a row pass. Run only the tests of the files you changed. Never pipe a test
+    command: the pipe hides the exit code. With `measure`, run it once more and give its `VERDICT`
+    line under Patched; undo a fix that makes a row worse. Commit once:
     `refactor(clean-code): <summary>`. orchestra commits `notes` itself: do not stage files under
     `docs/runs/` or `tmp/`. Do not review your own fixes again.
 
@@ -132,8 +133,9 @@ branches. Do not ask the user; a question goes into `decide`.
 12. **Dependencies point inward.** A domain module does not import the ORM, the HTTP framework or a
     client library, does not take the framework's request object, and does not read an environment
     variable. It defines an interface; the adapter implements it, and the caller injects it. A
-    stable platform facility, such as the standard library, is not a finding. Judge by the imports, not by the folder name.
-13. **A simple typed value crosses a boundary.** No ORM row or entity, no request schema, no free map
-    whose keys the receiver must know. The adapter translates. An error crosses in the form the inner
-    module defines: the adapter turns an outside failure into a domain error, and a domain error into
-    a transport error. A domain module never names a transport or framework error type.
+    stable platform facility, such as the standard library, is not a finding. Judge by the imports,
+    not by the folder name.
+13. **A simple typed value crosses a boundary.** No ORM row or entity, no request schema, no free
+    map whose keys the receiver must know. The adapter translates. An error crosses in the form the
+    inner module defines: the adapter turns an outside failure into a domain error, and a domain
+    error into a transport error. A domain module never names a transport or framework error type.

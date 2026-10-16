@@ -299,3 +299,10 @@ test('a gate that does not ask for the measure gets no measure inputs', () => {
   const a = t.step('implementation-check');
   assert.deepEqual(Object.keys(a.inputs).sort(), ['base', 'notes', 'spec']);
 });
+
+test('a $ in the plugin folder stays literal in a gate command', () => {
+  const { collect } = require('../../plugins/orchestra/lib/gates');
+  const gate = { name: 'fmt', phase: 'finish', kind: 'tool', run: 'x {plugin}/f', always: true };
+  const resolved = { slots: { 'stack-skills': { plugin: 'st', dir: '/p/$&/q', declaration: { slot: 'stack-skills', gates: [gate] } } } };
+  assert.equal(collect(resolved, {}, 'finish')[0].run, 'x /p/$&/q/f');
+});

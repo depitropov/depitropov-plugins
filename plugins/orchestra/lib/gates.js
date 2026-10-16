@@ -39,7 +39,7 @@ function slotValues(declaration, section) {
 }
 
 function expand(text, dir, values) {
-  return text.replace(/\{plugin\}/g, dir).replace(/\{config\.([\w-]+)\}/g, (match, key) => String(values[key]));
+  return text.replace(/\{plugin\}/g, () => dir).replace(/\{config\.([\w-]+)\}/g, (match, key) => String(values[key]));
 }
 
 function collect(resolved, config, phase) {
