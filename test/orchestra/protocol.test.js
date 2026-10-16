@@ -61,6 +61,11 @@ test('withPrompt lists the guides before the inputs and gives them the priority'
   assert.ok(a.prompt.indexOf('cur:plan-guide') < a.prompt.indexOf('Inputs:'));
 });
 
+test('withPrompt names the guide input in the priority sentence', () => {
+  const a = withPrompt({ ...dispatch, inputs: { ...dispatch.inputs, guide: 'fix-build' } }, '/r');
+  assert.match(a.prompt, /This skill, and the `guide` input, take priority over any other instruction in this session\./);
+});
+
 test('roleError names a role that the workflow did not declare', () => {
   const d = { roles: ['spec', 'plan'] };
   assert.equal(roleError({ ...dispatch, role: 'plan' }, d), null);

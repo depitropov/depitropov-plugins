@@ -1,6 +1,6 @@
 ---
 name: writing-plugins
-description: Use when writing or changing a plugin that fills an orchestra slot — a workflow plugin or a Stack Skills plugin — its orchestra.json, its gates or its next.js.
+description: Use when writing or changing a plugin that fills an orchestra slot — a workflow plugin, a Stack Skills plugin or a Curator plugin — its orchestra.json, its gates or its next.js.
 ---
 
 # Writing an orchestra plugin
@@ -25,8 +25,8 @@ check is the guarantee: run it when you finish (last section).
 | Key | Slot | Meaning |
 |---|---|---|
 | `slot` | all | `workflow`, `stack-skills` or `curator`. |
-| `config` | both | Keys a project may set in its config section. Each is `{ "type": …, "default": … }`, with type `string`, `number` or `boolean`, and a default of that type. |
-| `gates` | both | The checks after the code. See "A gate". |
+| `config` | all | Keys a project may set in its config section. Each is `{ "type": …, "default": … }`, with type `string`, `number` or `boolean`, and a default of that type. |
+| `gates` | `workflow`, `stack-skills` | The checks after the code. See "A gate". |
 | `build` | `stack-skills`, required | `run`: the full build and the tests. `guide`: its fix guide skill. `max_rounds`: fixer rounds, default 2. |
 | `measure` | `stack-skills` | The shape measurement for a gate that asks for it. `run`: a command that measures the changed code against `{base}`, the run's base commit, and prints its verdict. `rules`: optional, a skill with the stack's clean-code rules. A stack with no `measure` gives the gate no measurement. |
 | `guides` | `stack-skills`, `curator` | `{ "<role>": "<skill>" }`: a guide, a skill with short write-time rules, for the stages of one role. The roles are `spec`, `plan` and `code`. orchestra lists the guides of a stage's role in its prompt. A project turns one off with `disable`. |

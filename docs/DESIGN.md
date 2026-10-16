@@ -116,11 +116,11 @@ it and acts on it. The plugin never runs its own gates or orders them.
 }
 ```
 
-A Stack Skills declaration may also have `measure`: `{ "run": "<command>", "rules": "<skill>" }`. `{plugin}` and `{base}` (the run's base commit) expand in its `run` (S75).
+A Stack Skills declaration may also have `measure`: `{ "run": "<command>", "rules": "<skill>" }`. `{plugin}` and `{base}` (the run's base commit) expand in its `run` (S75). `guides` maps a role (`spec`, `plan` or `code`) to a skill (S76).
 
 A workflow's `orchestra.json` has `slot: workflow`, its `config` keys, its `roles` (the roles of
 its stages: `spec`, `plan`, `code`) and its own `gates` in the same format. It has no `build` and
-no `guides`. `guides` maps a role to a skill (S76).
+no `guides`.
 
 `{plugin}` is the plugin's folder and `{config.<key>}` is a config value. Both come from
 `resolved.json`. Skill names in the declaration are names inside the same plugin. Every `config`
@@ -290,7 +290,7 @@ it (S66).
 | Part | Rule |
 |---|---|
 | Entry | None of its own. `orchestra:run` runs its `next.js` through the driver loop (S51, S52). |
-| Declaration | `orchestra.json` with `slot: workflow`, its config keys and its own gates. |
+| Declaration | `orchestra.json` with `slot: workflow`, its config keys, its `roles` and its own gates. |
 | Resolution | A `manifest` skill (5.2). |
 | Order | `next.js` in Node, standard library only (S10, S11). It prints actions of the orchestra protocol, including `phase`. |
 | Output | One status, `done`, `decide` or `failed`. orchestra writes `report.md` into the notes folder from the result files in the run folder, so no workflow repeats that logic (S55). |

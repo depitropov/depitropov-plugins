@@ -145,7 +145,7 @@ function step(project, extraArgs, resume) {
     if (a.action === 'dispatch') {
       const bad = roleError(a, resolved.slots.workflow.declaration);
       if (bad) return finish(project, { action: 'failed', reason: bad, runDir: a.runDir }, resolved);
-      // ponytail: on the start call only, the held-back dispatch counts as one of the workflow's two dispatches of that stage; once per project.
+      // ponytail: on the start call only, the held-back dispatch counts as one of the workflow's two dispatches of that stage; once per run that needs setup.
       const held = setupAction(project, a.runDir, resolved);
       if (held) return held;
       remember(project, a);
