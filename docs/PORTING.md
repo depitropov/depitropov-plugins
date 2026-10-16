@@ -617,65 +617,65 @@ General notes:
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Frontmatter: trigger after a feature ships, dispatched by the curate step | `orc-curator:curate` description; orchestra dispatches it on `done` (S76) | planned (other mechanism, S76) | yes |
-| Tools: Read, Grep, Glob, Bash, Write, Edit | the run subagent's normal actions | n/a (orchestra dispatches a general-purpose subagent, S57) | no |
-| Role: keep durable knowledge true to the shipped code; report and stage, no commit, no archive | `orc-curator:curate` intro | planned (Curator plan, S76) | yes |
-| Hard gate: never commit, never archive | orchestra commits the sure edits on the task branch; no feature folder to archive | planned (other mechanism, S76) | yes |
+| Frontmatter: trigger after a feature ships, dispatched by the curate step | `orc-curator:curate` description; orchestra runs it inline on `done`, or by hand on a commit range (S76) | ported (changed, S76) | yes |
+| Tools: Read, Grep, Glob, Bash, Write, Edit | the main session's normal actions | n/a (curate runs inline in the main session, S76) | no |
+| Role: keep durable knowledge true to the shipped code; report and stage, no commit, no archive | `orc-curator:curate` intro; changed: curate commits its own edits once (S76) | ported (changed, S76) | yes |
+| Hard gate: never commit, never archive | `orc-curator:curate` Step 8: one commit of the sure and answered edits; no feature folder to archive | ported (changed, S76) | yes |
 | Hard gate: write list — skill files, CLAUDE.md files, rules | — | dropped (S76: waits for PSK) | no |
-| Hard gate: write list — DECISIONS, PRODUCT, ledger | DECISIONS, PRODUCT: `orc-curator:curate`; ledger dropped | partial (ledger dropped, S76: waits for PSK) | yes |
-| Hard gate: BACKLOG — idea rows into Next or Later, Vision prose rewritten, never a horizon move | `orc-curator:curate`; the Shipped move also moves into curate (single writer, S76) | planned (changed, S76) | yes |
-| Hard gate: DIRECTION — mark satisfied, retire, delete orphans, never author a `Cn` | `orc-curator:curate`; curate now also runs the sweep, so it writes sure `Cn`s (S76) | planned (changed, S76) | yes |
-| Hard gate: QUESTIONS — close only, never open, never delete | `orc-curator:curate` | planned (Curator plan, S76) | yes |
-| Hard gate: `<feature>/CURATE.md` report, none for `--light` | the curate notes file in the notes folder (`docs/runs/<branch>/`) | planned (other mechanism, S76) | yes |
+| Hard gate: write list — DECISIONS, PRODUCT, ledger | DECISIONS, PRODUCT: `orc-curator:curate` Step 5; ledger dropped | partial (ledger dropped, S76: waits for PSK) | yes |
+| Hard gate: BACKLOG — idea rows into Next or Later, Vision prose rewritten, never a horizon move | `orc-curator:curate` Steps 3, 5, 6; the Shipped move is in curate (single writer); no run moves a row to Now (S76) | ported (changed, S76) | yes |
+| Hard gate: DIRECTION — mark satisfied, retire, delete orphans, never author a `Cn` | `orc-curator:curate` Step 6; curate invokes `orc-curator:direction`, which writes the `Cn` (S76) | ported (changed, S76) | yes |
+| Hard gate: QUESTIONS — close only, never open, never delete | `orc-curator:curate` Step 5; changed: curate opens a `Qn` for each `Question` line of the brief (S76: single writer); never deletes | ported (changed, S76) | yes |
+| Hard gate: `<feature>/CURATE.md` report, none for `--light` | `orc-curator:curate` Step 9: the summary to the user; no report file | ported (changed, S76) | yes |
 | Hard gate: re-append deferred rows to the live journal, never edit the snapshot | — | dropped (S76: the journal belongs to the dropped hooks) | no |
-| Hard gate: Bash read-only (git, grep, dedup) | `orc-curator:curate` rule | planned (Curator plan, S76) | yes |
+| Hard gate: Bash read-only (git, grep, dedup) | `orc-curator:curate` Step 8: read-only git before the one commit | ported | yes |
 | Hard gate: root `CLAUDE.md` and orientation pointer always human-gated | — | dropped (S76: waits for PSK) | no |
 | Hard gate: evidence before a rule, `promote_threshold` | — | dropped (S76: waits for PSK) | no |
-| Hard gate: verify before trust — ground each claim in the code | `orc-curator:curate` rule | planned (Curator plan, S76) | yes |
-| Hard gate: prune test ("would removing this cause a mistake?") | `orc-curator:curate` rule, for the direction docs | planned (Curator plan, S76) | yes |
-| Hard gate: dedup check before every write | `orc-curator:curate` rule | planned (Curator plan, S76) | yes |
-| Hard gate: a contradiction is a FLAG, not an overwrite | `orc-curator:curate`; a FLAG becomes a question, so a Decide (S76) | planned (other mechanism, S76) | yes |
-| Hard gate: never blind-append, rewrite inside managed-block anchors | `orc-curator:curate` rule, for the direction docs | planned (Curator plan, S76) | yes |
+| Hard gate: verify before trust — ground each claim in the code | `orc-curator:curate` Step 4 | ported | yes |
+| Hard gate: prune test ("would removing this cause a mistake?") | `orc-curator:curate` Step 4, for the direction docs | ported | yes |
+| Hard gate: dedup check before every write | `orc-curator:curate` Step 4 | ported | yes |
+| Hard gate: a contradiction is a FLAG, not an overwrite | `orc-curator:curate` Steps 4 and 7: a contradiction is a question to the user, asked inline (S76) | ported (changed, S76) | yes |
+| Hard gate: never blind-append, rewrite inside managed-block anchors | `orc-curator:curate` Step 4: edit the owning entry in place (the direction docs have no anchors) | ported (changed, S76) | yes |
 | Hard gate: no STATE, no commit, no archive | orchestra owns run state and commits | n/a (orchestra owns run state, S76) | no |
-| When invoked 1: dispatch prompt — flavor, folder, mode, apply, diff, spec, plan, ARCH | orchestra's dispatch inputs: base, brief, notes folder (S76) | planned (other mechanism, S76) | yes |
-| When invoked 1: knowledge root and the paths of every doc it may write | fixed docs folder `docs/curator/`, named in the skill (S76) | planned (other mechanism, S76) | yes |
+| When invoked 1: dispatch prompt — flavor, folder, mode, apply, diff, spec, plan, ARCH | `orc-curator:curate` Step 1: inline inputs `base`, `brief`, `notes`, result path; by hand a commit range (S76) | ported (changed, S76) | yes |
+| When invoked 1: knowledge root and the paths of every doc it may write | `orc-curator:curate`: fixed docs folder `docs/curator/`, named in the skill (S76) | ported (changed, S76) | yes |
 | When invoked 1: live journal and snapshot paths | — | dropped (S76: the journal belongs to the dropped hooks) | no |
 | When invoked 1: `config.curate` settings | — | dropped (S76: they serve the code-knowledge half) | no |
-| When invoked 1: a missing path — say so, never guess | `orc-curator:curate` rule | planned (Curator plan, S76) | yes |
-| When invoked 2: read every input first; DECISIONS for the next `Dn` and for contradictions | `orc-curator:curate` | planned (Curator plan, S76) | yes |
-| When invoked 2: unreadable input → `blocked` | result `failed` with the reason | planned (other mechanism, S76) | yes |
+| When invoked 1: a missing path — say so, never guess | `orc-curator:curate` Step 1 | ported | yes |
+| When invoked 2: read every input first; DECISIONS for the next `Dn` and for contradictions | `orc-curator:curate` Step 2 | ported | yes |
+| When invoked 2: unreadable input → `blocked` | `orc-curator:curate` Step 2: result `failed` with the reason | ported (changed, S76) | yes |
 | When invoked 3: map existing surfaces with `git ls-files` before routing | — | dropped (S76: the surfaces are the code-knowledge half) | no |
-| Pipeline: every candidate gets one recorded verdict ADD, UPDATE, NOOP, FLAG | curate notes file | planned (Curator plan, S76) | yes |
-| Pipeline: candidates from the diff and from the journal snapshot | diff (and brief, notes): planned; journal dropped | partial (journal dropped, S76) | yes |
-| Step A: 3-question filter — inferable, a choice, checkable | `orc-curator:curate`, for the direction docs | planned (Curator plan, S76) | yes |
-| Step B: Mem0 gate ADD, UPDATE, NOOP, FLAG | `orc-curator:curate` | planned (Curator plan, S76) | yes |
+| Pipeline: every candidate gets one recorded verdict ADD, UPDATE, NOOP, FLAG | `orc-curator:curate` Step 4; verdicts listed in the Step 9 summary; FLAG becomes a question (S76) | ported (changed, S76) | yes |
+| Pipeline: candidates from the diff and from the journal snapshot | `orc-curator:curate` Step 4: diff, brief, `<notes>/decisions.md`; journal dropped | partial (journal dropped, S76) | yes |
+| Step A: 3-question filter — inferable, a choice, checkable | `orc-curator:curate` Step 4, for the direction docs | ported | yes |
+| Step B: Mem0 gate ADD, UPDATE, NOOP, FLAG | `orc-curator:curate` Step 4; FLAG is a question (S76) | ported (changed, S76) | yes |
 | Step C route: task or intent → skill | — | dropped (S76: waits for PSK) | no |
 | Step C route: one directory → per-directory `CLAUDE.md` | — | dropped (S76: waits for PSK) | no |
 | Step C route: glob → `.claude/rules/*` | — | dropped (S76: waits for PSK) | no |
 | Step C route: every turn → root `CLAUDE.md` | — | dropped (S76: waits for PSK) | no |
-| Step C route: the why → `DECISIONS.md`, next `Dn`, `hard:` or `soft:` | `orc-curator:curate` | planned (Curator plan, S76) | yes |
-| Step C route: what the product is → PRODUCT, never a feature inventory | `orc-curator:curate` | planned (Curator plan, S76) | yes |
-| Step C route: a settled rationale → PRODUCT "Why it's shaped this way", cite the `Dn` | `orc-curator:curate` | planned (Curator plan, S76) | yes |
-| Step C route: Vision prose made real → delete it, one clause may go to PRODUCT | `orc-curator:curate` | planned (Curator plan, S76) | yes |
+| Step C route: the why → `DECISIONS.md`, next `Dn`, `hard:` or `soft:` | `orc-curator:curate` Step 5; also the run's answers in `<notes>/decisions.md` (S76) | ported (changed, S76) | yes |
+| Step C route: what the product is → PRODUCT, never a feature inventory | `orc-curator:curate` Step 5 | ported | yes |
+| Step C route: a settled rationale → PRODUCT "Why it's shaped this way", cite the `Dn` | `orc-curator:curate` Step 5 | ported | yes |
+| Step C route: Vision prose made real → delete it, one clause may go to PRODUCT | `orc-curator:curate` Step 5 | ported | yes |
 | Step C route: layers, where code goes → native surfaces, never TECH | — | dropped (S76: waits for PSK) | no |
-| Step C route: an idea → BACKLOG Next or Later, next `Bn` | `orc-curator:curate`; also the brief's out-of-scope items (S76) | planned (Curator plan, S76) | yes |
-| Step C route: a question settled in code → QUESTIONS `answered → Dn` plus one sentence | `orc-curator:curate` | planned (Curator plan, S76) | yes |
-| Step C route: a domain term → `CONTEXT.md`, only domain-specific, edited in place, `_Avoid_` | `orc-curator:curate`; the glossary sits in the docs subfolder (S76) | planned (changed, S76) | yes |
+| Step C route: an idea → BACKLOG Next or Later, next `Bn` | `orc-curator:curate` Step 5; also the brief's `Deferred` lines and out-of-scope items (S76) | ported (changed, S76) | yes |
+| Step C route: a question settled in code → QUESTIONS `answered → Dn` plus one sentence | `orc-curator:curate` Step 5 | ported | yes |
+| Step C route: a domain term → `CONTEXT.md`, only domain-specific, edited in place, `_Avoid_` | `orc-curator:curate` Step 5; the glossary is `docs/curator/CONTEXT.md` (S76) | ported (changed, S76) | yes |
 | Step C: maintain column (propose-only, NOOP for PRODUCT) | — | dropped (S76: maintain is a project without the Curator) | no |
-| CONTEXT is also deleted from; tiered: plain retirement deletes, else FLAG | `orc-curator:curate` | planned (Curator plan, S76) | yes |
-| Subtract: PRODUCT — remove what stopped being true; unbuilt aspiration moves to Vision | `orc-curator:curate` | planned (Curator plan, S76) | yes |
-| Subtract: Vision — both directions; rewrite prose for a dropped or demoted row | `orc-curator:curate` | planned (Curator plan, S76) | yes |
-| Removal tiered by confidence: plain contradiction deletes, else FLAG | `orc-curator:curate`; FLAG → question → Decide (S76) | planned (other mechanism, S76) | yes |
-| DIRECTION check 1: satisfied by `<path>` | `orc-curator:curate` | planned (Curator plan, S76) | yes |
-| DIRECTION check 2: retire satisfied rows whose `Bn` shipped | `orc-curator:curate` | planned (Curator plan, S76) | yes |
-| DIRECTION check 3: delete orphans whose `Bn` left Now and Next | `orc-curator:curate` | planned (Curator plan, S76) | yes |
-| DIRECTION check 4: cap 50 rows, FLAG, never truncate | `orc-curator:curate`; FLAG → question (S76) | planned (Curator plan, S76) | yes |
+| CONTEXT is also deleted from; tiered: plain retirement deletes, else FLAG | `orc-curator:curate` Step 6; else a question | ported (changed, S76) | yes |
+| Subtract: PRODUCT — remove what stopped being true; unbuilt aspiration moves to Vision | `orc-curator:curate` Step 6 | ported | yes |
+| Subtract: Vision — both directions; rewrite prose for a dropped or demoted row | `orc-curator:curate` Step 6 | ported | yes |
+| Removal tiered by confidence: plain contradiction deletes, else FLAG | `orc-curator:curate` Step 6; else a question to the user, asked inline (S76) | ported (changed, S76) | yes |
+| DIRECTION check 1: satisfied by `<path>` | `orc-curator:curate` Step 6 | ported | yes |
+| DIRECTION check 2: retire satisfied rows whose `Bn` shipped | `orc-curator:curate` Step 6 | ported | yes |
+| DIRECTION check 3: delete orphans whose `Bn` left Now and Next | `orc-curator:curate` Step 6 | ported | yes |
+| DIRECTION check 4: cap 50 rows, FLAG, never truncate | `orc-curator:curate` Step 6; the FLAG is a question to the user (S76) | ported (changed, S76) | yes |
 | `Direction: holds or needs re-derive` verdict line | curate runs the sweep itself, so no hand-off line (S76) | dropped (S76: curate runs the sweep) | no |
-| Report only diff evidence, not countable conditions | input to the sweep inside curate | planned (changed, S76) | yes |
-| Reviewing is curate's job, re-deriving is the sweep's; never author a `Cn` | curate runs `orc-curator:direction`; sure `Cn` committed, others a question (S76) | planned (changed, S76) | yes |
+| Report only diff evidence, not countable conditions | `orc-curator:curate` Step 6: the diff evidence passed to `orc-curator:direction` | ported (changed, S76) | yes |
+| Reviewing is curate's job, re-deriving is the sweep's; never author a `Cn` | `orc-curator:curate` Step 6: curate invokes `orc-curator:direction` with `Caller: curate`; the sweep writes the `Cn` (S76) | ported (changed, S76) | yes |
 | Skills are the dominant surface, root `CLAUDE.md` last | — | dropped (S76: waits for PSK) | no |
-| Close a `Qn` only on evidence in the diff, never on intent; leave a sentence | `orc-curator:curate` | planned (Curator plan, S76) | yes |
-| Step D: factual — refresh from source, never into a skill | refresh of PRODUCT and TECH facts in `orc-curator:curate`; skill part dropped | partial (skill part dropped, S76: waits for PSK) | yes |
+| Close a `Qn` only on evidence in the diff, never on intent; leave a sentence | `orc-curator:curate` Step 5 | ported | yes |
+| Step D: factual — refresh from source, never into a skill | `orc-curator:curate` Step 5: PRODUCT and TECH facts from the code; skill part dropped | partial (skill part dropped, S76: waits for PSK) | yes |
 | Step D: convention path — slug, predicate, ledger counts, promote, cap 3 per run | — | dropped (S76: waits for PSK) | no |
 | Journal snapshot consumption, re-append deferred rows | — | dropped (S76: the journal belongs to the dropped hooks) | no |
 | adhoc-edit mining | — | dropped (S76: the journal belongs to the dropped hooks) | no |
@@ -685,68 +685,68 @@ General notes:
 | Skill authoring bar, `cap_lines` | — | dropped (S76: waits for PSK) | no |
 | Propose a skill beyond the seed | — | dropped (S76: waits for PSK) | no |
 | `--audit` deferred | — | dropped (S76: waits for PSK) | no |
-| Mode vibe → establish | the Curator's only behaviour | planned (Curator plan, S76) | yes |
+| Mode vibe → establish | the Curator's only behaviour | ported (changed, S76: one mode) | yes |
 | Mode maintain → comply | — | dropped (S76: maintain is a project without the Curator) | no |
-| Apply staging 1: write edits to the tree, managed blocks | `orc-curator:curate` writes; orchestra commits | planned (other mechanism, S76) | yes |
+| Apply staging 1: write edits to the tree, managed blocks | `orc-curator:curate` Steps 4 and 8: edits in place, one commit by curate | ported (changed, S76) | yes |
 | Apply staging 2: update the ledger | — | dropped (S76: waits for PSK) | no |
-| Apply staging 3: run report per `templates/CURATE.md`; inline for `--light` | curate notes file in the notes folder | planned (other mechanism, S76) | yes |
-| End of run: return block Result ok, blocked, needs-input | result JSON `ok`, `decide`, `failed` | planned (other mechanism, S76) | yes |
-| Return block: Wrote, Summary | result JSON and the curate notes file | planned (other mechanism, S76) | yes |
+| Apply staging 3: run report per `templates/CURATE.md`; inline for `--light` | `orc-curator:curate` Step 9: the summary to the user | ported (changed, S76) | yes |
+| End of run: return block Result ok, blocked, needs-input | `orc-curator:curate` Step 9: result JSON `ok` or `failed`; questions are asked inline, not returned (S76) | ported (changed, S76) | yes |
+| Return block: Wrote, Summary | `orc-curator:curate` Step 9: the summary to the user | ported (changed, S76) | yes |
 | Return block: Direction line | — | dropped (S76: curate runs the sweep) | no |
-| Return block: Deviations/Warnings | questions in the `decide` result | planned (other mechanism, S76) | yes |
+| Return block: Deviations/Warnings | `orc-curator:curate` Step 7: asked inline as questions (S76) | ported (changed, S76) | yes |
 | Return block: Next `/minions:curate` | — | n/a (the driver loop decides the next action) | no |
-| `needs-input` on a contradiction | `decide` result, the run stops (S76) | planned (other mechanism, S76) | yes |
-| `ok` with FLAGs is still a clean run | changed: a FLAG is a question, so the result is `decide` (S76) | planned (changed, S76) | yes |
+| `needs-input` on a contradiction | `orc-curator:curate` Step 7: the question is asked inline; the run does not stop (S76) | ported (changed, S76) | yes |
+| `ok` with FLAGs is still a clean run | `orc-curator:curate` Step 9: `ok` after the questions are answered and committed (S76) | ported (changed, S76) | yes |
 
 #### skills/curate/SKILL.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Frontmatter: trigger after reconcile; runnable directly; `--auto`, `--light` | `orc-curator:curate`, called by orchestra on `done` and by hand (S76) | planned (other mechanism, S76) | yes |
+| Frontmatter: trigger after reconcile; runnable directly; `--auto`, `--light` | `orc-curator:curate`: run inline by orchestra on `done`, and by hand on a commit range (S76) | ported (changed, S76) | yes |
 | Announce line | — | n/a (orchestra prompts carry no announce) | no |
 | Step 1: resolve `.minions/` or `docs/minions/` roots, `.minions-root` | fixed docs folder `docs/curator/` (S76) | n/a (fixed folder, S76) | no |
-| Step 1: no `config.yml` → run init | the setup flag: `setup` runs when it is false (S76) | planned (other mechanism, S76) | yes |
+| Step 1: no `config.yml` → run init | `orc-curator:curate` Step 2: no `docs/curator/` → `failed`, run `orc-curator:setup`; orchestra runs setup from the flag (S76) | ported (changed, S76) | yes |
 | Step 1: read mode, auto, `docs.knowledge`, journal, curate settings | — | dropped (S76: no modes, no journal, no code-knowledge settings) | no |
-| Step 1: effective apply; maintain forces review | sure edits committed, questions a Decide (S76) | planned (other mechanism, S76) | yes |
+| Step 1: effective apply; maintain forces review | `orc-curator:curate`: one behaviour; sure edits and answers committed once (S76) | ported (changed, S76) | yes |
 | Step 1: `--light` flavor — journal-only consolidation | — | dropped (S76: its only input is the journal; curate by hand on a commit range replaces the need) | no |
 | Step 1: knowledge gate `docs.knowledge: off` | — | n/a (no Curator slot = no curate, S76) | no |
 | Step 2: find the active feature folder from STATE | the run's notes folder and brief from `run.json` | n/a (orchestra owns run state, S76) | no |
-| Step 3: phase detection from STATE; re-entry on `staged` skips re-dispatch | resume after a Decide re-dispatches curate with the answers; must not double-apply (S76) | planned (other mechanism, S76) | yes |
-| Step 3: never infer approval from the working tree | the result file and the answers are the signal | planned (other mechanism, S76) | yes |
+| Step 3: phase detection from STATE; re-entry on `staged` skips re-dispatch | `orc-curator:curate` Step 3: a row already shipped with this run is not added again; a stopped curate reruns from the committed docs (S76) | ported (changed, S76) | yes |
+| Step 3: never infer approval from the working tree | the result file is the signal for orchestra; answers come from the user inline (S76) | ported (changed, S76) | yes |
 | Step 4: STATE in progress | — | n/a (orchestra owns run state) | no |
 | Step 4.5: journal snapshot, crash recovery, atomic rename | — | dropped (S76: the journal belongs to the dropped hooks) | no |
-| Step 5: dispatch `minions:curator` with a self-contained prompt | orchestra dispatches `orc-curator:curate` with base, brief, notes (S76) | planned (other mechanism, S76) | yes |
-| Step 5: every writable doc path named, no hunting | fixed docs folder, named in the skill (S76) | planned (other mechanism, S76) | yes |
+| Step 5: dispatch `minions:curator` with a self-contained prompt | orchestra runs `orc-curator:curate` inline with `base`, `brief`, `notes` (S76: curate is one skill) | ported (changed, S76) | yes |
+| Step 5: every writable doc path named, no hunting | `orc-curator:curate`: fixed docs folder, named in the skill (S76) | ported (changed, S76) | yes |
 | Step 5: `--light` writes no report file | — | dropped (S76: `--light` dropped) | no |
-| Step 5: apply review — relay, STATE `staged`, pause for approval | questions → Decide; no pause for sure edits (S76) | planned (other mechanism, S76) | yes |
+| Step 5: apply review — relay, STATE `staged`, pause for approval | `orc-curator:curate` Step 7: judgement calls asked inline, one at a time; no pause for sure edits (S76) | ported (changed, S76) | yes |
 | Step 5: maintain — human PR flow | — | dropped (S76: maintain is a project without the Curator) | no |
-| Step 5: apply auto falls through | the default (S76) | planned (other mechanism, S76) | yes |
-| Step 6: vibe commit — `git add` exactly the staged files and the docs | orchestra commits in the worktree on the task branch | planned (other mechanism, S76) | yes |
+| Step 5: apply auto falls through | `orc-curator:curate` Step 8: the default (S76) | ported (changed, S76) | yes |
+| Step 6: vibe commit — `git add` exactly the staged files and the docs | `orc-curator:curate` Step 8: one commit of `docs/curator/` on the task branch | ported (changed, S76) | yes |
 | Step 6: never `git add` root `CLAUDE.md` | — | dropped (S76: waits for PSK) | no |
 | Step 6: maintain commits nothing | — | dropped (S76: maintain is a project without the Curator) | no |
 | Step 6: archive the feature folder, clean-folder precondition | — | n/a (the notes folder stays; orchestra removes the worktree) | no |
-| Step 6: ship the BACKLOG row Now → Shipped | `orc-curator:curate`, using the brief's `Serves: Bn \| new` line (S76) | planned (changed, S76) | yes |
-| Step 6: shipped-as reference (archive folder or commit range) | the branch or commit range of the run | planned (changed, S76) | yes |
+| Step 6: ship the BACKLOG row Now → Shipped | `orc-curator:curate` Step 3, using the brief's `Serves: B<n> \| new`; `new` checks Now, Next and Later first (S76) | ported (changed, S76) | yes |
+| Step 6: shipped-as reference (archive folder or commit range) | `orc-curator:curate` Step 3: the run's branch or commit range | ported (changed, S76) | yes |
 | Step 6: epic phase closure, EPIC.md | — | n/a (orchestra has no epics) | no |
 | Step 6: delete the journal snapshot | — | dropped (S76: the journal belongs to the dropped hooks) | no |
 | Step 6: terminal STATE, gated `CLAUDE.md` as Open and Next | — | n/a (orchestra owns run state) | no |
-| Step 6: direction sweep always, unconditional, idempotent; pass the diff evidence | `orc-curator:curate` runs `orc-curator:direction`; sure `Cn` committed, others a question (S76) | planned (Curator plan, S76) | yes |
+| Step 6: direction sweep always, unconditional, idempotent; pass the diff evidence | `orc-curator:curate` Step 6: invokes `orc-curator:direction` with `Caller: curate`, folds its `Coverage:` line (S76) | ported (changed, S76) | yes |
 | Step 6: no DIRECTION.md → skip the sweep | `setup` creates the docs, so the file always exists (S76) | n/a (setup flag, S76) | no |
 | Step 6: relay the report and the return block; name the branch, nothing pushed | `report.md` by orchestra | n/a (orchestra writes the report, S55) | no |
-| Hard gate: only agent `minions:curator`, only skill `minions:direction` | `orc-curator:curate` invokes only `orc-curator:direction` | planned (Curator plan, S76) | yes |
-| Hard gate: step writes only git and STATE; never authors skills, never writes `Cn` itself | changed: curate is one skill; sure `Cn` via the sweep (S76) | planned (changed, S76) | yes |
+| Hard gate: only agent `minions:curator`, only skill `minions:direction` | `orc-curator:curate` Permitted actions: invokes only `orc-curator:direction` | ported | yes |
+| Hard gate: step writes only git and STATE; never authors skills, never writes `Cn` itself | `orc-curator:curate`: one skill; the `Cn` comes from the sweep (S76) | ported (changed, S76) | yes |
 
 #### templates/CURATE.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Header: run summary, written last | curate notes file in `docs/runs/<branch>/` | planned (other mechanism, S76) | yes |
+| Header: run summary, written last | `orc-curator:curate` Step 9: the summary to the user; no report file (S76) | ported (changed, S76) | yes |
 | Updated line with apply mode | — | dropped (S76: one apply behaviour) | no |
-| Verdicts: one line per candidate, NOOP recorded | curate notes file | planned (Curator plan, S76) | yes |
+| Verdicts: one line per candidate, NOOP recorded | `orc-curator:curate` Step 9: one line per candidate in the summary | ported (changed, S76) | yes |
 | Promotions | — | dropped (S76: waits for PSK) | no |
-| Refreshes | curate notes file (PRODUCT, TECH facts) | planned (Curator plan, S76) | yes |
-| Flags | questions in the `decide` result, answers in the notes (S76) | planned (other mechanism, S76) | yes |
-| Staged edits | the commit on the task branch | planned (other mechanism, S76) | yes |
+| Refreshes | `orc-curator:curate` Step 9: what changed in PRODUCT and TECH, in the summary | ported (changed, S76) | yes |
+| Flags | `orc-curator:curate` Step 7: questions asked inline; answers applied and listed in the summary (S76) | ported (changed, S76) | yes |
+| Staged edits | `orc-curator:curate` Step 8: the one commit on the task branch | ported (changed, S76) | yes |
 | Ledger deltas | — | dropped (S76: waits for PSK) | no |
 
 #### templates/knowledge-ledger.md, templates/journal.md
