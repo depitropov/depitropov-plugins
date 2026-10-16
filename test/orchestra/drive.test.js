@@ -442,3 +442,15 @@ test('a failed setup retries without a false spec failure, then the spec dispatc
   assert.equal(a.action, 'dispatch');
   assert.equal(a.skill, 'orc-standard-workflow:spec');
 });
+
+test('a resume after a stopped Curator skill says to discard its files', () => {
+  const dir = project({ curator: true });
+  const setup = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  assert.equal(setup.action, 'inline');
+  fs.mkdirSync(path.join(wt(dir, setup), 'docs/curator'), { recursive: true });
+  fs.writeFileSync(path.join(wt(dir, setup), 'docs/curator/BACKLOG.md'), '# half done\n');
+  const a = drive(dir, [], { resume: true });
+  assert.equal(a.action, 'failed');
+  assert.match(a.reason, /docs\//);
+  assert.match(a.reason, /If a stopped Curator skill \(setup or curate\) left them, discard them; it runs again\./);
+});

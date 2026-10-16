@@ -23,6 +23,7 @@ All plugins live in this repo (S30).
 | `orc-java-stack` | Stack Skills | `build`, its gates, fix guides, plan and code guides, its `manifest` skill |
 | `orc-ts-stack` | Stack Skills | build, its fix guide, measure and its rules skill, its manifest skill |
 | `clean-code` | Standalone | A copy of mentorano's clean-code for use outside orchestra (S75). Not a slot plugin |
+| `orc-curator` | Curator | `curate`, `setup`, the `spec`, `plan` and `code` guides, the direction sweep, its templates, its `manifest` skill |
 
 `orc-java-stack` here is the personal, generic rewrite. The ship.cars version lives in a second repo. The `orc-` prefix marks every plugin made to work with orchestra and keeps it apart from plugins with the same base name, such as the ship.cars `java-stack` (S56).
 Commits are copied between the two repos, and the ship.cars repo may diverge (S3).
@@ -408,6 +409,8 @@ can also be invoked by hand on any branch. Each finding cites `file:line` and th
 | `setup` | yes | `{ skill, done }`. The skill runs inline before the first stage while the file `done` is missing; it writes `done` last. |
 | `guides` | no | As for Stack Skills; listed before the Stack Skills guides. |
 | `manifest` skill | yes | Resolution (5.2). |
+
+`orc-curator` fills the slot. Its docs live in `docs/curator/`. Its setup is minimal until plan 3 ports `shape-project`.
 
 The `curator` section of the config is optional. The design of the Curator plugin itself is in
 `docs/superpowers/specs/2026-10-16-curator-design.md` (S76).
