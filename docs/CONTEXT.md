@@ -6,7 +6,7 @@ The glossary of this project. Use these names and no others.
 |---|---|
 | **Orchestrator** | The `orchestra` plugin and its single entry, `orchestra:run`. It reads the per-project config, resolves each slot, runs the driver loop and the gate runner, and owns `orchestra check` and `orchestra:init`. |
 | **Workflow** | Takes one task to reviewed, committed code. Its `next.js` fixes the stage order and says when each phase runs. It can declare its own stack-free gates. |
-| **Curator** | Keeps the project's direction current: backlog, product, direction, decisions, questions. What minions does today. Later phase. |
+| **Curator** | The plugin in the optional `curator` slot (`orc-curator`, S76). Keeps the project's direction docs in `docs/curator/` current: backlog, product, direction, decisions, questions, glossary, tech. Its `setup` runs when its flag is missing; its `curate` runs at a run's `done`. Its skills also work by hand. |
 | **Stack Skills** | The plugin in the `stack-skills` slot (formerly SSK, Specific Stack Knowledge). The rules for one stack (for example Java): its build, its gates, its fix guides and its plan and code guides. |
 | **PSK** | Project Specific Knowledge. Rules for one project that can override the Stack Skills, including the build. Not defined yet. |
 | **Slot** | A named place in the config that one plugin fills, for example the `stack-skills` slot. |
@@ -22,7 +22,8 @@ The glossary of this project. Use these names and no others.
 | **Fixer** | The orchestra subagent that fixes a failed tool gate. It uses orchestra's generic fixer procedure plus the gate's fix guide. |
 | **Fix guide** | A skill, owned by the gate's declarer, that says how to fix one tool's findings. |
 | **Triage** | Sorting each finding of a judging stage or an agent gate into Decide, Patch, Evaluate or Noise. The contract is the skill `orchestra:triage`. |
-| **Guide** | Short write-time rules for the planner (`guides.plan`) or the coder (`guides.code`), declared by the Stack Skills. |
+| **Role** | What a workflow stage does, from a fixed list: `spec`, `plan`, `code`. A workflow declares its roles and tags each dispatch with one. Guides are given by role (S76). |
+| **Guide** | A skill with short write-time rules for one role, declared by a slot plugin under `guides.<role>`. orchestra lists the guides for a dispatch's role in its prompt (S76). |
 | **Run folder** | `tmp/runs/<branch>/`. The orchestration state of one run: results, checkpoints, logs, `run.json`, `stages.json`. Git-ignored. Inside the run root. |
 | **Notes folder** | `docs/runs/<branch>/`. What a human reads about one run: `task.md`, `brief.md`, `plan.md`, `decisions.md`, review notes, `report.md`. Committed. Inside the run root. |
 | **Worktree** | The git worktree of one run, `.orchestra/worktrees/<branch>`. Git-ignored. Removed when the run is done; the branch stays. |

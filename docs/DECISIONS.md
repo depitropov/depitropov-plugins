@@ -284,3 +284,50 @@ wording change needs no entry.
   `plugins/orchestra/skills/writing-plugins/SKILL.md`, `plugins/orc-standard-workflow/orchestra.json`,
   `plugins/orc-standard-workflow/skills/clean-code/SKILL.md`, `plugins/orc-ts-stack/`,
   `plugins/clean-code/`, `docs/PORTING.md`.
+
+## S76: The Curator as a slot plugin, fed by guides by role
+
+- **Date:** 2026-10-16
+- **Status:** decided
+- **Question:** How does minions' curate part (the backlog, product, direction, decisions and questions of a vibe-coded project) become the Curator, plug into orchestra, and stay usable without it? Who calls curate after a run (O3)?
+- **Options:**
+  1. What it owns.
+     - The direction docs only. Chosen. The code-knowledge half (conventions into skills, rules and `CLAUDE.md`) overlaps with the PSK, which is not defined.
+     - Both halves. It ports the knowledge ledger before the PSK exists.
+     - BACKLOG and DIRECTION only. PRODUCT, DECISIONS and QUESTIONS would have no writer.
+  2. Which skills.
+     - The whole long-term tier: shape-project, shape-product, shape-tech, research, backlog, direction, curate. Chosen. Without the shaping skills a new project has empty docs, and the sweep has no rows to work on.
+     - Curate, direction and backlog only. The docs must be written by hand from templates.
+  3. How the stages get the docs.
+     - Guides by role, pushed by orchestra in the dispatch prompt. Chosen. The workflow knows only roles, and the Curator's guide carries the full text on how to read each file.
+     - A generic `context` list of files with one generic line in each stage skill. Rejected by the user: a file list without sentences that explain it.
+     - A pointer in `CLAUDE.md`. Every stage sees it, orchestra cannot check it, and Codex reads `AGENTS.md`.
+     - The workflow pulls the Curator's files, as it pulled Stack Skills guides. Every workflow must know the Curator.
+  4. Who calls curate (O3).
+     - orchestra, from a declared `curate` skill, on the workflow's `done`. Chosen. Every workflow gets it with no code.
+     - A fourth phase of gates. Curate is not a check-and-fix gate.
+     - The workflow's last stage. It couples every workflow to the Curator.
+  5. Who writes the docs in a run.
+     - `curate` alone, at the end. Chosen. Spec only reads. It loses two things on purpose: Now no longer means "in progress", and the product answers of a failed run stay in its notes folder.
+     - Spec and curate, as in minions (specify moves the row to Now and records answers). Two writers in one run, and a move to Now that the same run undoes.
+  6. Questions and approval in a run.
+     - Sure edits committed, judgement calls a Decide. Chosen. The user relaxed the headless rule for the Curator.
+     - Commit all and list the doubts in the report. Judgement-heavy deletions would land with no human.
+     - Stage everything uncommitted (minions `apply: review`). The run's commits would no longer hold its work.
+  7. New `Cn` constraints.
+     - `curate` runs the direction sweep; sure `Cn` rows are committed, the others are questions. Chosen.
+     - By hand only. A row that curate adds to Next owes constraints until someone remembers the sweep.
+  8. Setup.
+     - The Curator declares a flag file; every run checks it and runs `setup` when it is missing. Chosen. It is deterministic and quick, it works for a Curator added after `orchestra:init`, and orchestra knows nothing of direction docs.
+     - `orchestra:init` runs it once. A Curator added later never gets set up. This becomes O11 (`orchestra:setup`).
+  9. Modes.
+     - One mode (minions' `vibe`). Chosen. A project that does not want the Curator does not fill the slot.
+     - Both modes. `maintain` would be a Curator that writes almost nothing.
+  10. Where the docs live.
+     - A fixed `docs/curator/`. Chosen. It avoids a clash with a project's own `docs/DECISIONS.md` or `docs/CONTEXT.md`, as this repo has.
+     - `docs/` itself. It clashes in this repo.
+     - A config key. A mechanism with no project that needs it.
+- **Evidence:** the full read of the minions source in `docs/PORTING.md`, section "minions". `orc-standard-workflow/bin/next.js` pulled the Stack Skills guides (`guide()`); `withPrompt` in `lib/protocol.js` already writes every dispatch prompt, so the push needs no new channel.
+- **Decision:** As the S76 row in `docs/TENSIONS.md`, with the design in `docs/superpowers/specs/2026-10-16-curator-design.md`. Research stays out of the spec and plan stages. A code guide carries two rules: CONTEXT words in names, and only `Dn` cited in code. In a run, a sweep verdict that needs `research` or `shape-tech` becomes a question, because a subagent cannot interview the user or start subagents.
+- **Cost and risk:** About 2,000 lines of source to port, in four plans. Two open runs can both edit `docs/curator/BACKLOG.md`, so their merges conflict (O10). A run that starts before the setup branch is merged runs setup again. The backlog row a run serves can be dropped while it is open; curate asks. `setup` runs in the main session, which the Codex path has not tested. The Stack Skills guides change mechanism, so `orc-java-stack` and the stage skills change with plan 1.
+- **Where it lives:** the spec above; later `plugins/orc-curator/`, `plugins/orchestra/lib/protocol.js`, `plugins/orchestra/lib/check.js`, `plugins/orchestra/bin/drive.js`, `plugins/orc-standard-workflow/bin/next.js` and its stage skills, the skills `orchestra:init`, `orchestra:run` and `orchestra:writing-plugins`.
