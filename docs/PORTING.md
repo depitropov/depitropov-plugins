@@ -781,3 +781,44 @@ Source: `~/Projects-other/ai-marketplace-mentorano/plugins/clean-code`, version 
 | Two greps | "Two searches", tied to TS rules 4 and 5 | ported | yes |
 | A hit in an untouched file is context | "Two searches", last line | ported | yes |
 | What not to do: no `helpers.ts`, one URL-state owner, create the hook, fix the dependency source, do not silence `exhaustive-deps` | TS rules 12, 13, 4, 6 | ported | yes |
+
+#### skills/clean-code/SKILL.md
+
+| Part | Where now | Status | Applicable? |
+|---|---|---|---|
+| Overview: two deliverables, numbers not feelings | gate step 2, rule 3 | ported | yes |
+| Project file outranks, also on the edit tool | gate step 5 (`AGENTS.md` or `CLAUDE.md`); the edit tool comes from the dispatch prompt | ported | yes |
+| When to use: before any edit, any review | the gate runs on every run (`always`) | ported (other mechanism) | yes |
+| Load the language skill | the stack's `rules` skill (S75) | ported (other mechanism) | yes |
+| Process 1: measure before, keep the whole table | `--compare` against `base` in one run | ported (other mechanism) | yes |
+| Process 1: `CLAUDE_PLUGIN_ROOT` check | `{plugin}` expanded by orchestra | n/a (orchestra gives the path) | no |
+| Process 1 and 3: `boundaries.py` | — | dropped (S75: Python and FastAPI only) | no |
+| Process 2: write | the code stage | n/a (the gate reviews) | no |
+| Process 3: measure after, verdict table, the five floor rules | gate step 3, rule 3 | ported | yes |
+| Process 3: renamed function shows as a new row | gate step 3 | ported | yes |
+| Process 3: `--at HEAD` for another session's work | — | n/a (a run has its own worktree, S74) | no |
+| Process 3: not done until the shape holds; Boy Scout | gate step 10, rule 3 last lines | ported | yes |
+| Process 4: verify with the project's gate | the build (S48) | ported (other mechanism) | yes |
+| Process 5: correctness pass | logic-review | dropped (S75: logic-review owns correctness) | yes |
+| Process 5: design and readability passes | rules 1–13 | ported | yes |
+| Process 5: revalidate each finding, report rejected ones | `orchestra:triage` "Check the finding first" | ported (other mechanism) | yes |
+| Process 6: report | `<notes>/clean-code.md` and the result JSON | ported (other mechanism) | yes |
+| Audit mode | — | n/a (a gate always has a diff) | no |
+| Rules that do not depend on the language | rules 1–10 | ported | yes |
+| Reading the numbers: shape rows | rule 3 | ported | yes |
+| Reading the numbers: boundary rows | — | dropped (S75: `boundaries.py` not ported) | no |
+| Thresholds change by flag, in the project file | gate step 5 (the project file wins); no flag in the command | partial (no config key yet, S75) | yes |
+| Honest report: task files not worse; never edit a threshold; never add a suppression to pass; rejected stays rejected | gate step 4, rule 3, `orchestra:triage` | ported | yes |
+
+#### skills/clean-code/architecture.md
+
+| Part | Where now | Status | Applicable? |
+|---|---|---|---|
+| Scope: source boundaries, not system style | gate rules 11–13 only | ported | yes |
+| Vocabulary | the words in rules 11–13 | ported | yes |
+| Phase 1, UI and core separation, duplicated logic | rule 11 | ported | yes |
+| Phase 2, dependency rule | rule 12 | ported | yes |
+| Phase 3, information hiding | rule 13 | ported | yes |
+| Phase 4, local quality at the boundary | rules 1–10 (duplication: rule 6; errors: rule 13) | ported | yes |
+| Automated checks: run the project's dependency checker | the build runs it when the project has one | ported (other mechanism) | yes |
+| Automated checks: add one when practical | — | dropped (S75: the gate fixes the shape, it does not add tooling) | yes |

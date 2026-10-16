@@ -35,6 +35,14 @@ function toReview(dir) {
   return drive(dir);
 }
 
+// Passes the clean-code gate, which follows logic-review, and returns the next action.
+function afterReview(dir) {
+  const cc = drive(dir);
+  assert.equal(cc.skill, 'orc-standard-workflow:clean-code');
+  writeJson(path.join(wt(dir, cc), cc.result), { stage: 'clean-code', status: 'ok' });
+  return drive(dir);
+}
+
 // Walks spec, plan and plan-check with ok results, and returns the first code dispatch.
 function toCode(dir, tasks = 1) {
   let a = drive(dir, ['--task-file', '.orchestra/task.txt']);
@@ -65,7 +73,7 @@ test('a run goes from task to done: code, logic-review, report, committed run fi
   assert.equal(review.skill, 'orc-standard-workflow:logic-review');
   writeJson(path.join(wt(dir, review), review.result), { stage: 'logic-review', status: 'ok', counts: { patch: 1, evaluate: 1 }, evaluate: ['PriceCalculator.java:9 — null now throws; before it returned null'] });
 
-  const done = drive(dir);
+  const done = afterReview(dir);
   assert.equal(done.action, 'done');
   assert.equal(done.branch, 'task/add-a-discount');
   assert.equal(done.report, 'docs/runs/task/add-a-discount/report.md');
@@ -95,7 +103,7 @@ test('a gate that skips itself is listed under Skipped gates', () => {
   writeJson(path.join(wt(dir, pc), pc.result), { stage: 'plan-conformance', status: 'skipped' });
   const review = drive(dir);
   writeJson(path.join(wt(dir, review), review.result), { stage: 'logic-review', status: 'ok' });
-  const report = doneReport(dir, drive(dir));
+  const report = doneReport(dir, afterReview(dir));
   assert.match(report, /## Skipped gates\n\n- implementation-check: plan-conformance \(the gate found nothing in scope\)/);
 });
 
@@ -159,7 +167,7 @@ test('chunked code steps keep run order in the report', () => {
   writeJson(path.join(wt(dir, c3), c3.result), { stage: 'code', status: 'ok' });
   const review = toReview(dir);
   writeJson(path.join(wt(dir, review), review.result), { stage: 'logic-review', status: 'ok' });
-  const report = doneReport(dir, drive(dir));
+  const report = doneReport(dir, afterReview(dir));
   const order = ['| spec |', '| plan |', '| plan-check |', '| code-1 |', '| code-3 |'].map(row => report.indexOf(row));
   assert.ok(order.every((pos, i) => pos >= 0 && (i === 0 || pos > order[i - 1])), `rows out of run order: ${order}`);
 });
@@ -171,7 +179,7 @@ test('the report copies decisions.md, with its headings one level down', () => {
   writeJson(path.join(wt(dir, code), code.result), { stage: 'code', status: 'ok' });
   const review = toReview(dir);
   writeJson(path.join(wt(dir, review), review.result), { stage: 'logic-review', status: 'ok' });
-  const report = doneReport(dir, drive(dir));
+  const report = doneReport(dir, afterReview(dir));
   assert.match(report, /## Decisions\n\n### business-facts\n\nThe VIP rate is 10%\./);
   assert.doesNotMatch(report, /^## business-facts$/m);
 });
@@ -231,7 +239,7 @@ test('the report lists real deviations, not "none", and the files changed', () =
   writeJson(path.join(wt(dir, code), code.result), { stage: 'code', status: 'ok' });
   const review = toReview(dir);
   writeJson(path.join(wt(dir, review), review.result), { stage: 'logic-review', status: 'ok' });
-  const report = doneReport(dir, drive(dir));
+  const report = doneReport(dir, afterReview(dir));
   assert.match(report, /## Deviations\n\n- T2: used BigDecimal, not double\n/);
   assert.doesNotMatch(report, /T1: none/);
   assert.match(report, /## Integration points\n\n- none\n/);
@@ -247,7 +255,7 @@ test('the report copies the brief\'s Integration points, or says none', () => {
   writeJson(path.join(wt(dir, code), code.result), { stage: 'code', status: 'ok' });
   const review = toReview(dir);
   writeJson(path.join(wt(dir, review), review.result), { stage: 'logic-review', status: 'ok' });
-  const report = doneReport(dir, drive(dir));
+  const report = doneReport(dir, afterReview(dir));
   assert.match(report, /## Deviations\n\n- none\n\n## Integration points\n\n- pricing API — needs a discount field — assumption\n\n## Evaluate/);
 });
 
@@ -261,7 +269,7 @@ test('a run works in its worktree and leaves the checkout, its branch and its ed
   writeJson(path.join(wt(dir, code), code.result), { stage: 'code', status: 'ok' });
   const review = toReview(dir);
   writeJson(path.join(wt(dir, review), review.result), { stage: 'logic-review', status: 'ok' });
-  const done = drive(dir);
+  const done = afterReview(dir);
   assert.equal(done.action, 'done');
   assert.equal(done.worktree, undefined);
   assert.equal(fs.existsSync(path.join(dir, '.orchestra/worktrees/task/add-a-discount')), false);
@@ -323,7 +331,7 @@ test('a done run keeps a worktree that git refuses to remove, and says why', () 
   writeJson(path.join(wt(dir, code), code.result), { stage: 'code', status: 'ok' });
   const review = toReview(dir);
   writeJson(path.join(wt(dir, review), review.result), { stage: 'logic-review', status: 'ok' });
-  const done = drive(dir);
+  const done = afterReview(dir);
   assert.equal(done.action, 'done');
   assert.equal(done.worktree, '.orchestra/worktrees/task/add-a-discount');
   assert.match(done.kept, /untracked|modified/);
