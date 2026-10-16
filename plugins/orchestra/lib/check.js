@@ -9,14 +9,17 @@ const { DIR } = require('./worktree');
 
 // The contract of a plugin declaration and of the project config. The skill writing-plugins explains
 // every word in these lists; a test fails when one is missing there.
-const SLOTS = ['workflow', 'stack-skills'];
+const SLOTS = ['workflow', 'stack-skills', 'curator'];
+// A project may leave the curator slot empty: then it runs with no Curator (S76).
+const REQUIRED_SLOTS = ['workflow', 'stack-skills'];
 const KINDS = ['tool', 'agent'];
 const FIXES = ['self', 'fixer', 'none'];
 const CONFIG_TYPES = ['string', 'number', 'boolean'];
-const DECLARATION_KEYS = { workflow: ['slot', 'config', 'roles', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'measure', 'guides', 'gates'] };
+const DECLARATION_KEYS = { workflow: ['slot', 'config', 'roles', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'measure', 'guides', 'gates'], curator: ['slot', 'config', 'curate', 'setup', 'guides'] };
 const GATE_KEYS = ['name', 'phase', 'kind', 'skill', 'run', 'fix', 'guide', 'max_rounds', 'files', 'grep', 'when', 'always', 'measure'];
 const BUILD_KEYS = ['run', 'guide', 'max_rounds'];
 const MEASURE_KEYS = ['run', 'rules'];
+const SETUP_KEYS = ['skill', 'done'];
 const SECTION_KEYS = ['plugin', 'disable', 'gates'];
 const CONFIG = '.orchestra/config.json';
 
@@ -99,6 +102,21 @@ function checkDeclaration(d, dir, where) {
         }
         for (const p of m.run.matchAll(PLACEHOLDER)) fail(`measure "run" uses {config.${p[1]}}, but the measure command expands only {plugin} and {base}`, 'write the value into the command');
         if (m.rules !== undefined) skill(m.rules, 'measure "rules"');
+      }
+    }
+  }
+  if (d.slot === 'curator') {
+    skill(d.curate, '"curate"');
+    const s = d.setup;
+    if (!isObject(s)) {
+      fail('there is no "setup"', 'add "setup": { "skill": "<setup skill>", "done": "<the flag file the skill writes last>" }');
+    } else {
+      for (const key of Object.keys(s)) {
+        if (!SETUP_KEYS.includes(key)) fail(`unknown setup key "${key}"`, `remove it; the allowed keys are ${SETUP_KEYS.join(', ')}`);
+      }
+      skill(s.skill, 'setup "skill"');
+      if (typeof s.done !== 'string' || !s.done || path.isAbsolute(s.done) || s.done.split(/[\\/]/).includes('..')) {
+        fail(`setup "done" is ${JSON.stringify(s.done)}`, 'give a file path inside the project, relative to its root, such as "docs/curator/.setup"');
       }
     }
   }
@@ -226,7 +244,7 @@ function checkProject(project) {
   if (resolved === undefined) return ['.orchestra/resolved.json is missing. Fix: start orchestra run or orchestra init; both resolve the plugins first.'];
   if (!config || !resolved) return out;
   if (!isObject(config)) return [`${CONFIG} is not a JSON object. Fix: run orchestra init.`];
-  for (const slot of SLOTS) {
+  for (const slot of REQUIRED_SLOTS) {
     if (!(slot in config)) out.push(`${CONFIG}: section "${slot}" is missing. Fix: add "${slot}": { "plugin": "<the ${slot} plugin>" }, or run orchestra init.`);
   }
   const slots = resolved.slots || {};
@@ -358,6 +376,6 @@ function checkPlugin(dir) {
 }
 
 module.exports = {
-  SLOTS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, MEASURE_KEYS, ROLES, SECTION_KEYS, PHASES, ACTIONS,
+  SLOTS, REQUIRED_SLOTS, SETUP_KEYS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, MEASURE_KEYS, ROLES, SECTION_KEYS, PHASES, ACTIONS,
   parseJson, skillExists, checkDeclaration, checkProject, checkPlugin,
 };

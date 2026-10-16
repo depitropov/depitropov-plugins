@@ -29,7 +29,15 @@ test('a valid declaration passes', () => {
 test('each broken declaration rule gives one line with the rule and its fix', () => {
   const tool = extra => ({ name: 'a', phase: 'finish', kind: 'tool', run: 'x', always: true, ...extra });
   const cases = [
-    [{ slot: 'curator' }, /"slot" is "curator"/],
+    [{ slot: 'psk' }, /"slot" is "psk"/],
+    [curator({ curate: undefined }), /"curate" names no skill/],
+    [curator({ setup: undefined }), /there is no "setup"/],
+    [curator({ setup: { skill: 'setup', done: 'x', when: 'once' } }), /unknown setup key "when"/],
+    [curator({ setup: { skill: 'setup' } }), /setup "done" is undefined/],
+    [curator({ setup: { skill: 'setup', done: '/abs/.setup' } }), /setup "done" is "\/abs\/\.setup"/],
+    [curator({ setup: { skill: 'setup', done: '../out/.setup' } }), /setup "done" is "\.\.\/out\/\.setup"/],
+    [curator({ build: { run: 'make' } }), /unknown key "build" for slot curator/],
+    [curator({ guides: { review: 'x' } }), /unknown guide role "review"/],
     [stack({ params: [] }), /unknown key "params"/],
     [{ slot: 'workflow', build: { run: 'make' } }, /unknown key "build" for slot workflow/],
     [{ slot: 'stack-skills' }, /no "build" with a "run" command/],
@@ -75,6 +83,7 @@ test('the measure rules skill must exist in skills/', () => {
   assert.ok(out.some(l => /measure "rules" names skill "rules-ts"/.test(l)), out.join(' | '));
 });
 
+const curator = (extra = {}) => ({ slot: 'curator', curate: 'curate', setup: { skill: 'setup', done: 'docs/curator/.setup' }, ...extra });
 const wf = { slot: 'workflow', config: { 'tasks-per-coder': { type: 'number', default: 2 } }, roles: ['spec', 'plan', 'code'], gates: [] };
 const st = stack({ guides: { code: 'code-guide' }, gates: [{ name: 'fmt', phase: 'finish', kind: 'tool', run: 'x', always: true }] });
 
@@ -82,7 +91,7 @@ function project(config, declarations) {
   const dir = makeRepo();
   const slots = {};
   for (const [slot, d] of Object.entries(declarations)) {
-    const name = slot === 'workflow' ? 'wf' : 'st';
+    const name = { workflow: 'wf', 'stack-skills': 'st', curator: 'cur' }[slot];
     slots[slot] = { plugin: name, version: '0.0.1', dir: writePlugin(tmp(`${name}-`), name, d), declaration: d };
   }
   writeJson(path.join(dir, '.orchestra/config.json'), config);
@@ -116,7 +125,7 @@ test('each broken config rule gives one line with the rule and its fix', () => {
     [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', disable: ['nope'] } }, /"stack-skills\.disable" names "nope"/],
     [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { max_rounds: 0 } } } }, /"stack-skills\.gates\.fmt\.max_rounds" is not a whole number/],
     [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { nope: { max_rounds: 2 } } } }, /"stack-skills\.gates" names "nope"/],
-    [{ workflow: { plugin: 'wf' }, 'stack-skills': ok, curator: { plugin: 'c' } }, /unknown section "curator"/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': ok, nope: { plugin: 'c' } }, /unknown section "nope"/],
   ];
   for (const [config, re] of cases) {
     const out = checkProject(project(config, both));
@@ -273,4 +282,18 @@ test('the project must ignore the run worktrees', () => {
   const out = checkProject(dir);
   assert.equal(out.length, 1, out.join(' | '));
   assert.match(out[0], /^\.gitignore: \.orchestra\/worktrees\/ is not ignored\. Fix: .+\.$/);
+});
+
+test('a valid curator declaration passes, and the curator section is optional', () => {
+  const cur = curator({ guides: { spec: 'spec-guide', plan: 'plan-guide' } });
+  const config = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, curator: { plugin: 'cur' } };
+  assert.deepEqual(checkProject(project(config, { workflow: wf, 'stack-skills': st, curator: cur })), []);
+  assert.deepEqual(checkProject(project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' } }, { workflow: wf, 'stack-skills': st })), []);
+});
+
+test('a curator guide for a role the workflow lacks names the curator section in its fix', () => {
+  const cur = curator({ guides: { spec: 'spec-guide' } });
+  const config = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, curator: { plugin: 'cur' } };
+  const out = checkProject(project(config, { workflow: { ...wf, roles: ['plan', 'code'] }, 'stack-skills': st, curator: cur }));
+  assert.deepEqual(out, ['.orchestra/config.json: cur declares a "spec" guide, but the workflow wf has no spec stage. Fix: add "spec-guide" to "curator.disable", or choose a workflow with a spec stage.']);
 });

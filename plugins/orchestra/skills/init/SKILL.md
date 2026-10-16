@@ -1,6 +1,6 @@
 ---
 name: init
-description: Use when the user wants to set up orchestra in a project — "orchestra init", "set up orchestra here" — or to change which workflow or Stack Skills plugin the project uses.
+description: Use when the user wants to set up orchestra in a project — "orchestra init", "set up orchestra here" — or to change which workflow, Stack Skills or Curator plugin the project uses.
 ---
 
 # orchestra init
@@ -24,13 +24,15 @@ If the list shows no manifest skills, ask the user for the name of the workflow 
 Stack Skills plugin. Offer `orc-standard-workflow` as the default workflow plugin, and `orc-java-stack` and `orc-ts-stack` as the Stack Skills plugins.
 
 For each plugin, invoke the skill `<plugin>:manifest`. It answers with one line,
-`PLUGIN_DIR=<folder>`. Read `<folder>/orchestra.json`. Its `slot` is `workflow` or `stack-skills`.
+`PLUGIN_DIR=<folder>`. Read `<folder>/orchestra.json`. Its `slot` is `workflow`, `stack-skills` or `curator`.
 
 ## 3. Ask
 
 Ask the user which plugin fills each slot. Offer only the plugins of that slot. When a slot has one
 plugin, propose it and ask for a yes. When a slot has none, tell the user that orchestra needs one
 plugin for each slot, and stop.
+
+The `curator` slot is optional. When a Curator plugin is in the list, ask the user if the project wants it; it keeps the project's backlog and direction docs current, and its setup interviews the user on the first run. When there is none, leave the slot out.
 
 ## 4. Write
 
@@ -42,6 +44,8 @@ Write `.orchestra/config.json` with only `plugin` in each section:
   "stack-skills": { "plugin": "<Stack Skills plugin>" }
 }
 ```
+
+Add `"curator": { "plugin": "<Curator plugin>" }` only when the user chose one.
 
 Add each of these lines to `.gitignore` when it is missing. Create the file when there is none.
 
@@ -58,6 +62,8 @@ Run:
 ```
 node <orchestra>/bin/resolve.js workflow=<workflow folder> stack-skills=<Stack Skills folder>
 ```
+
+Add `curator=<Curator folder>` to the command when the config has a curator section.
 
 It resolves the plugins and runs orchestra check on the config. If it fails, show each line: every
 line names the rule and its fix. Leave the config in place, so the user can fix it.
