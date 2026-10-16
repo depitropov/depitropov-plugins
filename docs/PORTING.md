@@ -19,6 +19,7 @@ visible, and makes each drop a decision.
 | java-stack | `~/Projects/claude-code-plugins/plugins/java-stack` | Stack knowledge (orc-java-stack) |
 | minions | `~/Projects-other/claude-minions` | Project rails (the Curator, later phase) |
 | sc-agent-plugins | `~/Projects/sc-agent-plugins` | Multi-harness delivery (packaging rules) |
+| ai-marketplace-mentorano | `~/Projects-other/ai-marketplace-mentorano/plugins/clean-code` (MIT) | Clean code (the workflow gate, orc-ts-stack, the standalone `clean-code`) |
 
 ## Steps for every port
 
@@ -716,3 +717,43 @@ Claude Code reads it through the link `.claude/skills/multi-harness-support`.
    that they agree. Decide which one stays.
 7. **README.** No install text for either harness.
 8. **Proof.** A Codex run of the sample repo (S34), with the loader read from the Codex source.
+
+### ai-marketplace-mentorano
+
+Source: `~/Projects-other/ai-marketplace-mentorano/plugins/clean-code`, version 0.6.0, read in full on 2026-10-16. `plugins/clean-code` is a verbatim copy of every file below, so each part is at least `ported` there. The rows say where each part went in orchestra; decided by S75.
+
+#### README.md
+
+| Part | Where now | Status | Applicable? |
+|---|---|---|---|
+| Purpose: rules plus measurement, before and after | `plugins/clean-code/README.md`; the clean-code gate (Task 4) | ported | yes |
+| Install lines | `plugins/clean-code/README.md`, pointed at this marketplace | ported (changed) | yes |
+| Skills table, scripts usage, thresholds and their sources | `plugins/clean-code/README.md` | ported (copy) | yes |
+| `boundaries.py` measures | `plugins/clean-code/README.md` only | dropped from orchestra (S75: Python and FastAPI only) | no |
+| Tests section | `plugins/clean-code/README.md`, rewritten for `test/clean-code/` | ported (changed) | yes |
+| Not in this version: CRAP, mutation, cross-file duplication | DESIGN §10 phase 2 | planned (phase 2) | yes |
+
+#### skills/clean-code/boundaries.py, boundary_rules.py, imports.py
+
+| Part | Where now | Status | Applicable? |
+|---|---|---|---|
+| Whole files: the import graph and the boundary counts | `plugins/clean-code/skills/clean-code/` | dropped from orchestra (S75: Python only, FastAPI layer names) | no |
+
+#### skills/clean-code/rationalizations.md
+
+| Part | Where now | Status | Applicable? |
+|---|---|---|---|
+| Whole file: excuses and answers | `plugins/clean-code/skills/clean-code/rationalizations.md` | dropped from orchestra (S75: it speaks to a coder, the gate reviews) | no |
+
+#### skills/clean-code-python/SKILL.md, skills/clean-code-logging/** , skills/architecture-fundamentals/**
+
+| Part | Where now | Status | Applicable? |
+|---|---|---|---|
+| Whole files | `plugins/clean-code/skills/` | dropped from orchestra (S75: no Python stack; logging and system architecture are not the clean-code gate's) | no |
+
+#### tests/test_measure.py, test_revisions.py, test_boundaries.py, ts_package.py, fixtures/clean-code/*
+
+| Part | Where now | Status | Applicable? |
+|---|---|---|---|
+| Whole files, path constants changed | `test/clean-code/` | ported | yes |
+| `test_skills.py` (marketplace frontmatter) | `test/packaging.test.js` checks every plugin | n/a (this repo has its own check) | no |
