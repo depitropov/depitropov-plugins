@@ -1,0 +1,7 @@
+{
+  "slot": "curator",
+  "config": {},
+  "curate": "curate",
+  "setup": { "skill": "setup", "done": "docs/curator/.setup" },
+  "guides": { "spec": "spec-guide", "plan": "plan-guide", "code": "code-guide" }
+}

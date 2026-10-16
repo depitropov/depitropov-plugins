@@ -803,7 +803,7 @@ General notes:
 | Step 4: read the return block; every row the evidence earns is yours to write | `orc-curator:direction` | planned (Curator plan, S76) | yes |
 | Step 4: a research decline is an answer (preference, already settled, already covered); never re-invoke reworded | `orc-curator:direction` | planned (Curator plan, S76) | yes |
 | Step 4: a `wide` ranking goes to the user when the constraint depends on the choice | `orc-curator:direction`; in a run a Decide (S76) | planned (Curator plan, S76) | yes |
-| Step 5: ids and mutation per `recording-rules.md` | `orc-curator` recording rules | planned (Curator plan, S76) | yes |
+| Step 5: ids and mutation per `recording-rules.md` | `plugins/orc-curator/references/recording-rules.md` | planned (Curator plan, S76) | yes |
 | Step 5: `from Bn` mandatory | `orc-curator:direction` + template | planned (Curator plan, S76) | yes |
 | Step 5: forward pressure, never forward design | `orc-curator:direction` + template | planned (Curator plan, S76) | yes |
 | Step 5: no architecture doctrine | `orc-curator:direction` | planned (Curator plan, S76) | yes |
@@ -876,53 +876,53 @@ General notes:
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Header: forward pressure, not forward design, with the example | `orc-curator` DIRECTION template | planned (Curator plan, S76) | yes |
-| Header: derived from Now and Next only; Later invisible | `orc-curator` DIRECTION template | planned (Curator plan, S76) | yes |
-| Header: who reads it (the planner, every plan); written by direction, kept by curate | `orc-curator` DIRECTION template; the planner reads it through the Curator `plan` guide (S76) | planned (Curator plan, S76) | yes |
-| Header: rows are not hand-authored; status edits are harmless | `orc-curator` DIRECTION template | planned (Curator plan, S76) | yes |
-| Header: `Cn` ids, highest plus one, never reused | `orc-curator` DIRECTION template | planned (Curator plan, S76) | yes |
-| `## Constraints`: every row cites `from Bn`; an orphan is dead and deleted | `orc-curator` DIRECTION template | planned (Curator plan, S76) | yes |
-| `## Constraints`: status values; point at the file, never restate it | `orc-curator` DIRECTION template | planned (Curator plan, S76) | yes |
-| `## Constraints`: satisfied + shipped = retired; the why lives in DECISIONS | `orc-curator` DIRECTION template | planned (Curator plan, S76) | yes |
-| `## Constraints` table (id, from, constraint, status) | `orc-curator` DIRECTION template | planned (Curator plan, S76) | yes |
-| `## Size`: 50-row soft cap, the three causes, keep the unsatisfied half small | `orc-curator` DIRECTION template | planned (Curator plan, S76) | yes |
-| `## Evaluated`: the coverage record; `no constraint` is the load-bearing outcome | `orc-curator` DIRECTION template | planned (Curator plan, S76) | yes |
-| `## Evaluated`: maintained by direction; curate and backlog retire rows | `orc-curator` DIRECTION template | planned (Curator plan, S76) | yes |
-| `## Evaluated`: `horizon at eval` is information; specify promotes Next → Now on every feature | `orc-curator` DIRECTION template: information, not a trigger; the reason becomes "a row moves between Now and Next by hand" | planned (changed, S76: single writer, no run moves a row to Now) | yes |
-| `## Evaluated`: not a flag anyone sets; derive it | `orc-curator` DIRECTION template | planned (Curator plan, S76) | yes |
-| `## Evaluated` table (Bn, horizon at eval, date, outcome) | `orc-curator` DIRECTION template | planned (Curator plan, S76) | yes |
+| Header: forward pressure, not forward design, with the example | `plugins/orc-curator/templates/DIRECTION.md` | ported | yes |
+| Header: derived from Now and Next only; Later invisible | `plugins/orc-curator/templates/DIRECTION.md` | ported | yes |
+| Header: who reads it (the planner, every plan); written by direction, kept by curate | `plugins/orc-curator/templates/DIRECTION.md`; the planner reads it through the Curator `plan` guide (S76) | ported | yes |
+| Header: rows are not hand-authored; status edits are harmless | `plugins/orc-curator/templates/DIRECTION.md` | ported | yes |
+| Header: `Cn` ids, highest plus one, never reused | `plugins/orc-curator/templates/DIRECTION.md` | ported | yes |
+| `## Constraints`: every row cites `from Bn`; an orphan is dead and deleted | `plugins/orc-curator/templates/DIRECTION.md` | ported | yes |
+| `## Constraints`: status values; point at the file, never restate it | `plugins/orc-curator/templates/DIRECTION.md` | ported | yes |
+| `## Constraints`: satisfied + shipped = retired; the why lives in DECISIONS | `plugins/orc-curator/templates/DIRECTION.md` | ported | yes |
+| `## Constraints` table (id, from, constraint, status) | `plugins/orc-curator/templates/DIRECTION.md` | ported | yes |
+| `## Size`: 50-row soft cap, the three causes, keep the unsatisfied half small | `plugins/orc-curator/templates/DIRECTION.md` | ported | yes |
+| `## Evaluated`: the coverage record; `no constraint` is the load-bearing outcome | `plugins/orc-curator/templates/DIRECTION.md` | ported | yes |
+| `## Evaluated`: maintained by direction; curate and backlog retire rows | `plugins/orc-curator/templates/DIRECTION.md` | ported | yes |
+| `## Evaluated`: `horizon at eval` is information; specify promotes Next → Now on every feature | `plugins/orc-curator/templates/DIRECTION.md`: information, not a trigger; the reason becomes "a row moves between Now and Next by hand" | ported (changed, S76: single writer, no run moves a row to Now) | yes |
+| `## Evaluated`: not a flag anyone sets; derive it | `plugins/orc-curator/templates/DIRECTION.md` | ported | yes |
+| `## Evaluated` table (Bn, horizon at eval, date, outcome) | `plugins/orc-curator/templates/DIRECTION.md` | ported | yes |
 
 #### templates/BACKLOG.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Header: owns the future; PRODUCT holds what is real; the split stops duplication | `orc-curator` BACKLOG template | planned (Curator plan, S76) | yes |
-| Header: sections are confidence, not dates; rows move both ways | `orc-curator` BACKLOG template | planned (Curator plan, S76) | yes |
-| Header: hand edits are fine; run backlog afterwards; curate's orphan sweep catches the dangerous half | `orc-curator` BACKLOG template | planned (Curator plan, S76) | yes |
-| Header: `Bn` ids, independent of other ids and of feature `NNN`; highest plus one; kept across moves | `orc-curator` BACKLOG template (no feature `NNN`; runs are branches) | planned (Curator plan, S76) | yes |
-| `## Vision`: prose; written by shape-project/shape-product; thinned by curate as things ship | `orc-curator` BACKLOG template | planned (Curator plan, S76) | yes |
-| `## Now`: intent, not work in progress; STATE names the feature in flight; DIRECTION derives from here | `orc-curator` BACKLOG template | partial (S76: the STATE clause is n/a; the open runs are the task branches) | yes |
-| `## Next`: shaped, not started; DIRECTION derives from here too | `orc-curator` BACKLOG template | planned (Curator plan, S76) | yes |
-| `## Later`: bets; DIRECTION never reads it | `orc-curator` BACKLOG template | planned (Curator plan, S76) | yes |
-| `## Shipped`: link the archived feature folder (vibe) or the commit range (maintain); appended by curate | `orc-curator` BACKLOG template: link the run's notes folder `docs/runs/<branch>/` | planned (other mechanism, S76) | yes |
-| The four tables (id, item, why / refs; Shipped: shipped as) | `orc-curator` BACKLOG template | planned (Curator plan, S76) | yes |
+| Header: owns the future; PRODUCT holds what is real; the split stops duplication | `plugins/orc-curator/templates/BACKLOG.md` | ported | yes |
+| Header: sections are confidence, not dates; rows move both ways | `plugins/orc-curator/templates/BACKLOG.md` | ported | yes |
+| Header: hand edits are fine; run backlog afterwards; curate's orphan sweep catches the dangerous half | `plugins/orc-curator/templates/BACKLOG.md` | ported | yes |
+| Header: `Bn` ids, independent of other ids and of feature `NNN`; highest plus one; kept across moves | `plugins/orc-curator/templates/BACKLOG.md` (no feature `NNN`; runs are branches) | ported | yes |
+| `## Vision`: prose; written by shape-project/shape-product; thinned by curate as things ship | `plugins/orc-curator/templates/BACKLOG.md` | ported | yes |
+| `## Now`: intent, not work in progress; STATE names the feature in flight; DIRECTION derives from here | `plugins/orc-curator/templates/BACKLOG.md` | partial (S76: the STATE clause is n/a; the open runs are the task branches) | yes |
+| `## Next`: shaped, not started; DIRECTION derives from here too | `plugins/orc-curator/templates/BACKLOG.md` | ported | yes |
+| `## Later`: bets; DIRECTION never reads it | `plugins/orc-curator/templates/BACKLOG.md` | ported | yes |
+| `## Shipped`: link the archived feature folder (vibe) or the commit range (maintain); appended by curate | `plugins/orc-curator/templates/BACKLOG.md`: the run's branch or commit range | ported (other mechanism, S76) | yes |
+| The four tables (id, item, why / refs; Shipped: shipped as) | `plugins/orc-curator/templates/BACKLOG.md` | ported | yes |
 
 #### references/recording-rules.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Shared policy, cited by every skill that writes a docs file | `orc-curator` recording rules (one shared reference) | planned (Curator plan, S76) | yes |
-| Ids: `Bn`, `Cn`, `Dn`, `Qn` independent; `ACn` and `Tn` feature-scoped | `orc-curator` recording rules; `ACn`/`Tn` map to the run's brief and plan | planned (Curator plan, S76) | yes |
-| Next id = highest plus one; never reused; `Bn` kept across moves | `orc-curator` recording rules | planned (Curator plan, S76) | yes |
-| Where a fact goes: six files by tense; no fact in two | `orc-curator` recording rules | planned (Curator plan, S76) | yes |
-| Never one dimension in two files (TECH vs QUESTIONS) | `orc-curator` recording rules | planned (Curator plan, S76) | yes |
-| A question is never a backlog row | `orc-curator` recording rules | planned (Curator plan, S76) | yes |
-| PRODUCT holds only what is true today; the delete-a-row test | `orc-curator` recording rules | planned (Curator plan, S76) | yes |
-| DECISIONS append-only; a reversal is a new row naming what it reverses | `orc-curator` recording rules | planned (Curator plan, S76) | yes |
-| Every `Why` opens with `hard:` or `soft:`, a prefix, never a column; set at write time | `orc-curator` recording rules | planned (Curator plan, S76) | yes |
-| A `soft:` row is invited to be challenged; challenge makes a new row | `orc-curator` recording rules | planned (Curator plan, S76) | yes |
-| QUESTIONS never blocks; entries closed, never deleted | `orc-curator` recording rules | planned (Curator plan, S76). Note: inside a run a question can still stop the run as a Decide; that is the Curator asking, not QUESTIONS.md blocking | yes |
-| Removal tiered by confidence: delete only on plain contradiction, else flag | `orc-curator` recording rules; a flag in a run is a Decide (S76) | planned (Curator plan, S76) | yes |
+| Shared policy, cited by every skill that writes a docs file | `plugins/orc-curator/references/recording-rules.md` (one shared reference) | ported | yes |
+| Ids: `Bn`, `Cn`, `Dn`, `Qn` independent; `ACn` and `Tn` feature-scoped | `plugins/orc-curator/references/recording-rules.md`; `ACn`/`Tn` map to the run's brief and plan | ported | yes |
+| Next id = highest plus one; never reused; `Bn` kept across moves | `plugins/orc-curator/references/recording-rules.md` | ported | yes |
+| Where a fact goes: six files by tense; no fact in two | `plugins/orc-curator/references/recording-rules.md` | ported | yes |
+| Never one dimension in two files (TECH vs QUESTIONS) | `plugins/orc-curator/references/recording-rules.md` | ported | yes |
+| A question is never a backlog row | `plugins/orc-curator/references/recording-rules.md` | ported | yes |
+| PRODUCT holds only what is true today; the delete-a-row test | `plugins/orc-curator/references/recording-rules.md` | ported | yes |
+| DECISIONS append-only; a reversal is a new row naming what it reverses | `plugins/orc-curator/references/recording-rules.md` | ported | yes |
+| Every `Why` opens with `hard:` or `soft:`, a prefix, never a column; set at write time | `plugins/orc-curator/references/recording-rules.md` | ported | yes |
+| A `soft:` row is invited to be challenged; challenge makes a new row | `plugins/orc-curator/references/recording-rules.md` | ported | yes |
+| QUESTIONS never blocks; entries closed, never deleted | `plugins/orc-curator/references/recording-rules.md` | ported. Note: inside a run a question can still stop the run as a Decide; that is the Curator asking, not QUESTIONS.md blocking | yes |
+| Removal tiered by confidence: delete only on plain contradiction, else flag | `plugins/orc-curator/references/recording-rules.md`; a flag in a run is a Decide (S76) | ported | yes |
 
 #### skills/shape-project/SKILL.md
 
@@ -1030,68 +1030,68 @@ General notes:
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Header: true today; the deletion test; never inventory features; budget by section | `orc-curator` templates/PRODUCT.md | planned (Curator plan, S76) | yes |
-| Sections What it is, Who it's for, Why it exists | `orc-curator` templates/PRODUCT.md | planned (Curator plan, S76) | yes |
-| Core use cases: optional, 3–4 lines | `orc-curator` templates/PRODUCT.md | planned (Curator plan, S76) | yes |
-| Why it's shaped this way, citing `Dn`; "surface during `/minions:specify` interviews" | `orc-curator` templates/PRODUCT.md; the source line changes to curate and shape-product (spec only reads, S76) | planned (Curator plan, S76: changed) | yes |
-| Deliberately not, citing `Dn` | `orc-curator` templates/PRODUCT.md | planned (Curator plan, S76) | yes |
-| Comparable products, 2–4 | `orc-curator` templates/PRODUCT.md | planned (Curator plan, S76) | yes |
+| Header: true today; the deletion test; never inventory features; budget by section | `plugins/orc-curator/templates/PRODUCT.md` | ported | yes |
+| Sections What it is, Who it's for, Why it exists | `plugins/orc-curator/templates/PRODUCT.md` | ported | yes |
+| Core use cases: optional, 3–4 lines | `plugins/orc-curator/templates/PRODUCT.md` | ported | yes |
+| Why it's shaped this way, citing `Dn`; "surface during `/minions:specify` interviews" | `plugins/orc-curator/templates/PRODUCT.md`; the source line changes to curate and shape-product (spec only reads, S76) | ported (changed, S76) | yes |
+| Deliberately not, citing `Dn` | `plugins/orc-curator/templates/PRODUCT.md` | ported | yes |
+| Comparable products, 2–4 | `plugins/orc-curator/templates/PRODUCT.md` | ported | yes |
 
 #### templates/TECH.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Header: what it must do and is built on; conventions live on native surfaces; 50 lines | `orc-curator` templates/TECH.md | planned (Curator plan, S76) | yes |
-| Capabilities table: settled only, no `decided` column, delete rows that do not apply | `orc-curator` templates/TECH.md | planned (Curator plan, S76) | yes |
-| Spine (committed): greenfield vs existing code; decided cites `Dn`, transcribed does not | `orc-curator` templates/TECH.md | planned (Curator plan, S76) | yes |
-| Where conventions live: the tree is the registry, the `git ls-files` command | `orc-curator` templates/TECH.md | planned (Curator plan, S76) | yes |
-| Why behind the calls → DECISIONS | `orc-curator` templates/TECH.md | planned (Curator plan, S76) | yes |
+| Header: what it must do and is built on; conventions live on native surfaces; 50 lines | `plugins/orc-curator/templates/TECH.md` | ported | yes |
+| Capabilities table: settled only, no `decided` column, delete rows that do not apply | `plugins/orc-curator/templates/TECH.md` | ported | yes |
+| Spine (committed): greenfield vs existing code; decided cites `Dn`, transcribed does not | `plugins/orc-curator/templates/TECH.md` | ported | yes |
+| Where conventions live: the tree is the registry, the `git ls-files` command | `plugins/orc-curator/templates/TECH.md` | ported | yes |
+| Why behind the calls → DECISIONS | `plugins/orc-curator/templates/TECH.md` | ported | yes |
 
 #### templates/DECISIONS.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Header: append-only, newest at the bottom, the why is the value | `orc-curator` templates/DECISIONS.md | planned (Curator plan, S76) | yes |
-| Who reads it (curator, shape-product, shape-tech `soft:` rows); an enforced rule belongs on a native surface | `orc-curator` templates/DECISIONS.md | planned (Curator plan, S76) | yes |
-| `hard:` / `soft:` prefix inside the Why cell, not a fifth column; definitions | `orc-curator` templates/DECISIONS.md | planned (Curator plan, S76) | yes |
-| Immutability of the record, not the conclusion; reversal is a new row | `orc-curator` templates/DECISIONS.md | planned (Curator plan, S76) | yes |
-| Ids `Dn`: highest plus one, never reused | `orc-curator` templates/DECISIONS.md | planned (Curator plan, S76) | yes |
-| Table and the two commented examples | `orc-curator` templates/DECISIONS.md | planned (Curator plan, S76) | yes |
-| File location: the knowledge root | the docs folder, not `docs/DECISIONS.md` (a project such as this repo can have its own file there) | planned (Curator plan, S76) | yes |
+| Header: append-only, newest at the bottom, the why is the value | `plugins/orc-curator/templates/DECISIONS.md` | ported | yes |
+| Who reads it (curator, shape-product, shape-tech `soft:` rows); an enforced rule belongs on a native surface | `plugins/orc-curator/templates/DECISIONS.md` | ported | yes |
+| `hard:` / `soft:` prefix inside the Why cell, not a fifth column; definitions | `plugins/orc-curator/templates/DECISIONS.md` | ported | yes |
+| Immutability of the record, not the conclusion; reversal is a new row | `plugins/orc-curator/templates/DECISIONS.md` | ported | yes |
+| Ids `Dn`: highest plus one, never reused | `plugins/orc-curator/templates/DECISIONS.md` | ported | yes |
+| Table and the two commented examples | `plugins/orc-curator/templates/DECISIONS.md` | ported | yes |
+| File location: the knowledge root | `plugins/orc-curator/templates/DECISIONS.md`, in `docs/curator/`, not `docs/DECISIONS.md` (a project such as this repo can have its own file there) | ported | yes |
 
 #### templates/QUESTIONS.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Header: prose not a table; one `##` per question, `· open` or `· answered → Dn`; `Refs:` line | `orc-curator` templates/QUESTIONS.md | planned (Curator plan, S76) | yes |
-| Answered entries stay | `orc-curator` templates/QUESTIONS.md | planned (Curator plan, S76) | yes |
-| Non-blocking by design | `orc-curator` templates/QUESTIONS.md | planned (Curator plan, S76) | yes |
-| Writers: shape-project (bootstrap, re-runs), the curator closes entries | `orc-curator` templates/QUESTIONS.md; add shape-tech and direction, which also write `Qn` | planned (Curator plan, S76: fixed list) | yes |
-| Delete the example block on the first entry; the example block | `orc-curator` templates/QUESTIONS.md | planned (Curator plan, S76) | yes |
+| Header: prose not a table; one `##` per question, `· open` or `· answered → Dn`; `Refs:` line | `plugins/orc-curator/templates/QUESTIONS.md` | ported | yes |
+| Answered entries stay | `plugins/orc-curator/templates/QUESTIONS.md` | ported | yes |
+| Non-blocking by design | `plugins/orc-curator/templates/QUESTIONS.md` | ported | yes |
+| Writers: shape-project (bootstrap, re-runs), the curator closes entries | `plugins/orc-curator/templates/QUESTIONS.md`; add shape-tech and direction, which also write `Qn` | ported (changed, S76: fixed list) | yes |
+| Delete the example block on the first entry; the example block | `plugins/orc-curator/templates/QUESTIONS.md` | ported | yes |
 
 #### templates/CONTEXT.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Header: ubiquitous language, committed; "lives at the repo root in both modes" | `orc-curator` templates/CONTEXT.md; the file goes in the docs folder, not the repo root and not `docs/CONTEXT.md` (in this repo that is orchestra's own glossary) | planned (Curator plan, S76: changed location; no modes) | yes |
-| A glossary and nothing else; only domain-specific terms; be opinionated with `_Avoid_` | `orc-curator` templates/CONTEXT.md | planned (Curator plan, S76) | yes |
-| Entries edited in place; delete when the concept leaves the code | `orc-curator` templates/CONTEXT.md | planned (Curator plan, S76) | yes |
-| Nothing blocks on it | `orc-curator` templates/CONTEXT.md | planned (Curator plan, S76) | yes |
-| Body: domain line, `## Language`, commented examples, `###` grouping note | `orc-curator` templates/CONTEXT.md | planned (Curator plan, S76) | yes |
+| Header: ubiquitous language, committed; "lives at the repo root in both modes" | `plugins/orc-curator/templates/CONTEXT.md`; the file goes in the docs folder, not the repo root and not `docs/CONTEXT.md` (in this repo that is orchestra's own glossary) | ported (changed, S76 location; no modes) | yes |
+| A glossary and nothing else; only domain-specific terms; be opinionated with `_Avoid_` | `plugins/orc-curator/templates/CONTEXT.md` | ported | yes |
+| Entries edited in place; delete when the concept leaves the code | `plugins/orc-curator/templates/CONTEXT.md` | ported | yes |
+| Nothing blocks on it | `plugins/orc-curator/templates/CONTEXT.md` | ported | yes |
+| Body: domain line, `## Language`, commented examples, `###` grouping note | `plugins/orc-curator/templates/CONTEXT.md` | ported | yes |
 
 #### references/glossary.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Shared policy, cited by every skill that reads or writes CONTEXT | `orc-curator` references/glossary.md | planned (Curator plan, S76) | yes |
-| The file: repo root, same in both modes, committed | the docs folder (see templates/CONTEXT.md) | planned (Curator plan, S76: changed location; no modes) | yes |
-| Created lazily, on the first term | `orc-curator` references/glossary.md | planned (Curator plan, S76) | yes |
-| A glossary and nothing else | `orc-curator` references/glossary.md | planned (Curator plan, S76) | yes |
-| Format: copy the template; bold name, 1–2 sentences, `_Avoid_` | `orc-curator` references/glossary.md | planned (Curator plan, S76) | yes |
-| What earns a term (domain-specific, could be got wrong, opinionated, define what it is) | `orc-curator` references/glossary.md | planned (Curator plan, S76) | yes |
-| Mutation: edit in place, retired word to `_Avoid_`, delete when the concept leaves | `orc-curator` references/glossary.md | planned (Curator plan, S76) | yes |
-| Never a gate; missing file is a no-op; drift is flagged | `orc-curator` references/glossary.md | planned (Curator plan, S76) | yes |
-| The four habits (challenge, sharpen, cross-check with the code, write at once) | `orc-curator` references/glossary.md | planned (Curator plan, S76) | yes |
+| Shared policy, cited by every skill that reads or writes CONTEXT | `plugins/orc-curator/references/glossary.md` | ported | yes |
+| The file: repo root, same in both modes, committed | `plugins/orc-curator/references/glossary.md` names `docs/curator/CONTEXT.md` (see templates/CONTEXT.md) | ported (changed, S76 location; no modes) | yes |
+| Created lazily, on the first term | `plugins/orc-curator/references/glossary.md` | ported | yes |
+| A glossary and nothing else | `plugins/orc-curator/references/glossary.md` | ported | yes |
+| Format: copy the template; bold name, 1–2 sentences, `_Avoid_` | `plugins/orc-curator/references/glossary.md` | ported | yes |
+| What earns a term (domain-specific, could be got wrong, opinionated, define what it is) | `plugins/orc-curator/references/glossary.md` | ported | yes |
+| Mutation: edit in place, retired word to `_Avoid_`, delete when the concept leaves | `plugins/orc-curator/references/glossary.md` | ported | yes |
+| Never a gate; missing file is a no-op; drift is flagged | `plugins/orc-curator/references/glossary.md` | ported | yes |
+| The four habits (challenge, sharpen, cross-check with the code, write at once) | `plugins/orc-curator/references/glossary.md` | ported | yes |
 
 #### references/interview-cadence.md
 
