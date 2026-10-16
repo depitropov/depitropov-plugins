@@ -229,7 +229,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--line);
 <div class="shell">
 <nav class="rail" aria-label="Guide sections">
   <div class="brand">Orchestra</div>
-  <div class="ver">Field guide · plugins 0.12.0 · decisions to S75</div>
+  <div class="ver">Field guide · plugins 0.13.0 · decisions to S76</div>
   <ol>
     <li><a class="lvl" href="#l1"><span class="n">1</span> What it does</a>
       <ul><li><a href="#delivers">What it delivers</a></li><li><a href="#what">The result</a></li><li><a href="#why">Why use it</a></li><li><a href="#philosophy">Many gates, one workflow</a></li><li><a href="#explore">Explore a run</a></li></ul></li>
@@ -652,16 +652,16 @@ Evaluate
 
       <section class="xp-panel" data-step="4" hidden>
         <h4>Plan</h4>
-        <div class="xp-meta"><span class="chip">AI agent, fresh</span><span class="chip">uses the stack's plan guide, if any</span><span class="chip">writes plan.md</span></div>
+        <div class="xp-meta"><span class="chip">AI agent, fresh</span><span class="chip">uses the plan guides, if any</span><span class="chip">writes plan.md</span></div>
         <div data-depth="what">
           <p>An agent splits the brief into small, ordered tasks. Each task names its files and the tests that prove each acceptance criterion. The plan has no code.</p>
         </div>
         <div data-depth="flow" hidden>
-          <ol class="xp-flow"><li>load the plan guide, if any</li><li class="arrow">→</li><li>apply your answers to the brief</li><li class="arrow">→</li><li>read the affected files</li><li class="arrow">→</li><li>write tasks T1, T2, …</li></ol>
+          <ol class="xp-flow"><li>load the plan guides, if any</li><li class="arrow">→</li><li>apply your answers to the brief</li><li class="arrow">→</li><li>read the affected files</li><li class="arrow">→</li><li>write tasks T1, T2, …</li></ol>
           <p>A task has at most about four files and one job. Notes may hold a signature or ten lines of pseudo-code, no more.</p>
         </div>
         <div data-depth="code" hidden>
-          <p>Skill <code>orc-standard-workflow:plan</code>, with input <code>guide</code> when the stack has a plan guide and the project does not disable it. <code>orc-java-stack</code> has a code guide only, with the test-command facts. It has no plan guide (S68).</p>
+          <p>Skill <code>orc-standard-workflow:plan</code>, dispatched with the role <code>plan</code>. Orchestra lists the plan guides of every slot in the prompt, the Curator's first. A project that disables a guide gets no line for it. <code>orc-java-stack</code> has a code guide only, with the test-command facts (S68).</p>
         </div>
       </section>
 
@@ -687,11 +687,11 @@ Evaluate
           <p>Coder agents implement the plan, two tasks each by default, with tests. Each task becomes one commit. A coder never deletes or disables a test to get a pass.</p>
         </div>
         <div data-depth="flow" hidden>
-          <ol class="xp-flow"><li>load the code guide, if any</li><li class="arrow">→</li><li>do the task</li><li class="arrow">→</li><li>write its named tests</li><li class="arrow">→</li><li>run the affected tests</li><li class="arrow">→</li><li>commit</li><li class="arrow">→</li><li>log it, record assumptions</li></ol>
+          <ol class="xp-flow"><li>load the code guides, if any</li><li class="arrow">→</li><li>do the task</li><li class="arrow">→</li><li>write its named tests</li><li class="arrow">→</li><li>run the affected tests</li><li class="arrow">→</li><li>commit</li><li class="arrow">→</li><li>log it, record assumptions</li></ol>
           <p>The coder runs only the tests it touched. Orchestra runs the full build after it. A task done another way than the plan says is written down as a deviation. Detail inside a task, such as an extra check, is the coder's call: it goes into <code>code.md</code>. When a coder fails and the run goes on, the next coder finds the reason in the implementation log.</p>
         </div>
         <div data-depth="code" hidden>
-          <p>Skill <code>orc-standard-workflow:code</code>, dispatched as <code>code-1</code>, <code>code-3</code>, … The chunk size is the config key <code>tasks-per-coder</code>.</p>
+          <p>Skill <code>orc-standard-workflow:code</code>, dispatched as <code>code-1</code>, <code>code-3</code>, … with the role <code>code</code>. The chunk size is the config key <code>tasks-per-coder</code>.</p>
         </div>
       </section>
 
@@ -765,6 +765,7 @@ Evaluate
 
   <h3 id="setup">Set up and start</h3>
   <p>The quick way: install the three plugins and ask your AI tool for <code>orchestra init</code>. It asks which workflow and which stack plugin to use, writes <code>.orchestra/config.json</code>, adds the <code>.gitignore</code> lines, and runs <code>orchestra check</code> on the result. It commits nothing; you commit the two files.</p>
+  <p>A fourth plugin is optional: a Curator, in the <code>curator</code> slot. <code>orchestra init</code> asks if you want one. Without it, the run works as before. The <code>orc-curator</code> plugin is not built yet (see Built and not built).</p>
   <p>By hand, your project needs four things:</p>
   <ul>
     <li>The three plugins installed: <code>orchestra</code>, <code>orc-standard-workflow</code> and a stack plugin such as <code>orc-java-stack</code> or <code>orc-ts-stack</code>.</li>
@@ -892,7 +893,7 @@ orchestra run                                            # continue a stopped ru
     <div class="layer st"><div class="who">Stack Skills<small>orc-ts-stack</small></div><div>TypeScript: the build (<code>npm ci &amp;&amp; npm test</code>), a <code>measure</code> command and the clean-code-typescript rules. No gates yet. It needs Python 3.11 or newer and the project's <code>typescript</code> 5.</div></div>
     <div class="layer pr"><div class="who">Project<small>.orchestra/config.json</small></div><div>Your choices: which plugins, which checks are off, how many fix rounds, your naming patterns.</div></div>
     <div class="layer pr later"><div class="who">Project rules<small>later</small></div><div>Rules for one project that override the stack, including its build.</div></div>
-    <div class="layer pr later"><div class="who">Curator<small>later</small></div><div>Keeps your backlog, direction and decisions current after each feature.</div></div>
+    <div class="layer pr later"><div class="who">Curator<small>orc-curator, not built yet</small></div><div>Optional. Keeps your backlog, direction and decisions in <code>docs/curator/</code> current. Its guides tell each agent how to read them, and its <code>curate</code> step runs at the end of a run. The slot is built; the plugin is not.</div></div>
   </div>
   <h4>What you can set</h4>
 <pre><code>{
@@ -904,8 +905,10 @@ orchestra run                                            # continue a stopped ru
     "plugin": "orc-java-stack",
     "disable": ["code-guide"],                // turn off a check or a guide by name
     "gates": { "spotless": { "max_rounds": 2 } }  // more fix rounds for one check
-  }
+  },
+  "curator": { "plugin": "orc-curator" }      // optional: leave it out to run with no Curator
 }</code></pre>
+  <p>The <code>curator</code> section is optional. It has the same <code>disable</code> key, and <code>disable</code> also turns off a Curator guide by name.</p>
   <p>A stack can also offer its own keys, for example a pattern that marks your entity classes. You set them in the same section. Every key gets its default from the plugin, so you set only what you change. At the start of every run, <code>orchestra check</code> tests the whole config against the plugins: a typo in a key, an unknown gate in <code>disable</code> or a wrong type stops the run before any agent starts, with one line per problem and its fix.</p>
 </section>
 
@@ -955,6 +958,8 @@ orchestra run                                            # continue a stopped ru
   </svg></div>
   <figcaption>Red marks the three places a run can stop for a human. Each stop comes before the work that would build on a guess. The Java stack brings six gates: ops in implementation-check, testing in conventions-check, and comments, logging, layout and Spotless in finish.</figcaption>
   </figure>
+
+  <p>One more kind of step runs in the main session, with you, and not in a fresh agent. When a Curator is set up, its <code>setup</code> runs once, before the first stage, while its flag file is missing. Its <code>curate</code> runs when the workflow is done, before the report. Both can ask you questions and start subagents.</p>
 
   <h4>Technical choice or business fact</h4>
   <p>This split runs through every step. A <strong>technical choice</strong> has a sensible default: the rounding mode, null handling, the order of two steps. The agent takes the default and records it, and the report shows it to you. A <strong>business fact</strong> never has a default: a rate, a price, a limit value, who qualifies. An invented fact is the one mistake a later review cannot see, because the code and the tests agree with each other and both are wrong. So business facts always come to you.</p>
@@ -1186,6 +1191,7 @@ orchestra run                                            # continue a stopped ru
     <thead><tr><th>Folder</th><th>Holds</th></tr></thead>
     <tbody>
       <tr><td><code>docs/runs/&lt;branch&gt;/</code><br>committed</td><td><code>task.md</code>, <code>brief.md</code>, <code>plan.md</code>, <code>plan-check.md</code>, <code>implementation-log.md</code>, <code>code.md</code>, <code>plan-conformance.md</code>, <code>logic-review.md</code>, <code>decisions.md</code>, <code>report.md</code></td></tr>
+      <tr><td><code>docs/curator/</code><br>committed, only with a Curator</td><td>The project's direction docs: backlog, product, direction, decisions, questions, glossary, tech. The Curator's <code>curate</code> step is the only writer in a run, and it commits at the end. A flag file, named in the Curator's declaration, tells orchestra that <code>setup</code> is done.</td></tr>
       <tr><td><code>tmp/runs/&lt;branch&gt;/</code><br>git-ignored</td><td>result files, checkpoints, tool logs. A resume works on the same machine only, because this folder is not committed.</td></tr>
     </tbody>
   </table></div>
@@ -1270,6 +1276,7 @@ orchestra run                                            # continue a stopped ru
       <tr><td>S72, S73</td><td>Phase 1 is closed on Claude Code. The Codex run moves to plan 5, which stays paused.</td><td>The exit test passed; no Codex install is available.</td></tr>
       <tr><td>S74</td><td>Every run works in its own git worktree.</td><td>From the first real run: a run moved the user's branch (O9).</td></tr>
       <tr><td>S75</td><td>Clean code is a workflow gate, and a Stack Skills plugin may declare a <code>measure</code>. New stack plugin <code>orc-ts-stack</code>.</td><td>User decision.</td></tr>
+      <tr><td>S76</td><td>The Curator is an optional slot plugin that also works by hand. Guides are given by role, and orchestra lists them in the prompt of each dispatch. Its <code>setup</code> and <code>curate</code> run in the main session through a new <code>inline</code> action.</td><td>User decision, brainstorm of October 16. It closes O3.</td></tr>
     </tbody>
   </table></div>
   <p>Each real run on a sample project fed back into the design. The first runs led to clearer errors, a skip for repeated builds, the Evaluate list in the report, the assumptions list, the business-fact stop, and the rebuilt logic review.</p>
@@ -1289,7 +1296,8 @@ orchestra run                                            # continue a stopped ru
       <tr><td><code>orchestra/lib/runner.js</code></td><td>Runs one phase gate by gate, with a checkpoint file.</td></tr>
       <tr><td><code>orchestra/lib/gates.js</code></td><td>Collects, selects and orders the gates of a phase.</td></tr>
       <tr><td><code>orchestra/lib/report.js</code></td><td>Writes <code>report.md</code> from the result files.</td></tr>
-      <tr><td><code>orchestra/lib/protocol.js</code></td><td>Checks each action and builds the agent prompt.</td></tr>
+      <tr><td><code>orchestra/lib/protocol.js</code></td><td>Checks each action, lists the guides for a dispatch's role and builds the agent prompt.</td></tr>
+      <tr><td><code>orchestra/lib/curator.js</code></td><td>Decides when the Curator's <code>setup</code> and <code>curate</code> run inline, from the flag file and the result files.</td></tr>
       <tr><td><code>orchestra/bin/resolve.js</code>, <code>lib/resolved.js</code></td><td>Find the plugins, write <code>.orchestra/resolved.json</code>, then run <code>orchestra check</code> on the config.</td></tr>
       <tr><td><code>orchestra/bin/check.js</code>, <code>lib/check.js</code></td><td>Every contract rule for a plugin and for the project config, and the dry run of a workflow's <code>next.js</code>.</td></tr>
       <tr><td><code>orchestra/lib/worktree.js</code></td><td>Creates, renames, finds and removes the run's worktree, with plain git commands.</td></tr>
@@ -1341,6 +1349,8 @@ orchestra run                                            # continue a stopped ru
   <figcaption>Blue boxes are code, green is the model in the main session, amber is a subagent. Each <code>drive.js</code> call runs every step that needs no model (next.js, the runner, the build), then returns at the first step that needs one.</figcaption>
   </figure>
 
+  <p>One action is not in the figure: <code>inline</code>. Only <code>drive.js</code> prints it, never <code>next.js</code>. It asks the main session to run a Curator skill itself, with no subagent, so the skill can ask you questions. Before the first stage, <code>drive.js</code> checks the Curator's flag file and prints <code>inline</code> for <code>setup</code> while the file is missing. When <code>next.js</code> says <code>done</code>, <code>drive.js</code> prints <code>inline</code> for <code>curate</code> before the report. Before every dispatch, it also checks that the stage's role is one the workflow declares, and it fails the run if not.</p>
+
   <h3 id="lifecycle">Step lifecycle</h3>
   <p>Each workflow step and each reviewer gate follows the same small state machine, driven by its result file.</p>
   <figure class="dg-fig"><div class="dg-scroll">
@@ -1372,7 +1382,7 @@ orchestra run                                            # continue a stopped ru
     <text x="609" y="212" text-anchor="end" class="sm m">a new ## section</text>
     <text x="360" y="240" text-anchor="middle" class="sm m">next call: delete the result, dispatch again</text>
   </svg></div>
-  <figcaption>A stop and a retry are the same move: delete the result file, so the stage looks like it never ran. A result file with broken JSON counts as failed. Each dispatch is counted in a <code>.sent</code> file next to the result: after two dispatches with no result, the step fails. A retry deletes the count too, so it starts with two fresh tries.</figcaption>
+  <figcaption>A stop and a retry are the same move: delete the result file, so the stage looks like it never ran. A result file with broken JSON counts as failed. Each dispatch is counted in a <code>.sent</code> file next to the result: after two dispatches with no result, the step fails. A retry deletes the count too, so it starts with two fresh tries. An <code>inline</code> step uses the same result file. Its <code>ok</code> goes on; its <code>failed</code> is reported once and runs again on the next call. Setup counts as done only when its flag file exists.</figcaption>
   </figure>
 
   <h3 id="plugins">Plugin contracts</h3>
@@ -1416,7 +1426,11 @@ orchestra run                                            # continue a stopped ru
 }</code></pre>
   <p>A stack may also declare <code>measure</code>: a <code>run</code> command that measures the changed code against <code>{base}</code>, the run's base commit, and an optional <code>rules</code> skill with the stack's clean-code rules. The command takes only <code>{plugin}</code> and <code>{base}</code>. A gate with <code>"measure": true</code> gets both as inputs. <code>orc-ts-stack</code> declares one; <code>orc-java-stack</code> does not.</p>
   <p>The build skips the format check only when the root <code>pom.xml</code> names the Spotless plugin, the same test the Spotless gate uses: the gate formats the code before the final build (S69).</p>
-  <p>A workflow declares <code>"slot": "workflow"</code>, its config keys and its own gates, and ships <code>bin/next.js</code>. Every step writes a small result file that code reads:</p>
+  <p>Guides are given by <strong>role</strong>. The roles are fixed by orchestra: <code>spec</code>, <code>plan</code> and <code>code</code>. A slot plugin declares <code>"guides": { "&lt;role&gt;": "&lt;skill&gt;" }</code>. For each dispatch, orchestra lists the guides for its role in the prompt, the Curator's first and then the Stack Skills'. Guides no longer come as a <code>guide</code> input.</p>
+  <p>A workflow declares <code>"slot": "workflow"</code>, its <code>roles</code> (for example <code>["spec", "plan", "code"]</code>), its config keys and its own gates, and ships <code>bin/next.js</code>. <code>next.js</code> tags each dispatch with one of its roles. A dispatch with a role the workflow did not declare fails the run.</p>
+  <p>The optional <code>curator</code> slot declares <code>curate</code> (a skill) and <code>setup</code>, which is <code>{ "skill": "…", "done": "docs/curator/.setup" }</code>, with <code>guides</code> as an option. <code>setup</code> runs inline while the <code>done</code> file is missing. <code>curate</code> runs inline at <code>done</code>, in the run's worktree, and it is the only writer of the direction docs in a run.</p>
+  <p><strong>Breaking change in 0.13.0.</strong> A workflow with no <code>roles</code>, paired with a stack that declares guides, now fails <code>orchestra check</code>. Add the roles to the workflow, or list the guides in <code>disable</code>. <code>check</code> also fails on a guide for a role the workflow lacks, unless <code>disable</code> names it.</p>
+  <p>Every step writes a small result file that code reads:</p>
 <pre><code>{ "stage": "logic-review", "status": "ok",
   "decide": [], "counts": { "decide": 0, "patch": 2, "evaluate": 1, "noise": 0 },
   "evaluate": ["OrderService.java:42 — a null customer now throws"], "assumptions": [] }</code></pre>
@@ -1445,7 +1459,7 @@ orchestra run                                            # continue a stopped ru
     <text x="440" y="96" text-anchor="middle" class="sm b">plan 2</text><text x="440" y="110" text-anchor="middle" class="sm m">check, init</text>
     <text x="518" y="40" text-anchor="middle" class="sm b">plan 5</text><text x="518" y="54" text-anchor="middle" class="sm m">Codex, paused</text>
     <text x="596" y="96" text-anchor="middle" class="sm b">phase 2</text><text x="596" y="110" text-anchor="middle" class="sm m">CRAP, mutation</text>
-    <text x="710" y="40" text-anchor="end" class="sm b">later</text><text x="710" y="54" text-anchor="end" class="sm m">Curator, PSK, adapters</text>
+    <text x="710" y="40" text-anchor="end" class="sm b">later</text><text x="710" y="54" text-anchor="end" class="sm m">orc-curator, PSK, adapters</text>
     <polygon points="479,80 473,90 485,90" class="stopb"/><text x="479" y="134" text-anchor="middle" class="sm tr">phase 1 closed</text>
   </svg></div>
   <figcaption>Filled dots are done (October 1 to 14, 2026). Phase 1 closed on October 14, after the exit-test run on Claude Code. Dashed rings are paused or later work; the next plan is not chosen yet.</figcaption>
@@ -1465,7 +1479,9 @@ orchestra run                                            # continue a stopped ru
       <tr><td>Every run in its own git worktree</td><td><span class="pill built">built</span></td></tr>
       <tr><td>A tested run on Codex</td><td><span class="pill later">plan 5, paused</span></td></tr>
       <tr><td>Complexity (CRAP) and mutation testing gates</td><td><span class="pill later">phase 2</span></td></tr>
-      <tr><td>Project rules, the Curator, adapters for other AI frameworks</td><td><span class="pill later">later</span></td></tr>
+      <tr><td>Guides by role, the optional <code>curator</code> slot, the <code>inline</code> action and <code>lib/curator.js</code> (S76, plan 1)</td><td><span class="pill built">built</span></td></tr>
+      <tr><td>The <code>orc-curator</code> plugin: its skills, <code>docs/curator/</code> and its guides (plans 2 to 4)</td><td><span class="pill later">not built yet</span></td></tr>
+      <tr><td>Project rules, adapters for other AI frameworks</td><td><span class="pill later">later</span></td></tr>
     </tbody>
   </table></div>
 
@@ -1474,7 +1490,10 @@ orchestra run                                            # continue a stopped ru
     <dt>Orchestrator</dt><dd>The <code>orchestra</code> plugin and its single entry, <code>orchestra run</code>.</dd>
     <dt>Workflow</dt><dd>The plugin that sets the steps of a run and their order.</dd>
     <dt>Stack Skills</dt><dd>The plugin with the build, guides and reviewers for one language stack.</dd>
-    <dt>Slot</dt><dd>A named place in the config that one plugin fills: <code>workflow</code> or <code>stack-skills</code>.</dd>
+    <dt>Slot</dt><dd>A named place in the config that one plugin fills: <code>workflow</code>, <code>stack-skills</code> or the optional <code>curator</code>.</dd>
+    <dt>Curator</dt><dd>The plugin in the <code>curator</code> slot. It keeps the project's direction docs in <code>docs/curator/</code> current. Its <code>setup</code> and <code>curate</code> run inline.</dd>
+    <dt>Role</dt><dd>What a workflow stage does: <code>spec</code>, <code>plan</code> or <code>code</code>. The workflow declares its roles and tags each dispatch.</dd>
+    <dt>Inline</dt><dd>An action that only <code>drive.js</code> prints. The main session runs the skill itself, so it can ask you.</dd>
     <dt>Declaration</dt><dd>A plugin's <code>orchestra.json</code>. Data only.</dd>
     <dt>orchestra check</dt><dd>The command that tests a plugin or a project config against every contract rule. Each run starts with it.</dd>
     <dt>Brief</dt><dd>The goal and acceptance criteria of a run. Every check compares against it.</dd>
@@ -1483,7 +1502,7 @@ orchestra run                                            # continue a stopped ru
     <dt>Build</dt><dd>The full build and tests. It runs first and last. Not a gate.</dd>
     <dt>Measure</dt><dd>An optional declaration of the Stack Skills: a command that measures the shape of the changed code against the run's base commit, and a skill with the stack's clean-code rules. A gate that asks for it gets both as inputs.</dd>
     <dt>Fixer</dt><dd>The agent that fixes a failed tool, using the tool's fix guide.</dd>
-    <dt>Guide</dt><dd>Short rules for the planner or the coder, from the stack.</dd>
+    <dt>Guide</dt><dd>A skill with short rules for one role, from the Curator or the stack. Orchestra lists it in the prompt of each dispatch for that role.</dd>
     <dt>Triage</dt><dd>Sorting a finding into Decide, Patch, Evaluate or Noise.</dd>
     <dt>Business fact</dt><dd>A product value no agent may invent: a rate, a price, a limit, who qualifies.</dd>
     <dt>Technical choice</dt><dd>A choice with a sensible default, taken and recorded.</dd>
@@ -1494,7 +1513,7 @@ orchestra run                                            # continue a stopped ru
 </section>
 
 <footer>
-  This guide matches plugin version 0.12.0 and decisions up to S75. The sources of truth are <code>docs/DESIGN.md</code>, <code>docs/TENSIONS.md</code>, <code>docs/DECISIONS.md</code>, <code>docs/CONTEXT.md</code> and the code in <code>plugins/</code>.
+  This guide matches plugin version 0.13.0 and decisions up to S76. The sources of truth are <code>docs/DESIGN.md</code>, <code>docs/TENSIONS.md</code>, <code>docs/DECISIONS.md</code>, <code>docs/CONTEXT.md</code> and the code in <code>plugins/</code>.
 </footer>
 </main>
 </div>
