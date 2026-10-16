@@ -745,7 +745,7 @@ Source: `~/Projects-other/ai-marketplace-mentorano/plugins/clean-code`, version 
 |---|---|---|---|
 | Whole file: excuses and answers | `plugins/clean-code/skills/clean-code/rationalizations.md` | dropped from orchestra (S75: it speaks to a coder, the gate reviews) | no |
 
-#### skills/clean-code-python/SKILL.md, skills/clean-code-logging/** , skills/architecture-fundamentals/**
+#### skills/clean-code-python/SKILL.md, skills/clean-code-logging/**, skills/architecture-fundamentals/**
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|

@@ -67,3 +67,10 @@ test('a project with no typescript package is a broken run with exit code 2', ()
   assert.equal(r.status, 2);
   assert.match(r.stderr, /typescript package not found/);
 });
+
+test('measureInputs keeps a $ pattern in the plugin dir and base literally', () => {
+  const odd = { slots: { 'stack-skills': { plugin: 'x', dir: '/p/$&/q', declaration } } };
+  const { measure: command } = measureInputs(odd, 'b$&b');
+  assert.ok(command.includes('/p/$&/q'));
+  assert.ok(!command.includes('{plugin}'));
+});

@@ -97,7 +97,7 @@ function measureInputs(resolved, base) {
   const stack = resolved.slots['stack-skills'];
   const m = stack && stack.declaration.measure;
   if (!m) return {};
-  const inputs = { measure: m.run.replace(/\{plugin\}/g, stack.dir).replace(/\{base\}/g, base) };
+  const inputs = { measure: m.run.replace(/\{plugin\}/g, () => stack.dir).replace(/\{base\}/g, () => base) };
   if (m.rules) inputs.rules = `${stack.plugin}:${m.rules}`;
   return inputs;
 }
@@ -110,7 +110,7 @@ function buildStep(resolved) {
     name: 'build',
     kind: 'tool',
     build: true,
-    run: build.run.replace(/\{plugin\}/g, stack.dir),
+    run: build.run.replace(/\{plugin\}/g, () => stack.dir),
     fix: 'fixer',
     guide: build.guide,
     max_rounds: build.max_rounds ?? 2,
