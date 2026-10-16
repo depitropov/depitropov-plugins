@@ -107,6 +107,7 @@ record in `docs/DECISIONS.md` under the same `S` number.
 | O7 | Does General Knowledge use the same contract as an SSK? | Next phase |
 | O8 | Adapters for external frameworks (Superpowers, minions, Matt Pocock's skills). Replaces the Executor idea. See "Backlog: adapters" below. | Paused, after phase 1 |
 | O10 | Two runs at once in one project. S74 prepared it: each run has its own worktree and branch, and `--branch` picks one of several open runs. Still open: two starts at the same moment (the cleanup of temporary `.new-<pid>` worktrees can remove the other start's folder, and both can pick the same slug); the shared `.orchestra/resolved.json` in the checkout; and how `orchestra:run` lets the user start, list and resume several runs in one session or in two. | Soon, after S74 |
+| O11 | `orchestra:setup`: one entry that runs the `setup` skill of each slot plugin that declares one, also after `orchestra:init`. From the Curator design (S76): a slot plugin added after init needs its setup run, and each `orchestra:run` already checks the plugin's declared setup flag. | Later, after the Curator |
 
 ## Backlog: adapters (O8)
 
