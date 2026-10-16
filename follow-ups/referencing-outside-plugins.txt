@@ -1,0 +1,82 @@
+Referencing files of another plugin
+===================================
+
+Question
+--------
+A slot plugin can only reach files inside its own folder. So `orc-ts-stack` carries its own copy
+of the clean-code measurement scripts, next to the copy in the standalone `plugins/clean-code`.
+Can a declaration use a file or a skill of another plugin, so that one copy is enough?
+
+Short answer
+------------
+Not today. The duplication is a workaround, accepted in S75 without a redesign. A test keeps the
+two copies identical. The real fix needs a contract change: a way for a declaration to name
+another plugin, and a way for orchestra to resolve that plugin's folder.
+
+What happens today
+------------------
+- In a declaration, `{plugin}` expands to the folder of the plugin that declares the command
+  (`plugins/orchestra/lib/gates.js`: `expand`, `buildStep`, `measureInputs`). There is no
+  placeholder for any other plugin.
+- A gate's `skill` and a stack's `measure.rules` are names inside the same plugin. The runner
+  qualifies them with the declaring plugin's name (`<plugin>:<skill>`). `check.js` fails a
+  name that is not in the plugin's own `skills/` folder.
+- Resolution (`orchestra:run`, `lib/resolved.js`) finds only the plugins in the two slots,
+  `workflow` and `stack-skills`. It invokes each one's `manifest` skill to learn its folder.
+  A plugin outside the slots, such as `clean-code`, is never resolved: orchestra does not know
+  whether it is installed, or where.
+- A relative path such as `{plugin}/../clean-code/...` works in this repo, but not after an
+  install. Claude Code puts each plugin in its own folder in the plugin cache, under a path
+  that includes the marketplace and the version. Nothing guarantees that two plugins sit side
+  by side.
+
+So `orc-ts-stack/scripts/` holds a copy of six files from
+`plugins/clean-code/skills/clean-code/` (`measure.py`, `languages.py`, `shape.py`, `compare.py`,
+`revisions.py`, `measure-ts.mjs`). `test/orc-ts-stack/measure.test.js` fails when the two copies
+differ.
+
+What it costs
+-------------
+- Every update from mentorano's clean-code means copying six files twice. The test catches a
+  missed copy, but a person still does the copy.
+- Each new stack that wants the same measurement (a Python stack, for example) adds a third
+  copy, and the test must grow to cover it.
+- The same limit blocks other sharing: a gate skill that two stacks want, a fix guide that two
+  plugins want, or a shared rules file. Each one must be copied today.
+- The standalone `clean-code` and the gate in `orc-standard-workflow` both have a skill named
+  `clean-code`. They are namespaced, so they do not clash, but the standalone one may trigger
+  by its description during a run.
+
+Options for a redesign
+----------------------
+1. **A third kind of plugin that orchestra resolves.** For example a `shared` or `tools` slot,
+   or a `requires` list in the declaration (`"requires": ["clean-code"]`). Resolution invokes
+   each required plugin's `manifest`, writes its folder to `resolved.json`, and a new
+   placeholder (`{plugin:clean-code}`) expands to it. `check.js` checks that the required
+   plugin is resolved and that a named skill exists in it.
+   Cost: a contract change in `check.js`, `gates.js`, `resolved.js`, the `run` and `init` skills
+   and `writing-plugins`; one more manifest call per run; a missing required plugin must stop
+   the run with a clear fix.
+2. **Qualified skill names only.** Allow `skill` and `measure.rules` to be `<plugin>:<skill>`.
+   The harness loads a skill by its qualified name, so no folder is needed for skills. It does
+   not solve scripts: a command still needs a folder.
+   Cost: small, but it covers only half of the problem.
+3. **Ship the scripts as a package.** Publish the measurement as a pip or npm package, and let
+   the `measure` command call it (`pipx run ...`, `npx ...`). No plugin needs the files.
+   Cost: a release process, a network or install step on every machine, and a version to pin.
+4. **Keep the copies (today).** A generator script copies the files and the test checks them.
+   Cost: the manual sync, which grows with each stack.
+
+Recommendation
+--------------
+When a second shared need shows up (a second stack that wants the measurement, or a gate skill
+that two stacks want), do option 1. It removes the copies and every later case. Option 2 alone
+can come earlier if only skills need to be shared. Until then, keep the copies and the identity
+test.
+
+Where it is recorded
+--------------------
+- `docs/TENSIONS.md` and `docs/DECISIONS.md`, S75 ("Cost and risk": the scripts exist twice).
+- `docs/PORTING.md`, section "ai-marketplace-mentorano", the scripts subsection.
+- The test: `test/orc-ts-stack/measure.test.js`, "the scripts are the same as in the standalone
+  clean-code plugin".
