@@ -21,7 +21,7 @@ Look at the list of skills available to you. Each skill named `<plugin>:manifest
 plugin that can fill a slot.
 
 If the list shows no manifest skills, ask the user for the name of the workflow plugin and of the
-Stack Skills plugin. Offer `orc-standard-workflow` and `orc-java-stack` as the defaults.
+Stack Skills plugin. Offer `orc-standard-workflow` as the default workflow plugin, and `orc-java-stack` and `orc-ts-stack` as the Stack Skills plugins.
 
 For each plugin, invoke the skill `<plugin>:manifest`. It answers with one line,
 `PLUGIN_DIR=<folder>`. Read `<folder>/orchestra.json`. Its `slot` is `workflow` or `stack-skills`.

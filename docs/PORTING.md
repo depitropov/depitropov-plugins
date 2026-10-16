@@ -757,3 +757,25 @@ Source: `~/Projects-other/ai-marketplace-mentorano/plugins/clean-code`, version 
 |---|---|---|---|
 | Whole files, path constants changed | `test/clean-code/` | ported | yes |
 | `test_skills.py` (marketplace frontmatter) | `test/packaging.test.js` checks every plugin | n/a (this repo has its own check) | no |
+
+#### skills/clean-code/measure.py, languages.py, shape.py, compare.py, revisions.py, measure-ts.mjs
+
+| Part | Where now | Status | Applicable? |
+|---|---|---|---|
+| Whole files: shape per function and file, `--changed`, `--at`, `--compare` verdicts | `plugins/orc-ts-stack/scripts/` (byte-identical to `plugins/clean-code`), run by the `measure` of `orc-ts-stack` (S75) | ported (copy) | yes |
+| Python measurement inside `languages.py` | `plugins/orc-ts-stack/scripts/languages.py`; measures a changed `.py` file in a TS project too | ported (copy) | yes |
+| Thresholds by flag (`--max-lines` and the others) | not exposed: the measure command uses the defaults | dropped (S75: a config key when a project needs it) | yes |
+
+#### skills/clean-code-typescript/SKILL.md
+
+| Part | Where now | Status | Applicable? |
+|---|---|---|---|
+| Companion note, project file outranks | `orc-ts-stack:clean-code-typescript` intro; gate step 5 | ported | yes |
+| Rules, TypeScript shape (strict, unions, Props, hooks, query keys, dependency arrays, one job, explicit states, eslint-disable reason, early return, tests) | TS rules 1–11 | ported | yes |
+| Layer defaults, direction, feature grouping, smell table | "Layers of a React app"; Phase 1 and 3 references become gate rules 11 and 13 | ported | yes |
+| `console.log`, `as any`, `@ts-ignore` not listed | the "Not listed" paragraph | ported | yes |
+| Measuring: the command | the stack's `measure` (S75) | ported (other mechanism) | yes |
+| Measuring: the `typescript` package, TS 7, what counts as a function, test files | "Reading the measurement" | ported | yes |
+| Two greps | "Two searches", tied to TS rules 4 and 5 | ported | yes |
+| A hit in an untouched file is context | "Two searches", last line | ported | yes |
+| What not to do: no `helpers.ts`, one URL-state owner, create the hook, fix the dependency source, do not silence `exhaustive-deps` | TS rules 12, 13, 4, 6 | ported | yes |

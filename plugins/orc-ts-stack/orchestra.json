@@ -1,0 +1,7 @@
+{
+  "slot": "stack-skills",
+  "config": {},
+  "build": { "run": "npm ci && npm test", "guide": "fix-build", "max_rounds": 3 },
+  "measure": { "run": "python3 \"{plugin}/scripts/measure.py\" . --changed --base {base} --compare", "rules": "clean-code-typescript" },
+  "gates": []
+}
