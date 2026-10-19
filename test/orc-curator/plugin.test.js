@@ -39,14 +39,27 @@ test('the templates and references name no minions paths, modes or state', () =>
   }
 });
 
-test('the minimal setup copies the templates into docs/curator and writes the flag last', () => {
+test('setup bootstraps from the templates, runs the interviews and the sweep, and writes the flag last', () => {
   const text = read('skills/setup/SKILL.md');
   assert.match(text, /docs\/curator\//);
+  assert.match(text, /Do not copy `CONTEXT\.md`/);
+  assert.match(text, /never overwrite/i);
+  for (const s of ['orc-curator:shape-product', 'orc-curator:shape-tech', 'orc-curator:direction']) assert.ok(text.includes(s), s);
+  assert.match(text, /Caller: setup/);
+  assert.match(text, /template-shaped/);
   assert.match(text, /docs\/curator\/\.setup/);
   assert.match(text, /last/);
-  assert.match(text, /never overwrite/i);
-  assert.match(text, /Do not copy `CONTEXT\.md`/);
-  assert.doesNotMatch(text, /`QUESTIONS\.md`,\s+`CONTEXT\.md`/);
+  assert.match(text, /\{ "status": "ok" \}/);
+  assert.match(text, /except the result file/);
+  assert.doesNotMatch(text, /\/minions:|\.minions|STATE\.md|config\.yml|\bmaintain\b|\bvibe\b|--auto/);
+});
+
+test('setup reshapes a set-up project on approval and always ends with the sweep', () => {
+  const text = read('skills/setup/SKILL.md');
+  assert.match(text, /reshape/i);
+  assert.match(text, /approv/i);
+  assert.match(text, /every open `Qn`/);
+  assert.match(text, /edit `docs\/curator\/BACKLOG\.md` by hand/);
 });
 
 test('the interview and research references are shipped', () => {

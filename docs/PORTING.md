@@ -766,7 +766,7 @@ General notes:
 | "A sweep, not a designer"; nearest sibling is curate | `orc-curator:direction` | ported | yes |
 | The gap it closes: planner gated to one feature, spec forbidden to design, so the first feature sets the shape | `orc-curator:direction` | ported | yes |
 | Callers table: backlog, curate, shape-project, direct | `orc-curator:direction` callers: `curate` (`Caller: curate` + diff evidence), `backlog`, `setup`, by hand | ported (changed, S76) | yes |
-| Callers: curate only routes here (HITL), not a mandate | — | dropped (S76: curate runs the sweep in every run; sure `Cn`s committed, the rest a Decide) | no |
+| Callers: curate only routes here (HITL), not a mandate | — | dropped (S76: curate runs the sweep in every run; sure `Cn`s committed, for the rest the Curator asks the user) | no |
 | Step 1: resolve `.minions/` or `docs/minions/` roots, `.minions-root`, `disabled` | fixed docs folder `docs/curator/` | dropped (S76: fixed folder) | no |
 | Step 1: stop when no `config.yml`, run init first | `orc-curator:direction` Step 1: no `docs/curator/` → tell the user to run `orc-curator:setup`, `Result: blocked` | ported (changed, S76) | yes |
 | Step 1: read `mode`, `auto`, `questions` from `config.yml` | — | dropped (S76: one mode; no Curator config yet) | no |
@@ -928,42 +928,42 @@ General notes:
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Purpose: capture what the project is for and built on; intent only, never code, spec or plan | `orc-curator:setup` intro | planned (Curator plan, S76) | yes |
-| Re-runnable, unlike init; intent changes and must be revisable | `orc-curator:setup`; orchestra calls it when the Curator's setup flag is missing, the user can run it again by hand | planned (Curator plan, S76) | yes |
+| Purpose: capture what the project is for and built on; intent only, never code, spec or plan | `orc-curator:setup` intro | ported | yes |
+| Re-runnable, unlike init; intent changes and must be revisable | `orc-curator:setup`; orchestra calls it when the Curator's setup flag is missing, the user can run it again by hand | ported | yes |
 | Step 1: `.minions/` or `docs/minions/` roots, `.minions-root` override, `disabled` | the fixed docs folder | dropped (S76: one fixed folder, no roots) | no |
 | Step 1: no `config.yml` → run `/minions:init` first; init hands off into this skill | `orchestra:init` and the setup flag; orchestra calls `setup` | dropped (S76: orchestra:init and the setup flag replace minions init) | no |
 | Step 1: re-attach a missing STATE.md; read `mode` and `auto` from config, `--auto` override | — | dropped (S76: orchestra owns run state; no modes; no auto pause) | no |
 | Step 1.5: stop in `maintain`, offer own docs or `mode: vibe` | — | dropped (S76: maintain is a project without the Curator) | no |
 | Step 2: stop when another workflow owns the cursor | — | dropped (S76: orchestra owns run state; setup runs before the workflow's first stage) | no |
 | Step 2: resume after the product half from STATE (`arch/tech next`) | — | dropped (S76: no STATE; fill-state routing below is the resume signal) | no |
-| Step 2: route on fill state: template-shaped PRODUCT → bootstrap; PRODUCT real and TECH template-shaped → tech half; both real → reshape | `orc-curator:setup` step 1 | planned (Curator plan, S76) | yes |
-| Step 2: what "template-shaped" means (bracket placeholders, `_none yet_`, commented example) | `orc-curator:setup` step 1 | planned (Curator plan, S76) | yes |
-| Step 3: invoke shape-product with the idea; do not duplicate its questions or answer tech for it | `orc-curator:setup` → `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
+| Step 2: route on fill state: template-shaped PRODUCT → bootstrap; PRODUCT real and TECH template-shaped → tech half; both real → reshape | `orc-curator:setup` step 3 | ported | yes |
+| Step 2: what "template-shaped" means (bracket placeholders, `_none yet_`, commented example) | `orc-curator:setup` step 3 | ported | yes |
+| Step 3: invoke shape-product with the idea; do not duplicate its questions or answer tech for it | `orc-curator:setup` → `orc-curator:shape-product` | ported | yes |
 | Step 3: stop after the product half unless `auto` | — | dropped (S76: no auto mode; setup runs both halves in one call, the user is present) | no |
-| Step 4: tech is discussed only here, through three calls; each caller owns the cursor | `orc-curator:setup` step 4 (the cursor part is n/a) | planned (Curator plan, S76) | yes |
-| Step 4a: shape-tech walks the dimensions, commits only the minimum spine with no code | `orc-curator:setup` → `orc-curator:shape-tech` | planned (Curator plan, S76) | yes |
-| Step 4b: show the backlog (counts per horizon and rows), offer to arrange it, call backlog if wanted | `orc-curator:setup` → `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Step 4b: order matters: groom before the sweep, so the ledger matches the arrangement | `orc-curator:setup` step 4 | planned (Curator plan, S76) | yes |
-| Step 4c: direction sweep, every near-term row owes a verdict | `orc-curator:setup` → `orc-curator:direction` | planned (Curator plan, S76) | yes |
-| Why calls and not own interviews: one flow, several callers | `orc-curator:setup` note | planned (Curator plan, S76) | yes |
-| Step 5.1: state back PRODUCT, TECH spine and backlog counts per horizon; count only live `Qn`; delete the example block | `orc-curator:setup` reshape | planned (Curator plan, S76) | yes |
-| Step 5.2: walk every open `Qn` by id; settled → `Dn` first (`hard:`/`soft:`), flip to `answered → Dn`, keep the entry, add a `Bn` if work; tech dimension → shape-tech and direction write | `orc-curator:setup` reshape | planned (Curator plan, S76) | yes |
-| Step 5.3: ask what else changed; new unknowns → new `Qn` (highest plus one, never reused) | `orc-curator:setup` reshape | planned (Curator plan, S76) | yes |
-| Step 5.4: propose an edit list and diff, write only on approval | `orc-curator:setup` reshape | planned (Curator plan, S76) | yes |
-| Step 5.5: reversals append a new `Dn`; the reopened `Qn` goes back to open | `orc-curator:setup` reshape | planned (Curator plan, S76) | yes |
-| Step 5.6: always finish with the sweep, unconditionally; show the backlog first if rows moved | `orc-curator:setup` reshape | planned (Curator plan, S76) | yes |
+| Step 4: tech is discussed only here, through three calls; each caller owns the cursor | `orc-curator:setup` step 5 (the cursor part is n/a) | ported | yes |
+| Step 4a: shape-tech walks the dimensions, commits only the minimum spine with no code | `orc-curator:setup` → `orc-curator:shape-tech` | ported | yes |
+| Step 4b: show the backlog (counts per horizon and rows), offer to arrange it, call backlog if wanted | `orc-curator:setup` step 5 (b): shows the backlog; `orc-curator:backlog` is not built yet, so the user edits `docs/curator/BACKLOG.md` by hand and setup waits | ported (changed, S76: backlog comes in plan 4) | yes |
+| Step 4b: order matters: groom before the sweep, so the ledger matches the arrangement | `orc-curator:setup` step 5 (b) | ported | yes |
+| Step 4c: direction sweep, every near-term row owes a verdict | `orc-curator:setup` → `orc-curator:direction` | ported | yes |
+| Why calls and not own interviews: one flow, several callers | `orc-curator:setup` note | ported | yes |
+| Step 5.1: state back PRODUCT, TECH spine and backlog counts per horizon; count only live `Qn`; delete the example block | `orc-curator:setup` step 6 (reshape) | ported | yes |
+| Step 5.2: walk every open `Qn` by id; settled → `Dn` first (`hard:`/`soft:`), flip to `answered → Dn`, keep the entry, add a `Bn` if work; tech dimension → shape-tech and direction write | `orc-curator:setup` step 6 (reshape) | ported | yes |
+| Step 5.3: ask what else changed; new unknowns → new `Qn` (highest plus one, never reused) | `orc-curator:setup` step 6 (reshape) | ported | yes |
+| Step 5.4: propose an edit list and diff, write only on approval | `orc-curator:setup` step 6 (reshape) | ported | yes |
+| Step 5.5: reversals append a new `Dn`; the reopened `Qn` goes back to open | `orc-curator:setup` step 6 (reshape) | ported | yes |
+| Step 5.6: always finish with the sweep, unconditionally; show the backlog first if rows moved | `orc-curator:setup` step 6 (reshape) | ported | yes |
 | Step 6: STATE in-flight and complete forms, Step token enum, Workflow back to `none`, never overwrite another cursor | — | dropped (S76: orchestra owns run state) | no |
-| Step 6: suggest `/minions:feature`; report the `Cn` count | `orc-curator:setup` result; next step is `orchestra:run` | planned (Curator plan, S76: other next step) | yes |
+| Step 6: suggest `/minions:feature`; report the `Cn` count | `orc-curator:setup` step 8: relay the `Cn` count; next step is `orchestra:run` or curate by hand | ported (changed, S76) | yes |
 | Step 6: Stop-hook journal-pressure check depends on Workflow `none` | — | n/a (journal and hooks are in the dropped code-knowledge half, S76) | no |
-| Return block: Result, Wrote, Summary, Open questions, Coverage, Worth reopening, Warnings, Next | `orc-curator:setup` result JSON and relay | planned (Curator plan, S76) | yes |
-| Hard gate: intent only; writes PRODUCT, BACKLOG, DECISIONS, QUESTIONS; TECH is shape-tech's, DIRECTION is direction's | `orc-curator:setup` hard gate | planned (Curator plan, S76) | yes |
+| Return block: Result, Wrote, Summary, Open questions, Coverage, Worth reopening, Warnings, Next | `orc-curator:setup` step 8: result JSON (`ok`, or `failed` with a reason) and the relay | ported (changed, S76) | yes |
+| Hard gate: intent only; writes PRODUCT, BACKLOG, DECISIONS, QUESTIONS; TECH is shape-tech's, DIRECTION is direction's | `orc-curator:setup` hard gate: each file through its owner; setup writes the bootstrap copy, the approved reshape edits, the commits and the flag | ported (changed, S76) | yes |
 | Hard gate: vibe only, never create PRODUCT or TECH in maintain | — | dropped (S76: no modes) | no |
-| Hard gate: four skills only; never research directly; never init | `orc-curator:setup` hard gate (init part n/a) | planned (Curator plan, S76) | yes |
-| Hard gate: no loop; specify moves rows to Now, curate to Shipped; never run features | `orc-curator:setup` hard gate; in orchestra only curate writes rows during a run | planned (Curator plan, S76: spec only reads) | yes |
-| Hard gate: horizons are confidence bands, not a roadmap; no order inside a section, no estimates; broad rows broken down carry `from Bn` | `orc-curator:setup` and `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Hard gate: a question is never a backlog row | `orc-curator:setup` hard gate | planned (Curator plan, S76) | yes |
-| Hard gate: QUESTIONS never blocks | `orc-curator:setup` hard gate | planned (Curator plan, S76) | yes |
-| Hard gate: no commits | `orc-curator:setup`: commits the docs and the setup flag (on the task branch when orchestra calls it) | planned (Curator plan, S76: changed, the flag needs a commit) | yes |
+| Hard gate: four skills only; never research directly; never init | `orc-curator:setup` hard gate (init part n/a) | ported | yes |
+| Hard gate: no loop; specify moves rows to Now, curate to Shipped; never run features | `orc-curator:setup` hard gate: no runs; no run moves a row to Now, setup only when the user says so | ported (changed, S76: spec only reads) | yes |
+| Hard gate: horizons are confidence bands, not a roadmap; no order inside a section, no estimates; broad rows broken down carry `from Bn` | `orc-curator:setup` hard gate (`orc-curator:backlog` in plan 4) | ported | yes |
+| Hard gate: a question is never a backlog row | `orc-curator:setup` hard gate | ported | yes |
+| Hard gate: QUESTIONS never blocks | `orc-curator:setup` hard gate | ported | yes |
+| Hard gate: no commits | `orc-curator:setup`: commits the docs and the setup flag (on the task branch when orchestra calls it) | ported (changed, S76: it commits; the caller of `direction` owns the commit, and the flag needs a commit) | yes |
 
 #### skills/shape-product/SKILL.md
 
