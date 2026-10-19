@@ -229,7 +229,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--line);
 <div class="shell">
 <nav class="rail" aria-label="Guide sections">
   <div class="brand">Orchestra</div>
-  <div class="ver">Field guide · plugins 0.14.0 · decisions to S76</div>
+  <div class="ver">Field guide · plugins 0.15.0 · decisions to S76</div>
   <ol>
     <li><a class="lvl" href="#l1"><span class="n">1</span> What it does</a>
       <ul><li><a href="#delivers">What it delivers</a></li><li><a href="#what">The result</a></li><li><a href="#why">Why use it</a></li><li><a href="#philosophy">Many gates, one workflow</a></li><li><a href="#explore">Explore a run</a></li></ul></li>
@@ -766,7 +766,7 @@ Evaluate
 
   <h3 id="setup">Set up and start</h3>
   <p>The quick way: install the three plugins and ask your AI tool for <code>orchestra init</code>. It asks which workflow and which stack plugin to use, writes <code>.orchestra/config.json</code>, adds the <code>.gitignore</code> lines, and runs <code>orchestra check</code> on the result. It commits nothing; you commit the two files.</p>
-  <p>A fourth plugin is optional: a Curator, in the <code>curator</code> slot. <code>orchestra init</code> asks if you want one. Without it, the run works as before. The <code>orc-curator</code> plugin is built. Its <code>setup</code> is minimal for now: it copies the templates into <code>docs/curator/</code>. The setup interview is not built yet (see Built and not built).</p>
+  <p>A fourth plugin is optional: a Curator, in the <code>curator</code> slot. <code>orchestra init</code> asks if you want one. Without it, the run works as before. The <code>orc-curator</code> plugin is built. Its <code>setup</code> runs once, in the main session. It copies the templates into <code>docs/curator/</code> and checks what is already filled. Then it runs <code>shape-product</code>, the product interview, in batches of 3 to 5 questions. On a project with code, it reads the README and the code first and states the existing product back to you. Then it runs <code>shape-tech</code>, the tech interview, one question at a time over six capability dimensions. On existing code, it records what the code shows and invents no decision. Setup then shows the backlog, runs the direction sweep, commits once, and writes the flag file last. Until the <code>backlog</code> skill exists, you edit the backlog by hand; in a run, the file is in the run's worktree. If you stop the product interview, setup writes no flag, so it runs again. An open tech or direction question does not stop setup. On a project that is already set up, setup reshapes the docs only when you approve. <code>backlog</code> and <code>research</code> are not built yet (see Built and not built).</p>
   <p>By hand, your project needs four things:</p>
   <ul>
     <li>The three plugins installed: <code>orchestra</code>, <code>orc-standard-workflow</code> and a stack plugin such as <code>orc-java-stack</code> or <code>orc-ts-stack</code>.</li>
@@ -894,7 +894,7 @@ orchestra run                                            # continue a stopped ru
     <div class="layer st"><div class="who">Stack Skills<small>orc-ts-stack</small></div><div>TypeScript: the build (<code>npm ci &amp;&amp; npm test</code>), a <code>measure</code> command and the clean-code-typescript rules. No gates yet. It needs Python 3.11 or newer and the project's <code>typescript</code> 5.</div></div>
     <div class="layer pr"><div class="who">Project<small>.orchestra/config.json</small></div><div>Your choices: which plugins, which checks are off, how many fix rounds, your naming patterns.</div></div>
     <div class="layer pr later"><div class="who">Project rules<small>later</small></div><div>Rules for one project that override the stack, including its build.</div></div>
-    <div class="layer pr"><div class="who">Curator<small>orc-curator</small></div><div>Optional. Keeps your backlog, direction and decisions in <code>docs/curator/</code> current. Its guides tell each agent how to read them, and its <code>curate</code> step runs at the end of a run. Its setup interview, <code>backlog</code> and <code>research</code> are not built yet.</div></div>
+    <div class="layer pr"><div class="who">Curator<small>orc-curator</small></div><div>Optional. Keeps your backlog, direction and decisions in <code>docs/curator/</code> current. Its guides tell each agent how to read them, and its <code>curate</code> step runs at the end of a run. Its <code>setup</code> interviews you about the product and the tech. <code>backlog</code> and <code>research</code> are not built yet.</div></div>
   </div>
   <h4>What you can set</h4>
 <pre><code>{
@@ -960,7 +960,7 @@ orchestra run                                            # continue a stopped ru
   <figcaption>Red marks the three places a run can stop for a human. Each stop comes before the work that would build on a guess. The Java stack brings six gates: ops in implementation-check, testing in conventions-check, and comments, logging, layout and Spotless in finish.</figcaption>
   </figure>
 
-  <p>One more kind of step runs in the main session, with you, and not in a fresh agent. When a Curator is set up, its <code>setup</code> runs once, before the first stage, while its flag file is missing. Its <code>curate</code> runs when the workflow is done, before the report. Both can ask you questions and start subagents. <code>curate</code> is the only writer of the Curator's docs in a run: it moves the served backlog row to Shipped, records what the run decided, runs the <code>direction</code> sweep that writes new constraints, asks you each judgement call as it comes, and commits once. If a run stops while a Curator skill is running, the resume tells the agent to discard that skill's files and run it again.</p>
+  <p>One more kind of step runs in the main session, with you, and not in a fresh agent. When a Curator is set up, its <code>setup</code> runs once, before the first stage, while its flag file is missing. Its <code>curate</code> runs when the workflow is done, before the report. Both can ask you questions and start subagents. <code>setup</code> is the interview: it shapes the product and tech docs with you and ends with the flag file. <code>curate</code> is the only writer of the Curator's docs in a run: it moves the served backlog row to Shipped, records what the run decided, runs the <code>direction</code> sweep that writes new constraints, asks you each judgement call as it comes, and commits once. If a run stops while a Curator skill is running, the resume tells the agent to discard that skill's files and run it again.</p>
 
   <h4>Technical choice or business fact</h4>
   <p>This split runs through every step. A <strong>technical choice</strong> has a sensible default: the rounding mode, null handling, the order of two steps. The agent takes the default and records it, and the report shows it to you. A <strong>business fact</strong> never has a default: a rate, a price, a limit value, who qualifies. An invented fact is the one mistake a later review cannot see, because the code and the tests agree with each other and both are wrong. So business facts always come to you.</p>
@@ -1277,7 +1277,7 @@ orchestra run                                            # continue a stopped ru
       <tr><td>S72, S73</td><td>Phase 1 is closed on Claude Code. The Codex run moves to plan 5, which stays paused.</td><td>The exit test passed; no Codex install is available.</td></tr>
       <tr><td>S74</td><td>Every run works in its own git worktree.</td><td>From the first real run: a run moved the user's branch (O9).</td></tr>
       <tr><td>S75</td><td>Clean code is a workflow gate, and a Stack Skills plugin may declare a <code>measure</code>. New stack plugin <code>orc-ts-stack</code>.</td><td>User decision.</td></tr>
-      <tr><td>S76</td><td>The Curator is an optional slot plugin that also works by hand. Guides are given by role, and orchestra lists them in the prompt of each dispatch. Its <code>setup</code> and <code>curate</code> run in the main session through a new <code>inline</code> action. Plan 2 amendment: <code>curate</code> ships a <code>Serves</code> row found in Later, and it checks Now, Next and Later and asks you before it adds a row for <code>Serves: new</code>, so no row is duplicated. The plan guide writes a <code>Warning:</code> line for a constraint it cannot satisfy, and plan-check raises a missing one as Patch.</td><td>User decision, brainstorm of October 16. It closes O3.</td></tr>
+      <tr><td>S76</td><td>The Curator is an optional slot plugin that also works by hand. Guides are given by role, and orchestra lists them in the prompt of each dispatch. Its <code>setup</code> and <code>curate</code> run in the main session through a new <code>inline</code> action. Plan 2 amendment: <code>curate</code> ships a <code>Serves</code> row found in Later, and it checks Now, Next and Later and asks you before it adds a row for <code>Serves: new</code>, so no row is duplicated. The plan guide writes a <code>Warning:</code> line for a constraint it cannot satisfy, and plan-check raises a missing one as Patch. Plan 3 amendment: <code>setup</code> writes its flag only when the product half is confirmed, so a stopped product interview runs setup again, and an open tech or direction question does not stop it. On a project with code, it states the existing product back and does not explore from zero.</td><td>User decision, brainstorm of October 16. It closes O3.</td></tr>
     </tbody>
   </table></div>
   <p>Each real run on a sample project fed back into the design. The first runs led to clearer errors, a skip for repeated builds, the Evaluate list in the report, the assumptions list, the business-fact stop, and the rebuilt logic review.</p>
@@ -1437,7 +1437,7 @@ orchestra run                                            # continue a stopped ru
   "setup": { "skill": "setup", "done": "docs/curator/.setup" },
   "guides": { "spec": "spec-guide", "plan": "plan-guide", "code": "code-guide" }
 }</code></pre>
-  <p>The optional <code>curator</code> slot declares <code>curate</code> (a skill) and <code>setup</code>, which is <code>{ "skill": "…", "done": "docs/curator/.setup" }</code>, with <code>guides</code> as an option. <code>setup</code> runs inline while the <code>done</code> file is missing. <code>curate</code> runs inline at <code>done</code>, in the run's worktree, and it is the only writer of the direction docs in a run.</p>
+  <p>The optional <code>curator</code> slot declares <code>curate</code> (a skill) and <code>setup</code>, which is <code>{ "skill": "…", "done": "docs/curator/.setup" }</code>, with <code>guides</code> as an option. <code>setup</code> runs inline while the <code>done</code> file is missing, and <code>direction</code> can send one capability dimension to <code>shape-tech</code>. <code>curate</code> runs inline at <code>done</code>, in the run's worktree, and it is the only writer of the direction docs in a run.</p>
   <p><strong>Breaking change in 0.13.0.</strong> A workflow with no <code>roles</code>, paired with a stack that declares guides, now fails <code>orchestra check</code>. Add the roles to the workflow, or list the guides in <code>disable</code>. <code>check</code> also fails on a guide for a role the workflow lacks, unless <code>disable</code> names it.</p>
   <p>Every step writes a small result file that code reads:</p>
 <pre><code>{ "stage": "logic-review", "status": "ok",
@@ -1468,7 +1468,7 @@ orchestra run                                            # continue a stopped ru
     <text x="440" y="96" text-anchor="middle" class="sm b">plan 2</text><text x="440" y="110" text-anchor="middle" class="sm m">check, init</text>
     <text x="518" y="40" text-anchor="middle" class="sm b">plan 5</text><text x="518" y="54" text-anchor="middle" class="sm m">Codex, paused</text>
     <text x="596" y="96" text-anchor="middle" class="sm b">phase 2</text><text x="596" y="110" text-anchor="middle" class="sm m">CRAP, mutation</text>
-    <text x="710" y="40" text-anchor="end" class="sm b">later</text><text x="710" y="54" text-anchor="end" class="sm m">Curator plans 3-4, PSK, adapters</text>
+    <text x="710" y="40" text-anchor="end" class="sm b">later</text><text x="710" y="54" text-anchor="end" class="sm m">Curator plan 4, PSK, adapters</text>
     <polygon points="479,80 473,90 485,90" class="stopb"/><text x="479" y="134" text-anchor="middle" class="sm tr">phase 1 closed</text>
   </svg></div>
   <figcaption>Filled dots are done (October 1 to 14, 2026). Phase 1 closed on October 14, after the exit-test run on Claude Code. Dashed rings are paused or later work; the next plan is not chosen yet.</figcaption>
@@ -1489,8 +1489,9 @@ orchestra run                                            # continue a stopped ru
       <tr><td>A tested run on Codex</td><td><span class="pill later">plan 5, paused</span></td></tr>
       <tr><td>Complexity (CRAP) and mutation testing gates</td><td><span class="pill later">phase 2</span></td></tr>
       <tr><td>Guides by role, the optional <code>curator</code> slot, the <code>inline</code> action and <code>lib/curator.js</code> (S76, plan 1)</td><td><span class="pill built">built</span></td></tr>
-      <tr><td>The <code>orc-curator</code> plugin: <code>curate</code>, <code>direction</code>, a minimal <code>setup</code>, the three guides and the templates (S76, plan 2)</td><td><span class="pill built">built</span></td></tr>
-      <tr><td>The Curator setup interview (plan 3), and <code>backlog</code> and <code>research</code> (plan 4)</td><td><span class="pill later">not built yet</span></td></tr>
+      <tr><td>The <code>orc-curator</code> plugin: <code>curate</code>, <code>direction</code>, <code>setup</code>, the three guides and the templates (S76, plan 2)</td><td><span class="pill built">built</span></td></tr>
+      <tr><td>The Curator setup interview: <code>setup</code>, <code>shape-product</code> and <code>shape-tech</code> (S76, plan 3)</td><td><span class="pill built">built</span></td></tr>
+      <tr><td>The Curator <code>backlog</code> and <code>research</code> skills (plan 4)</td><td><span class="pill later">not built yet</span></td></tr>
       <tr><td>Project rules, adapters for other AI frameworks</td><td><span class="pill later">later</span></td></tr>
     </tbody>
   </table></div>
@@ -1502,6 +1503,7 @@ orchestra run                                            # continue a stopped ru
     <dt>Stack Skills</dt><dd>The plugin with the build, guides and reviewers for one language stack.</dd>
     <dt>Slot</dt><dd>A named place in the config that one plugin fills: <code>workflow</code>, <code>stack-skills</code> or the optional <code>curator</code>.</dd>
     <dt>Curator</dt><dd>The plugin in the <code>curator</code> slot. It keeps the project's direction docs in <code>docs/curator/</code> current. Its <code>setup</code> and <code>curate</code> run inline.</dd>
+    <dt>Setup</dt><dd>The Curator's first skill. It runs once, in the main session: the product interview, the tech interview, the backlog, the direction sweep, one commit, then the flag file.</dd>
     <dt>Direction sweep</dt><dd>The Curator's <code>direction</code> skill. It compares the near-term backlog rows with the direction file and writes a constraint (<code>Cn</code>) for each row that puts a demand on code written today.</dd>
     <dt>Role</dt><dd>What a workflow stage does: <code>spec</code>, <code>plan</code> or <code>code</code>. The workflow declares its roles and tags each dispatch.</dd>
     <dt>Inline</dt><dd>An action that only <code>drive.js</code> prints. The main session runs the skill itself, so it can ask you.</dd>
@@ -1524,7 +1526,7 @@ orchestra run                                            # continue a stopped ru
 </section>
 
 <footer>
-  This guide matches plugin version 0.14.0 and decisions up to S76. The sources of truth are <code>docs/DESIGN.md</code>, <code>docs/TENSIONS.md</code>, <code>docs/DECISIONS.md</code>, <code>docs/CONTEXT.md</code> and the code in <code>plugins/</code>.
+  This guide matches plugin version 0.15.0 and decisions up to S76. The sources of truth are <code>docs/DESIGN.md</code>, <code>docs/TENSIONS.md</code>, <code>docs/DECISIONS.md</code>, <code>docs/CONTEXT.md</code> and the code in <code>plugins/</code>.
 </footer>
 </main>
 </div>
