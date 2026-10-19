@@ -41,3 +41,12 @@ test('shape-tech keeps the evidence gate and writes each dimension in one place'
   assert.match(t, /never .*`docs\/curator\/DIRECTION\.md`|Never `DIRECTION\.md`|never write a `Cn`/i);
   for (const line of ['Result:', 'Constraints owed:', 'Worth reopening:']) assert.ok(t.includes(line), line);
 });
+
+test('shape-tech pins its callers, the no-commit rule and the DIRECTION.md hard gate', () => {
+  const t = read('shape-tech');
+  assert.ok(t.includes('`Caller: setup`'));
+  assert.ok(t.includes('`Caller: direction`'));
+  assert.ok(t.includes('exactly one named dimension'));
+  assert.ok(t.includes('do not commit: the caller\ncommits.'));
+  assert.ok(t.includes('**Never write `docs/curator/DIRECTION.md`**'));
+});

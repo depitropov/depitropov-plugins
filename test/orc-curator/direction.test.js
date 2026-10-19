@@ -33,3 +33,8 @@ test('it names its callers and ends with the return block', () => {
 test('it carries no minions state or modes', () => {
   assert.doesNotMatch(text, /STATE\.md|config\.yml|\.minions|\/minions:|\bmaintain\b|\bvibe\b/);
 });
+
+test('it reads the owed constraints and passes the reopening line on', () => {
+  assert.match(text, /Read its `Constraints owed:` line and give a verdict for each item/);
+  assert.match(text, /Show its `Worth reopening:` line to the user as it is/);
+});

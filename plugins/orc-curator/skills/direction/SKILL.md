@@ -115,7 +115,7 @@ you skip in silence looks the same as a row that you never saw.
 | **write a `Cn`** | the row demands something of the code written now | Step 5 |
 | **research first** | the demand depends on how the world works, not on what the user wants (see below) | invoke `orc-curator:research` (Step 4), then give the verdict again |
 | **open a `Qn`** | the gap is a *product* question: what the user wants, who it is for, which behaviour | write a `## Qn — <question> · open` entry and go on. The spec of a later run settles it. **But** when it constrains the code written now, it is a `Cn` |
-| **escalate one dimension** | the row sets or changes a **capability dimension**: runs-as, deploys-to, persists, integrates-with, authenticates, a hard constraint | invoke `orc-curator:shape-tech` for **that one dimension**, with the line `Caller: direction`. Use its answer, then write your `Cn` |
+| **escalate one dimension** | the row sets or changes a **capability dimension**: runs-as, deploys-to, persists, integrates-with, authenticates, a hard constraint | invoke `orc-curator:shape-tech` for **that one dimension**, with the line `Caller: direction`. Use its answer, then write your `Cn`. Read its `Constraints owed:` line and give a verdict for each item in the same sweep: a `Cn` with `from Bn`, or `no constraint`. Show its `Worth reopening:` line to the user as it is. You never edit a `Dn` |
 | **purpose change** | the row changes what the product is *for*, or who it is for | **stop and name it:** "this changes who the product is for: run `orc-curator:setup`". Do not run a small product interview yourself. A purpose change needs the full setup, and a human who chooses to start it |
 
 **Escalate to `shape-tech`. Never write `TECH.md` yourself.** A capability dimension is a row in
@@ -272,6 +272,8 @@ Summary: <one line per row evaluated, with its verdict>
 Escalated: <"shape-tech — <dimension>" | "setup — purpose change" | "none">
 Deviations/Warnings: <or "none">
 ```
+
+When `shape-tech` gave a `Worth reopening:` line that is not `none`, put it in `Deviations/Warnings:`, with the `soft:` `Dn` it names.
 
 `blocked` when `docs/curator/` does not exist. `needs-input` when a question that changes a
 constraint needs the user and the user cannot answer now. `ok` when each near-term row has a

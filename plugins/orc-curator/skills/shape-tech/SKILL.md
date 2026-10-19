@@ -187,7 +187,7 @@ reversal is a **new** `Dn` that the user asks for.
 
 **When a call you just settled puts a demand on the code written now, say so, and never write a
 `Cn`.** Name it in the relay as a constraint owed. `direction` writes the constraints. When it
-invoked you, it writes yours as soon as you return.
+invoked you, it reaches a verdict for each of yours in the same sweep, as soon as you return.
 
 When a caller invoked you, give this back and let it continue. When the user ran you by hand, stop
 and suggest `orchestra:run` for the next task.
