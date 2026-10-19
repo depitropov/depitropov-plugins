@@ -12,7 +12,7 @@
 > go on because an entry is open. To close entries is good, but never required.
 >
 > Written by `orc-curator:shape-product`, `orc-curator:shape-tech`, `orc-curator:direction`, and
-> `orc-curator:setup` when it reshapes (one entry at a time on every re-run). The curator also proposes to close an entry
+> `orc-curator:setup` when it reshapes (one entry at a time on every re-run), and `orc-curator:curate`, which opens a new `Qn` for each `Question` line of a run's brief. The curator also proposes to close an entry
 > when a shipped run settled it in code.
 >
 > **Delete the commented example block below when your first real entry lands.** Its `· open` text

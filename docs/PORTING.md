@@ -987,7 +987,7 @@ General notes:
 | Comparable products: 2–4, what each does well, falls short, one pattern | `orc-curator:shape-product` | ported | yes |
 | Capturing the shape and the wrap-up checklist (5 items, at least one Now row) | `orc-curator:shape-product` | ported (changed, S76: never commits; setup commits, by hand the user does) | yes |
 | How to ask: batch cadence, explain why, `AskUserQuestion` for options, do not ask what you can infer | `orc-curator:shape-product`; cites `references/interview-cadence.md` | ported (changed, S76: offer options, no tool name) | yes |
-| Where the idea comes from (arguments, conversation, PRODUCT, ask) | `orc-curator:shape-product` | ported | yes |
+| Where the idea comes from (arguments, conversation, PRODUCT, ask) | `orc-curator:shape-product` | ported (changed, S76: existing code → README and code first) | yes |
 | Where the shapes live: the plugin templates; copy a missing file | `orc-curator:shape-product` → `<plugin>/templates/` | ported | yes |
 | Anti-patterns (8) | `orc-curator:shape-product` | ported | yes |
 | Tone | `orc-curator:shape-product` | ported | yes |
@@ -997,7 +997,7 @@ General notes:
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
 | Purpose: settle the tech dimensions that outlive one feature; what in TECH, why in DECISIONS; altitude vs plan | `orc-curator:shape-tech` | ported | yes |
-| Callers: shape-project, all dimensions, no code | `orc-curator:setup` (`Caller: setup`) → `orc-curator:shape-tech` | ported (changed, S76: setup is the caller) | yes |
+| Callers: shape-project, all dimensions, no code | `orc-curator:setup` (`Caller: setup`) → `orc-curator:shape-tech`; evidence is the backlog, and the code when there is any | ported (changed, S76) | yes |
 | Callers: specify, one ground-shaping call mid-interview | — | dropped (S76: orchestra's spec stage does not interview and calls no Curator skill; a one-way tech fork found in a run is already a plan-check Decide, and curate can raise it as a question that names shape-tech for a run by hand) | no |
 | Callers: direction, exactly one named dimension | `orc-curator:direction` (`Caller: direction`) → `orc-curator:shape-tech` | ported | yes |
 | Callers: direct, by focus argument | `orc-curator:shape-tech` by hand; no focus means every dimension | ported (changed, S76: no `do` route) | yes |
@@ -1099,7 +1099,7 @@ General notes:
 |---|---|---|---|
 | Shared policy: rhythm only, no questions | `plugins/orc-curator/references/interview-cadence.md` | ported | yes |
 | Two cadences: batch of 3–5 (shape-product) vs one at a time (shape-tech, direction, specify); why the wrong one costs | `plugins/orc-curator/references/interview-cadence.md` | ported (changed, S76) | yes |
-| Budget from `config.yml` `questions` (none/few/regular/many) and never exceed it | `plugins/orc-curator/references/interview-cadence.md` | ported (changed, S76) | yes |
+| How many to ask: as few as the request needs; the count you need is a ceiling, not a quota; ask nothing if the request answers all | `plugins/orc-curator/references/interview-cadence.md` | ported (changed, S76) | yes |
 | Rules in both cadences (real options and what they foreclose, multiple choice with a recommendation, deferral is an answer, do not ask what you can infer, say why, ask only what changes a write) | `plugins/orc-curator/references/interview-cadence.md` | ported | yes |
 | Inside an orchestra run a question is a Decide | `plugins/orc-curator/references/interview-cadence.md` | ported (changed, S76) | yes |
 | What an answer is for: it lands somewhere durable in the same run | `plugins/orc-curator/references/interview-cadence.md` | ported | yes |
@@ -1146,7 +1146,7 @@ General notes:
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Shared policy, cited by five skills, no flow | `plugins/orc-curator/references/ask-vs-research.md` | ported | yes |
+| Shared policy, cited by shape-product and shape-tech (and research later), no flow | `plugins/orc-curator/references/ask-vs-research.md` | ported | yes |
 | Table: who can answer each type of question | `plugins/orc-curator/references/ask-vs-research.md` | ported | yes |
 | The two failure modes | `plugins/orc-curator/references/ask-vs-research.md` | ported | yes |
 | After the split: ask spends budget; research records nothing; a one-way door escalates | `plugins/orc-curator/references/ask-vs-research.md` | ported (changed, S76) | yes |

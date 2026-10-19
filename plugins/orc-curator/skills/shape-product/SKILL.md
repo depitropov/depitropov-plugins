@@ -90,6 +90,7 @@ COVERAGE
   [ ] Functional shape captured: problem, target user, core value, key behaviours, scope edges, non-goals
   [ ] Stayed functional: no tech or implementation talk
   [ ] The user confirmed the final shape
+  When the caller says the project has code, the two direction items cover only what is not built yet, and are n/a when nothing is.
 ```
 
 At the start of each turn after the first, show one line of status:
@@ -182,10 +183,10 @@ When the user says that it is good, check:
    bracket placeholders are left. A section with nothing true yet stays empty. Do not fill it with
    intent.
 2. `docs/curator/BACKLOG.md`: `## Vision` is prose. Each behaviour not built yet has a row under
-   `## Next`, and at least one row is in `## Now` so that work can start. Put a row in `## Now` only
+   `## Next`, and at least one row is in `## Now` so that work can start, or the user says none yet. Put a row in `## Now` only
    when the user says so: that is the user's intent, not a run. No row is a question ("decide …",
    "which …").
-3. `docs/curator/DECISIONS.md`: at least 2 discarded directions, each with its reason in `Why`.
+3. `docs/curator/DECISIONS.md`: at least 2 discarded directions, each with its reason in `Why`. When the project has code, this covers only what is not built yet, and is n/a when nothing is.
 4. `docs/curator/QUESTIONS.md`: one `## Qn … · open` section for each gray area left open on purpose,
    each with prose, not only one line. When the template's commented example block is still there,
    delete it with your first real entry.

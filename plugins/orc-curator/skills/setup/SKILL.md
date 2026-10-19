@@ -42,7 +42,7 @@ language…]`), `_none yet_`, or only the commented example block.
 
 ## Step 4: The product half
 
-Invoke `orc-curator:shape-product` and give it the user's idea, if there is one.
+Invoke `orc-curator:shape-product` and give it the user's idea, if there is one. In a run, the task text is a candidate `## Now` row to offer the user, not the product idea.
 
 When the project already has code (any source files outside `docs/`), say so in the call: it reads
 the README and the code first, states the existing product back to the user, writes it to
@@ -78,7 +78,7 @@ dimensions again and do not answer for it.
 from the product talk alone, before the tech was known, and (a) can change what looks near-term.
 Show the count per horizon and the rows, and ask if a row must move before the constraints are
 derived from them. `orc-curator:backlog` is not built yet: when the user wants changes, tell them to
-edit `docs/curator/BACKLOG.md` by hand now, and wait until they say that it is done. When they want
+edit `docs/curator/BACKLOG.md` by hand now, and wait until they say that it is done. In a run, give them the full path: the folder the prompt says to work in, plus `/docs/curator/BACKLOG.md`. Say that their checkout has no such file until the branch is merged. By hand, the path is the project's own `docs/curator/BACKLOG.md`. When they want
 no change, say so and continue. This is a pause for review, not a required grooming.
 
 The order is important: groom before the sweep. `direction` derives from `## Now` and `## Next` as
@@ -93,8 +93,8 @@ that does not exist yet, so the first run does not fill that gap by guessing. Gi
 A `needs-input` from shape-tech or direction does not stop setup: the open call is a `Qn`, and
 `QUESTIONS.md` never blocks. Name it in the relay.
 
-When direction returns `Escalated: setup — purpose change`, name it in the relay, and say that the
-next setup call runs the reshape (Step 6) for it.
+When direction returns `Escalated: setup — purpose change`, name it in the relay, and say to run
+`orc-curator:setup` by hand to reshape (Step 6) for it.
 
 Then go to Step 7.
 
@@ -141,14 +141,14 @@ Then go to Step 7.
 
 When orchestra runs you, write the result JSON to the path that the prompt names: `{ "status": "ok" }`
 when the flag is written. When the product half stopped, or on an error, write
-`{ "status": "failed", "reason": "<what stopped or failed>" }`.
+`{ "status": "failed", "reason": "<what stopped or failed>" }`. For a stopped product interview, end the reason with "Run orchestra run again to resume the product interview." (by hand: "Run setup again to resume.").
 
 Tell the user:
 
 - which files you wrote, and what the product and the spine are now;
 - the open `Qn` ids;
 - the sweep's `Coverage:` line and the `Cn` count;
-- a purpose change that direction escalated, and that the next setup call reshapes for it;
+- a purpose change that direction escalated, and that they run `orc-curator:setup` by hand to reshape;
 - shape-tech's `Worth reopening:` line word for word, or "none": only the user can reverse a
   `soft:` `Dn`;
 - in a run: the docs are on the run's task branch (in its worktree) until it is merged;

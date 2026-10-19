@@ -22,7 +22,7 @@ You run in the main session and ask the user, one question at a time.
 
 | Caller | Scope | Evidence in front of you |
 |---|---|---|
-| `setup` (the line `Caller: setup`) | every dimension that applies | the backlog, **no code** |
+| `setup` (the line `Caller: setup`) | every dimension that applies | the backlog, and the code when there is any |
 | `direction` (the line `Caller: direction`) | **exactly one named dimension** | the backlog row that changed it, and the code |
 | by hand | what the focus the user gave says; with no focus, every dimension | everything |
 

@@ -1,6 +1,6 @@
 # Ask the user, or research it?
 
-> **Shared policy.** `shape-product`, `shape-tech` and `direction` cite it. It is policy only: no
+> **Shared policy.** `shape-product` and `shape-tech` cite it. It is policy only: no
 > flow. Each skill keeps its own questions. This file only says **who can answer** one.
 
 For each gap, decide who can answer it. A wrong choice costs much in both directions. If you research

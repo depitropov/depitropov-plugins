@@ -1,6 +1,6 @@
 # Interview cadence
 
-> **Shared policy.** `shape-product`, `shape-tech` and `direction` cite it. It is policy only: no flow,
+> **Shared policy.** `shape-product` and `shape-tech` cite it. It is policy only: no flow,
 > and **none of the questions themselves.** What to ask is the business of each skill. This file is
 > only about rhythm and restraint.
 
@@ -20,7 +20,7 @@ answer made useless. One independent question at a time tires the user.
 
 ## How many to ask
 
-Ask as few as the request needs. A crisp request needs fewer. The number is a ceiling, not a quota:
+Ask as few as the request needs. A crisp request needs fewer. The count you need is a ceiling, not a quota:
 to ask many questions for their own sake is worse than a thin result. If the request answers
 everything, ask nothing. Work from what you have and record the real unknowns. Do not guess.
 
