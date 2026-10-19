@@ -24,3 +24,20 @@ test('shape-product routes each answer to one file and never turns a question in
   assert.match(t, /· open/);
   assert.match(t, /Open questions:/);
 });
+
+test('shape-tech walks the capability dimensions, one question at a time', () => {
+  const t = read('shape-tech');
+  for (const d of ['runs as', 'deploys to', 'persists', 'integrates with', 'authenticates', 'hard constraints']) assert.ok(t.toLowerCase().includes(d), d);
+  assert.match(t, /one question at a time/i);
+  assert.match(t, /exactly one named dimension|one named dimension/i);
+  assert.doesNotMatch(t, NO_MINIONS);
+});
+
+test('shape-tech keeps the evidence gate and writes each dimension in one place', () => {
+  const t = read('shape-tech');
+  assert.match(t, /existing code/i);
+  assert.match(t, /no `Dn`|without a `Dn`/i);
+  assert.match(t, /docs\/curator\/TECH\.md/);
+  assert.match(t, /never .*`docs\/curator\/DIRECTION\.md`|Never `DIRECTION\.md`|never write a `Cn`/i);
+  for (const line of ['Result:', 'Constraints owed:', 'Worth reopening:']) assert.ok(t.includes(line), line);
+});
