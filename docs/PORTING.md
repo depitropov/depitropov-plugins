@@ -1097,12 +1097,12 @@ General notes:
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Shared policy: rhythm only, no questions | `orc-curator` references/interview-cadence.md | planned (Curator plan, S76) | yes |
-| Two cadences: batch of 3–5 (shape-product) vs one at a time (shape-tech, direction, specify); why the wrong one costs | `orc-curator` references/interview-cadence.md; `specify` leaves the list (orchestra's spec does not interview) | planned (Curator plan, S76: changed list) | yes |
-| Budget from `config.yml` `questions` (none/few/regular/many) and never exceed it | `orc-curator` references/interview-cadence.md; a Curator config key or a fixed default, the plan decides | planned (Curator plan, S76: no config.yml) | yes |
-| Rules in both cadences (real options and what they foreclose, multiple choice with a recommendation, deferral is an answer, do not ask what you can infer, say why, ask only what changes a write) | `orc-curator` references/interview-cadence.md | planned (Curator plan, S76) | yes |
-| Inside an orchestra run a question is a Decide | `orc-curator` references/interview-cadence.md (new line: the Curator asks the user inline, S76; no Decide) | planned (Curator plan, S76) | yes |
-| What an answer is for: it lands somewhere durable in the same run | `orc-curator` references/interview-cadence.md | planned (Curator plan, S76) | yes |
+| Shared policy: rhythm only, no questions | `plugins/orc-curator/references/interview-cadence.md` | ported | yes |
+| Two cadences: batch of 3–5 (shape-product) vs one at a time (shape-tech, direction, specify); why the wrong one costs | `plugins/orc-curator/references/interview-cadence.md` | ported (changed, S76) | yes |
+| Budget from `config.yml` `questions` (none/few/regular/many) and never exceed it | `plugins/orc-curator/references/interview-cadence.md` | ported (changed, S76) | yes |
+| Rules in both cadences (real options and what they foreclose, multiple choice with a recommendation, deferral is an answer, do not ask what you can infer, say why, ask only what changes a write) | `plugins/orc-curator/references/interview-cadence.md` | ported | yes |
+| Inside an orchestra run a question is a Decide | `plugins/orc-curator/references/interview-cadence.md` | ported (changed, S76) | yes |
+| What an answer is for: it lands somewhere durable in the same run | `plugins/orc-curator/references/interview-cadence.md` | ported | yes |
 
 #### skills/research/SKILL.md
 
@@ -1146,10 +1146,10 @@ General notes:
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Shared policy, cited by five skills, no flow | `orc-curator` references | planned (Curator plan, S76) | yes |
-| Table: who can answer each type of question | `orc-curator` references | planned (Curator plan, S76) | yes |
-| The two failure modes | `orc-curator` references | planned (Curator plan, S76) | yes |
-| After the split: ask spends budget; research records nothing; a one-way door escalates | `orc-curator` references; in a run the Curator asks the user inline (S76) | planned (Curator plan, S76) | yes |
+| Shared policy, cited by five skills, no flow | `plugins/orc-curator/references/ask-vs-research.md` | ported | yes |
+| Table: who can answer each type of question | `plugins/orc-curator/references/ask-vs-research.md` | ported | yes |
+| The two failure modes | `plugins/orc-curator/references/ask-vs-research.md` | ported | yes |
+| After the split: ask spends budget; research records nothing; a one-way door escalates | `plugins/orc-curator/references/ask-vs-research.md` | ported (changed, S76) | yes |
 
 #### references/right-sizing.md
 

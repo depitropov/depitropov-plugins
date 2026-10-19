@@ -49,6 +49,19 @@ test('the minimal setup copies the templates into docs/curator and writes the fl
   assert.doesNotMatch(text, /`QUESTIONS\.md`,\s+`CONTEXT\.md`/);
 });
 
+test('the interview and research references are shipped', () => {
+  const cadence = read('references/interview-cadence.md');
+  assert.match(cadence, /3–5/);
+  assert.match(cadence, /one at a time/i);
+  assert.doesNotMatch(cadence, /config\.yml|questions: |Decide/);
+  const ask = read('references/ask-vs-research.md');
+  assert.match(ask, /ask the user/i);
+  assert.match(ask, /research/i);
+  for (const f of ['references/interview-cadence.md', 'references/ask-vs-research.md']) {
+    assert.doesNotMatch(read(f), /\/minions:|\.minions|STATE\.md|\bmaintain\b|\bvibe\b/, f);
+  }
+});
+
 test('the marketplace lists orc-curator', () => {
   const m = JSON.parse(fs.readFileSync(path.join(__dirname, '../../.claude-plugin/marketplace.json'), 'utf8'));
   assert.ok(m.plugins.some(p => p.name === 'orc-curator' && p.source === './plugins/orc-curator'));
