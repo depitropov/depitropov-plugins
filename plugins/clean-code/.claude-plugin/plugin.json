@@ -1,6 +1,6 @@
 {
   "name": "clean-code",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "Clean Code / Clean Architecture rules and source measurement for Python and TypeScript, logging guidance, and an architecture-fundamentals skill. A copy of mentorano's clean-code 0.6.0 (MIT).",
   "license": "MIT",
   "author": { "name": "Ivan Dachev", "email": "ivan@mentorano.com" }
