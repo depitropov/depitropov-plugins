@@ -217,6 +217,9 @@ On the first turn, look for the idea in this order:
 3. An existing `docs/curator/PRODUCT.md` with real content (resume: load it and continue).
 4. None of these: ask the user, *"What is the idea that you want to shape?"*
 
+When the caller says that the project has code, read the README and the code first, state what
+exists back to the user, and explore directions only for what is not built yet.
+
 ## Where the shapes live
 
 You do not own the file formats. Each file has its template in `<plugin>/templates/`: `PRODUCT.md`,

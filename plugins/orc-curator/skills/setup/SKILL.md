@@ -34,13 +34,20 @@ Read `docs/curator/PRODUCT.md`, `TECH.md`, `BACKLOG.md` and `QUESTIONS.md`. A fi
 language…]`), `_none yet_`, or only the commented example block.
 
 - `PRODUCT.md` template-shaped → Step 4 (the product half), then Step 5. Neither half ran.
-- `PRODUCT.md` real, `TECH.md` template-shaped → Step 5 (the tech half). An earlier setup stopped
-  after the product half. The files are the resume signal.
+- `PRODUCT.md` real, `TECH.md` template-shaped → an earlier setup stopped, and shape-product writes
+  `PRODUCT.md` before the user confirms it. Ask the user whether the product shape was confirmed.
+  Not confirmed → Step 4 (shape-product resumes from the real `PRODUCT.md`). Confirmed → Step 5
+  (the tech half). The files are the resume signal.
 - Both real → Step 6 (reshape).
 
 ## Step 4: The product half
 
 Invoke `orc-curator:shape-product` and give it the user's idea, if there is one.
+
+When the project already has code (any source files outside `docs/`), say so in the call: it reads
+the README and the code first, states the existing product back to the user, writes it to
+`PRODUCT.md` as true today, and goes wide only on what is not built yet. Do not explore four
+directions for a product that exists.
 
 It runs its own coverage: it states the idea back, finds the gray areas, explores at least four
 different directions before it narrows, examines comparable products, and keeps tech out of the
@@ -85,6 +92,9 @@ that does not exist yet, so the first run does not fill that gap by guessing. Gi
 
 A `needs-input` from shape-tech or direction does not stop setup: the open call is a `Qn`, and
 `QUESTIONS.md` never blocks. Name it in the relay.
+
+When direction returns `Escalated: setup — purpose change`, name it in the relay, and say that the
+next setup call runs the reshape (Step 6) for it.
 
 Then go to Step 7.
 
@@ -138,6 +148,7 @@ Tell the user:
 - which files you wrote, and what the product and the spine are now;
 - the open `Qn` ids;
 - the sweep's `Coverage:` line and the `Cn` count;
+- a purpose change that direction escalated, and that the next setup call reshapes for it;
 - shape-tech's `Worth reopening:` line word for word, or "none": only the user can reverse a
   `soft:` `Dn`;
 - in a run: the docs are on the run's task branch (in its worktree) until it is merged;

@@ -62,6 +62,14 @@ test('setup reshapes a set-up project on approval and always ends with the sweep
   assert.match(text, /edit `docs\/curator\/BACKLOG\.md` by hand/);
 });
 
+test('setup resumes an unconfirmed product half and respects existing code', () => {
+  const text = read('skills/setup/SKILL.md');
+  assert.match(text, /Ask the user whether the product shape was confirmed/);
+  assert.match(text, /When the project already has code/);
+  assert.match(text, /goes wide only on what is not built yet/);
+  assert.match(text, /purpose change/);
+});
+
 test('the interview and research references are shipped', () => {
   const cadence = read('references/interview-cadence.md');
   assert.match(cadence, /3–5/);

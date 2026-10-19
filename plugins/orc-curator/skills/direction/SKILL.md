@@ -27,7 +27,7 @@ You run in the main session, because you may ask the user. Ask one question at a
 |---|---|
 | `curate` | a run shipped. Constraints to mark satisfied, orphans to remove, and code that may **contradict** a live `Cn`. Its prompt has the line `Caller: curate` and, when it has one, the diff evidence |
 | `backlog` | after a change to the arrangement: a row added, dropped or moved, or the backlog groomed |
-| `setup` | at project start, when the backlog gets its first `## Now` and `## Next` rows |
+| `setup` | at project start, when the backlog gets its first `## Now` and `## Next` rows. It may pass shape-tech's `Constraints owed:` and `Worth reopening:` lines: treat them as in the escalate verdict (a verdict for each owed item in the same sweep; show `Worth reopening:` to the user) |
 | by hand | the user asks for it |
 
 A caller names itself with a `Caller: <name>` line. The flow is the same for each caller. Only the

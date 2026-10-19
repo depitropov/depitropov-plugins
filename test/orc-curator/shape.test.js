@@ -25,6 +25,12 @@ test('shape-product routes each answer to one file and never turns a question in
   assert.match(t, /Open questions:/);
 });
 
+test('shape-product reads the existing code before it explores', () => {
+  const t = read('shape-product');
+  assert.match(t, /When the caller says that the project has code, read the README and the code first/);
+  assert.match(t, /explore directions only for what is not built yet/);
+});
+
 test('shape-tech walks the capability dimensions, one question at a time', () => {
   const t = read('shape-tech');
   for (const d of ['runs as', 'deploys to', 'persists', 'integrates with', 'authenticates', 'hard constraints']) assert.ok(t.toLowerCase().includes(d), d);
