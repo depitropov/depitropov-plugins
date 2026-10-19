@@ -969,28 +969,28 @@ General notes:
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Purpose: shape a rough idea into a functional product shape; explore wide, examine comparables, keep rejected directions | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
-| Scope: functional only, redirect tech talk, and why | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
-| Scope: at least 4 distinct directions before narrowing; what "distinct" means | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
-| Scope: rejected directions are `Dn` rows; the user decides | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
+| Purpose: shape a rough idea into a functional product shape; explore wide, examine comparables, keep rejected directions | `orc-curator:shape-product` | ported | yes |
+| Scope: functional only, redirect tech talk, and why | `orc-curator:shape-product` | ported | yes |
+| Scope: at least 4 distinct directions before narrowing; what "distinct" means | `orc-curator:shape-product` | ported | yes |
+| Scope: rejected directions are `Dn` rows; the user decides | `orc-curator:shape-product` | ported | yes |
 | Output: resolve the knowledge root; no config → init | the fixed docs folder | dropped (S76: fixed folder; orchestra:init replaces init) | no |
 | Output: stop in maintain | — | dropped (S76: no modes) | no |
-| Output: destination table (What it is, Who, Why, existing vs not-built behaviours, shaped-this-way, Deliberately not, in scope, comparables, rejected direction, gray area) | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
-| Rule: a question is not a feature | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
-| Rule: PRODUCT holds only what is true today; vision goes to BACKLOG Vision; no feature inventory | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
-| Resuming from real PRODUCT content, backlog rows and open questions | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
-| Read DECISIONS first; honour `hard:`, put `soft:` discarded directions back on the table; reversal is a new `Dn` | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
-| Coverage checklist (9 items) and the one-line coverage status each turn | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
-| Choosing what to do next: restate first; gray-area buckets; pick 3–5 | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
-| Ask vs research: cite the shared policy, never a copy; where research findings go | `orc-curator:shape-product` → the ported `ask-vs-research` reference | planned (Curator plan, S76) | yes |
-| Going wide: 4–6 directions, kinds of distinctness; rejected → `Dn`; never skip it | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
-| Comparable products: 2–4, what each does well, falls short, one pattern | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
-| Capturing the shape and the wrap-up checklist (5 items, at least one Now row) | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
-| How to ask: batch cadence, explain why, `AskUserQuestion` for options, do not ask what you can infer | `orc-curator:shape-product`; cites the ported interview-cadence reference | planned (Curator plan, S76) | yes |
-| Where the idea comes from (arguments, conversation, PRODUCT, ask) | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
-| Where the shapes live: the plugin templates; copy a missing file | `orc-curator:shape-product` → the plugin's templates | planned (Curator plan, S76) | yes |
-| Anti-patterns (8) | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
-| Tone | `orc-curator:shape-product` | planned (Curator plan, S76) | yes |
+| Output: destination table (What it is, Who, Why, existing vs not-built behaviours, shaped-this-way, Deliberately not, in scope, comparables, rejected direction, gray area) | `orc-curator:shape-product` | ported | yes |
+| Rule: a question is not a feature | `orc-curator:shape-product` | ported | yes |
+| Rule: PRODUCT holds only what is true today; vision goes to BACKLOG Vision; no feature inventory | `orc-curator:shape-product` | ported | yes |
+| Resuming from real PRODUCT content, backlog rows and open questions | `orc-curator:shape-product` | ported | yes |
+| Read DECISIONS first; honour `hard:`, put `soft:` discarded directions back on the table; reversal is a new `Dn` | `orc-curator:shape-product` | ported | yes |
+| Coverage checklist (9 items) and the one-line coverage status each turn | `orc-curator:shape-product` | ported | yes |
+| Choosing what to do next: restate first; gray-area buckets; pick 3–5 | `orc-curator:shape-product` | ported | yes |
+| Ask vs research: cite the shared policy, never a copy; where research findings go | `orc-curator:shape-product`; cites `references/ask-vs-research.md` | ported | yes |
+| Going wide: 4–6 directions, kinds of distinctness; rejected → `Dn`; never skip it | `orc-curator:shape-product` | ported | yes |
+| Comparable products: 2–4, what each does well, falls short, one pattern | `orc-curator:shape-product` | ported | yes |
+| Capturing the shape and the wrap-up checklist (5 items, at least one Now row) | `orc-curator:shape-product` | ported (changed, S76: never commits; setup commits, by hand the user does) | yes |
+| How to ask: batch cadence, explain why, `AskUserQuestion` for options, do not ask what you can infer | `orc-curator:shape-product`; cites `references/interview-cadence.md` | ported (changed, S76: offer options, no tool name) | yes |
+| Where the idea comes from (arguments, conversation, PRODUCT, ask) | `orc-curator:shape-product` | ported | yes |
+| Where the shapes live: the plugin templates; copy a missing file | `orc-curator:shape-product` → `<plugin>/templates/` | ported | yes |
+| Anti-patterns (8) | `orc-curator:shape-product` | ported | yes |
+| Tone | `orc-curator:shape-product` | ported | yes |
 
 #### skills/shape-tech/SKILL.md
 
