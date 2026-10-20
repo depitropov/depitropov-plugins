@@ -828,48 +828,48 @@ General notes:
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Description: changes what is planned, walks the fallout, hands constraints to direction; never starts work | `orc-curator:backlog` (by hand only, not in the slot contract, S76) | planned (Curator plan, S76) | yes |
-| Runs inline; confirms judgement calls with the user | `orc-curator:backlog`, by hand in the session | planned (Curator plan, S76) | yes |
-| Owns every judgement change and its consequence chain; the front door for changing the plan | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Never decides what a change demands of code; reads no TECH and no code | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Interface: plain words, no flags; table of add, drop, move, groom, reconcile | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Several operations in one request; sweep once at the end | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
+| Description: changes what is planned, walks the fallout, hands constraints to direction; never starts work | `orc-curator:backlog`: by hand, and by `setup` with `Caller: setup`; not in the slot contract (S76) | ported (changed, S76) | yes |
+| Runs inline; confirms judgement calls with the user | `orc-curator:backlog`, in the main session | ported | yes |
+| Owns every judgement change and its consequence chain; the front door for changing the plan | `orc-curator:backlog` | ported | yes |
+| Never decides what a change demands of code; reads no TECH and no code | `orc-curator:backlog` | ported | yes |
+| Interface: plain words, no flags; table of add, drop, move, groom, reconcile | `orc-curator:backlog` | ported | yes |
+| Several operations in one request; sweep once at the end | `orc-curator:backlog` | ported | yes |
 | Step 1: resolve minions roots, `config.yml`, read `mode` | fixed docs folder; `setup` marker | dropped (S76: fixed folder, one mode) | no |
 | Step 1: never writes STATE.md | — | n/a (S76: no STATE.md) | no |
-| Step 1: guard, stop when demoting or dropping the row of an in-flight feature | — | n/a (S76: no STATE; a run works from its base in a worktree). Open edge: `curate` at run end must handle a `Serves: Bn` row that was dropped meanwhile | no |
-| Step 2: read BACKLOG (all), DIRECTION, DECISIONS, QUESTIONS | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Step 3 normal path: restate each change as `Bn: from → to`; confirm before touching; groom shows counts | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Step 3 reconcile path: detect hand edits by diffing against what other files assume; `git diff` | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Hand-editing BACKLOG is legal | `orc-curator:backlog` + template | planned (Curator plan, S76) | yes |
-| Step 4: next `Bn` = highest plus one; never reused; item is one line | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Step 4: refs empty, `specify` fills them | the brief's `Serves: Bn` line; `orc-curator:curate` sets the refs when it moves the row to Shipped | planned (other mechanism, S76: single writer, spec only reads) | yes |
-| Step 4: horizon by confidence (Now, Next, Later table); say which was picked | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Step 4: a question is never a row, it goes to QUESTIONS | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Step 4: extend Vision when it does not cover the new row | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Step 4: a purpose-sized row: say so, do not act; direction reaches the verdict | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Step 5: check every chain row, say you checked | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Chain: dropped (delete cited `Cn` + ledger row, rewrite Vision, `Dn` reversal, close moot `Qn`) | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Chain: demoted to Later = dropped; say it to the user | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Chain: added to Now/Next (owed, sweep; extend Vision) | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Chain: added to Later (nothing) | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Chain: promoted Later → Next (owed, sweep; extend Vision) | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Chain: promoted Next → Now (nothing; specify does it) | `orc-curator:backlog`: a move to Now is the user's, by hand; a run moves no row to Now | planned (changed, S76: single writer; Now no longer means in progress) | yes |
-| Chain: item text materially rewritten (retire the ledger row, leave `Cn`s) | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Chain: reordered inside a section (nothing) | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Step 5 verify: every `Cn` cites a live Now/Next row; no Vision for Later or gone rows; ids kept | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Step 6: invoke direction once at the end; idempotent; skip only for Later-only changes | `orc-curator:backlog` → `orc-curator:direction` | planned (Curator plan, S76) | yes |
-| Step 6: fold the Coverage line; relay a purpose-change FLAG verbatim | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Step 7: report every change and its consequences, empty ones too; what was not done | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Step 7: commit vibe only; maintain commits nothing (root gitignored) | `orc-curator:backlog` commits | planned (S76: one mode; maintain dropped) | yes |
-| Hard gate: arrangement only; the files and edits it may make | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Hard gate: no code, SPEC, PLAN, PRODUCT, TECH, STATE | `orc-curator:backlog` (STATE n/a) | planned (Curator plan, S76) | yes |
-| Hard gate: only skill invoked is direction | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Hard gate: never read TECH or code | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Hard gate: never author a `Cn`; only delete unlicensed ones | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Hard gate: never edit or delete a `Dn`; a reversal opens with `hard:`/`soft:`, usually `soft:` | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Hard gate: never start work; suggest `/minions:feature` | `orc-curator:backlog`: suggest `orchestra:run` | planned (Curator plan, S76) | yes |
-| Hard gate: never drop silently; confirm every deletion | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
-| Return block: Result, Wrote, Summary, Coverage, Escalated, Deviations/Warnings, Next | `orc-curator:backlog` | planned (Curator plan, S76) | yes |
+| Step 1: guard, stop when demoting or dropping the row of an in-flight feature | — | n/a (S76: no STATE; a run works from its base in a worktree). `orc-curator:backlog` Step 1 says so; `curate` asks at the end of the run | no |
+| Step 2: read BACKLOG (all), DIRECTION, DECISIONS, QUESTIONS | `orc-curator:backlog` | ported | yes |
+| Step 3 normal path: restate each change as `Bn: from → to`; confirm before touching; groom shows counts | `orc-curator:backlog` | ported | yes |
+| Step 3 reconcile path: detect hand edits by diffing against what other files assume; `git diff` | `orc-curator:backlog` | ported | yes |
+| Hand-editing BACKLOG is legal | `orc-curator:backlog` Step 3 + template | ported | yes |
+| Step 4: next `Bn` = highest plus one; never reused; item is one line | `orc-curator:backlog` | ported | yes |
+| Step 4: refs empty, `specify` fills them | `orc-curator:backlog` Step 4: the why in the cell; the brief's `Serves: Bn` line links the run; `orc-curator:curate` writes the shipped-as cell | ported (changed, S76: single writer, spec only reads) | yes |
+| Step 4: horizon by confidence (Now, Next, Later table); say which was picked | `orc-curator:backlog` | ported | yes |
+| Step 4: a question is never a row, it goes to QUESTIONS | `orc-curator:backlog` | ported | yes |
+| Step 4: extend Vision when it does not cover the new row | `orc-curator:backlog` | ported | yes |
+| Step 4: a purpose-sized row: say so, do not act; direction reaches the verdict | `orc-curator:backlog` | ported | yes |
+| Step 5: check every chain row, say you checked | `orc-curator:backlog` | ported | yes |
+| Chain: dropped (delete cited `Cn` + ledger row, rewrite Vision, `Dn` reversal, close moot `Qn`) | `orc-curator:backlog` | ported | yes |
+| Chain: demoted to Later = dropped; say it to the user | `orc-curator:backlog` | ported | yes |
+| Chain: added to Now/Next (owed, sweep; extend Vision) | `orc-curator:backlog` | ported | yes |
+| Chain: added to Later (nothing) | `orc-curator:backlog` | ported | yes |
+| Chain: promoted Later → Next (owed, sweep; extend Vision) | `orc-curator:backlog` | ported | yes |
+| Chain: promoted Next → Now (nothing; specify does it) | `orc-curator:backlog` Step 5 "moved between Next and Now": nothing owed; the user moves rows, a run never does | ported (changed, S76: single writer; Now no longer means in progress) | yes |
+| Chain: item text materially rewritten (retire the ledger row, leave `Cn`s) | `orc-curator:backlog` | ported | yes |
+| Chain: reordered inside a section (nothing) | `orc-curator:backlog` | ported | yes |
+| Step 5 verify: every `Cn` cites a live Now/Next row; no Vision for Later or gone rows; ids kept | `orc-curator:backlog` | ported | yes |
+| Step 6: invoke direction once at the end; idempotent; skip only for Later-only changes | `orc-curator:backlog` Step 6 → `orc-curator:direction` with `Caller: backlog` | ported | yes |
+| Step 6: fold the Coverage line; relay a purpose-change FLAG verbatim | `orc-curator:backlog` | ported | yes |
+| Step 7: report every change and its consequences, empty ones too; what was not done | `orc-curator:backlog` | ported | yes |
+| Step 7: commit vibe only; maintain commits nothing (root gitignored) | `orc-curator:backlog` Step 7: commits by hand; with `Caller: setup`, setup commits | ported (changed, S76: one mode; plan 4 ruling) | yes |
+| Hard gate: arrangement only; the files and edits it may make | `orc-curator:backlog` | ported | yes |
+| Hard gate: no code, SPEC, PLAN, PRODUCT, TECH, STATE | `orc-curator:backlog` (STATE n/a) | ported | yes |
+| Hard gate: only skill invoked is direction | `orc-curator:backlog` | ported | yes |
+| Hard gate: never read TECH or code | `orc-curator:backlog` | ported | yes |
+| Hard gate: never author a `Cn`; only delete unlicensed ones | `orc-curator:backlog` | ported | yes |
+| Hard gate: never edit or delete a `Dn`; a reversal opens with `hard:`/`soft:`, usually `soft:` | `orc-curator:backlog` | ported | yes |
+| Hard gate: never start work; suggest `/minions:feature` | `orc-curator:backlog` Step 7 and hard gate: suggest `orchestra:run`; a row goes to Now only when the user says so | ported (changed, S76) | yes |
+| Hard gate: never drop silently; confirm every deletion | `orc-curator:backlog` | ported | yes |
+| Return block: Result, Wrote, Summary, Coverage, Escalated, Deviations/Warnings, Next | `orc-curator:backlog` End of run | ported (changed, S76: no `Next` line; `blocked` when `docs/curator/` is missing) | yes |
 | Result `blocked` when a change strands an in-flight feature | — | n/a (S76: no in-flight state, see the Step 1 guard row) | no |
 
 #### templates/DIRECTION.md
