@@ -1137,10 +1137,10 @@ General notes:
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Header note: one topic per note; evidence, not the decision; complete, not a summary | `orc-curator` templates | planned (Curator plan, S76) | yes |
-| Header line: Date, Mode, Question, For, Method, Supersedes | `orc-curator` templates | planned (Curator plan, S76) | yes |
-| Sections: Recommendation (runners-up in `wide`), Comparison (`wide` only, fixed axes, ranking), Findings with confidence, Refuted, Caveats, Open questions | `orc-curator` templates | planned (Curator plan, S76) | yes |
-| Line: `/minions:shape-tech` and `/minions:direction` write the rows | `orc-curator:shape-tech`, `orc-curator:direction` | planned (Curator plan, S76) | yes |
+| Header note: one topic per note; evidence, not the decision; complete, not a summary | `plugins/orc-curator/templates/RESEARCH.md` | ported | yes |
+| Header line: Date, Mode, Question, For, Method, Supersedes | `plugins/orc-curator/templates/RESEARCH.md` | ported | yes |
+| Sections: Recommendation (runners-up in `wide`), Comparison (`wide` only, fixed axes, ranking), Findings with confidence, Refuted, Caveats, Open questions | `plugins/orc-curator/templates/RESEARCH.md` | ported | yes |
+| Line: `/minions:shape-tech` and `/minions:direction` write the rows | `plugins/orc-curator/templates/RESEARCH.md`: `orc-curator:shape-tech`, `orc-curator:direction`, and `orc-curator:shape-product` for a product fact | ported (changed, S76) | yes |
 
 #### references/ask-vs-research.md
 
@@ -1155,11 +1155,11 @@ General notes:
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Rule 1: ceremony is set by the caller, never raised by the callee | `orc-curator` references | planned (Curator plan, S76) | yes |
+| Rule 1: ceremony is set by the caller, never raised by the callee | `plugins/orc-curator/references/right-sizing.md` | ported | yes |
 | Rule 2: offer the other tier once, then proceed | — | n/a (orchestra has one tier per workflow; tiers are minions' `quick`/`feature`) | no |
 | "Too small" and "too big for one plan" signals (≈ 7 commits, several `Bn` constraints) | — | n/a (orc-standard-workflow has no epic or quick tier; note for the workflow, not the Curator) | no |
-| "Too big for a light pass": a purpose change needs full ceremony and a human | `orc-curator:direction` Step 3 verdict "purpose change": stop and name it, escalate to `orc-curator:setup` | ported (changed, S76: no Decide; direction names it and the user decides) | yes |
-| Research depth: mode and budget, both set by the caller | `orc-curator:research` | planned (Curator plan, S76) | yes |
+| "Too big for a light pass": a purpose change needs full ceremony and a human | `orc-curator:direction` Step 3 verdict "purpose change": stop and name it, escalate to `orc-curator:setup`; also in `plugins/orc-curator/references/right-sizing.md` | ported (changed, S76: no Decide; direction names it and the user decides) | yes |
+| Research depth: mode and budget, both set by the caller | `plugins/orc-curator/references/right-sizing.md`, cited by `orc-curator:research` | ported | yes |
 
 #### skills/specify/SKILL.md
 

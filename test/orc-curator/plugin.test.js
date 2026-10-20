@@ -83,6 +83,18 @@ test('the interview and research references are shipped', () => {
   }
 });
 
+test('the right-sizing reference and the research template are shipped', () => {
+  const sizing = read('references/right-sizing.md');
+  assert.match(sizing, /set by the caller/);
+  assert.match(sizing, /## Research depth/);
+  assert.doesNotMatch(sizing, /other tier|too small/i);
+  const note = read('templates/RESEARCH.md');
+  for (const h of ['**For:**', '**Supersedes:**', '## Recommendation', '## Comparison', '## Refuted', '## Open questions']) assert.ok(note.includes(h), h);
+  for (const f of ['references/right-sizing.md', 'templates/RESEARCH.md']) {
+    assert.doesNotMatch(read(f), /\/minions:|\.minions|docs\/minions|STATE\.md|config\.yml|\bmaintain\b|\bvibe\b/, f);
+  }
+});
+
 test('the marketplace lists orc-curator', () => {
   const m = JSON.parse(fs.readFileSync(path.join(__dirname, '../../.claude-plugin/marketplace.json'), 'utf8'));
   assert.ok(m.plugins.some(p => p.name === 'orc-curator' && p.source === './plugins/orc-curator'));
