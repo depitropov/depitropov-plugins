@@ -121,9 +121,6 @@ you skip in silence looks the same as a row that you never saw.
 **Escalate to `shape-tech`. Never write `TECH.md` yourself.** A capability dimension is a row in
 `TECH.md`, and that file has one writer.
 
-When `orc-curator:research` or `orc-curator:shape-tech` is not installed, ask the user the question
-that it would settle, or open a `Qn`. Say so in the relay.
-
 **Ask the user, or research?** Intent, preference, taste, business model, audience, strategy, and
 what the users of *this* project need: only the user knows, so ask. How comparable products do it,
 what is standard in the category, the words the category uses, and what a library or service does
@@ -148,7 +145,7 @@ A deferral is an answer: it becomes an open `Qn`. Each answer goes into a file i
 **When the sweep shows that a row is dead, flag it. Do not move it.** "We will not do B7" changes
 the arrangement of the backlog, and that change has consequences (constraints, vision prose,
 reversed decisions, questions that no longer matter) that belong to `orc-curator:backlog`. Name the
-row and the constraints that would go with it, tell the user to groom the backlog, and derive from
+row and the constraints that would go with it, tell the user to run `orc-curator:backlog`, and derive from
 the backlog as it is today.
 
 ## Step 4: Research, when a verdict asks for it
@@ -234,8 +231,7 @@ is a healthy result.
 
 Then report **each row that you evaluated and its verdict**, also the `no constraint` rows. That
 list is the value of the run. Then each `Cn` with its `from Bn` and status, the `Qn` ids, if
-research ran and what it concluded, what you escalated, which skill was missing and what you did
-instead, and each constraint that the code already satisfies (that is good news: say it). **Name
+research ran and what it concluded, what you escalated, and each constraint that the code already satisfies (that is good news: say it). **Name
 what you left to a later feature on purpose**, so that a short run does not look lazy.
 
 When a caller invoked you, give this back to the caller and let it go on. Otherwise stop.

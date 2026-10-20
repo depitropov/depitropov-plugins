@@ -59,7 +59,7 @@ test('setup reshapes a set-up project on approval and always ends with the sweep
   assert.match(text, /reshape/i);
   assert.match(text, /approv/i);
   assert.match(text, /every open `Qn`/);
-  assert.match(text, /edit `docs\/curator\/BACKLOG\.md` by hand/);
+  assert.match(text, /invoke `orc-curator:backlog` with the line\s+`Caller: setup`/);
 });
 
 test('setup resumes an unconfirmed product half and respects existing code', () => {
@@ -93,6 +93,14 @@ test('the right-sizing reference and the research template are shipped', () => {
   for (const f of ['references/right-sizing.md', 'templates/RESEARCH.md']) {
     assert.doesNotMatch(read(f), /\/minions:|\.minions|docs\/minions|STATE\.md|config\.yml|\bmaintain\b|\bvibe\b/, f);
   }
+});
+
+test('no skill or reference falls back for a Curator skill that is missing', () => {
+  const files = [
+    ...fs.readdirSync(path.join(DIR, 'skills')).map(s => `skills/${s}/SKILL.md`),
+    ...fs.readdirSync(path.join(DIR, 'references')).map(r => `references/${r}`),
+  ];
+  for (const f of files) assert.doesNotMatch(read(f), /is not installed|`orc-curator:[a-z-]+` is not built|when it is built/, f);
 });
 
 test('the marketplace lists orc-curator', () => {

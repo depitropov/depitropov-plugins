@@ -60,5 +60,4 @@ test('shape-tech pins its callers, the no-commit rule and the DIRECTION.md hard 
 test('final review: shape-tech setup row takes the code, shape-product direction items respect existing code', () => {
   assert.match(read('shape-tech'), /the backlog, and the code when there is any/);
   assert.match(read('shape-product'), /the two direction items cover only what is not built yet, and are n\/a when nothing is/);
-  assert.match(read('setup'), /plus `\/docs\/curator\/BACKLOG\.md`\. Say that their checkout has no such file until the branch is merged/);
 });

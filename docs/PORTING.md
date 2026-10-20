@@ -791,9 +791,9 @@ General notes:
 | Step 3: exactly one verdict per owed row, say which and why | `orc-curator:direction` | ported | yes |
 | Verdict: no constraint (most common, not a failure) | `orc-curator:direction` | ported | yes |
 | Verdict: write a `Cn` | `orc-curator:direction` | ported | yes |
-| Verdict: research first (arbiter `ask-vs-research.md`) | `orc-curator:direction` invokes `orc-curator:research`; when not installed, ask the user or open a `Qn`; the ask-vs-research split inline | ported (changed, S76) | yes |
+| Verdict: research first (arbiter `ask-vs-research.md`) | `orc-curator:direction` invokes `orc-curator:research`; the ask-vs-research split inline | ported (changed, S76) | yes |
 | Verdict: open a `Qn` for a product gap, unless it constrains code now | `orc-curator:direction` | ported | yes |
-| Verdict: escalate one capability dimension to shape-tech | `orc-curator:direction` invokes `orc-curator:shape-tech` (`Caller: direction`); when not installed, ask the user or open a `Qn` | ported (changed, S76) | yes |
+| Verdict: escalate one capability dimension to shape-tech | `orc-curator:direction` invokes `orc-curator:shape-tech` (`Caller: direction`) | ported (changed, S76) | yes |
 | Verdict: FLAG a purpose change; vibe only | `orc-curator:direction`: verdict `purpose change`, names `orc-curator:setup`; always, no mode | ported (changed, S76) | yes |
 | Escalate to shape-tech, never write TECH.md (one owner per file) | `orc-curator:direction` | ported | yes |
 | Ask only what changes a constraint; one at a time; budget from `questions` (`interview-cadence.md`) | `orc-curator:direction`: one question at a time, as few as possible, the interview-cadence rules inline; no `questions` budget (no Curator config) | ported (changed, S76) | yes |
@@ -942,7 +942,7 @@ General notes:
 | Step 3: stop after the product half unless `auto` | — | dropped (S76: no auto mode; setup runs both halves in one call, the user is present) | no |
 | Step 4: tech is discussed only here, through three calls; each caller owns the cursor | `orc-curator:setup` step 5 (the cursor part is n/a) | ported | yes |
 | Step 4a: shape-tech walks the dimensions, commits only the minimum spine with no code | `orc-curator:setup` → `orc-curator:shape-tech` | ported | yes |
-| Step 4b: show the backlog (counts per horizon and rows), offer to arrange it, call backlog if wanted | `orc-curator:setup` step 5 (b): shows the backlog; `orc-curator:backlog` is not built yet, so the user edits `docs/curator/BACKLOG.md` by hand and setup waits | ported (changed, S76: backlog comes in plan 4) | yes |
+| Step 4b: show the backlog (counts per horizon and rows), offer to arrange it, call backlog if wanted | `orc-curator:setup` step 5 (b): shows the backlog; invokes `orc-curator:backlog` with `Caller: setup`, which leaves the sweep to setup | ported (changed, plan 4 ruling) | yes |
 | Step 4b: order matters: groom before the sweep, so the ledger matches the arrangement | `orc-curator:setup` step 5 (b) | ported | yes |
 | Step 4c: direction sweep, every near-term row owes a verdict | `orc-curator:setup` → `orc-curator:direction` | ported | yes |
 | Why calls and not own interviews: one flow, several callers | `orc-curator:setup` note | ported | yes |
@@ -960,7 +960,7 @@ General notes:
 | Hard gate: vibe only, never create PRODUCT or TECH in maintain | — | dropped (S76: no modes) | no |
 | Hard gate: four skills only; never research directly; never init | `orc-curator:setup` hard gate (init part n/a) | ported | yes |
 | Hard gate: no loop; specify moves rows to Now, curate to Shipped; never run features | `orc-curator:setup` hard gate: no runs; no run moves a row to Now, setup only when the user says so | ported (changed, S76: spec only reads) | yes |
-| Hard gate: horizons are confidence bands, not a roadmap; no order inside a section, no estimates; broad rows broken down carry `from Bn` | `orc-curator:setup` hard gate (`orc-curator:backlog` in plan 4) | ported | yes |
+| Hard gate: horizons are confidence bands, not a roadmap; no order inside a section, no estimates; broad rows broken down carry `from Bn` | `orc-curator:setup` hard gate | ported | yes |
 | Hard gate: a question is never a backlog row | `orc-curator:setup` hard gate | ported | yes |
 | Hard gate: QUESTIONS never blocks | `orc-curator:setup` hard gate | ported | yes |
 | Hard gate: no commits | `orc-curator:setup`: commits the docs and the setup flag (on the task branch when orchestra calls it) | ported (changed, S76: it commits; the caller of `direction` owns the commit, and the flag needs a commit) | yes |
@@ -1001,7 +1001,7 @@ General notes:
 | Callers: specify, one ground-shaping call mid-interview | — | dropped (S76: orchestra's spec stage does not interview and calls no Curator skill; a one-way tech fork found in a run is already a plan-check Decide, and curate can raise it as a question that names shape-tech for a run by hand) | no |
 | Callers: direction, exactly one named dimension | `orc-curator:direction` (`Caller: direction`) → `orc-curator:shape-tech` | ported | yes |
 | Callers: direct, by focus argument | `orc-curator:shape-tech` by hand; no focus means every dimension | ported (changed, S76: no `do` route) | yes |
-| Single-dimension invocation: walk only that one, never raise the caller's ceremony | `orc-curator:shape-tech` | partial (S76: the rule is in the skill; the citation of `right-sizing.md` waits for plan 4, which ports that reference) | yes |
+| Single-dimension invocation: walk only that one, never raise the caller's ceremony | `orc-curator:shape-tech` hard gate, citing `references/right-sizing.md` | ported | yes |
 | Step 1: roots, config, `mode`, `auto`, `questions`, `--auto` | the fixed docs folder | dropped (S76: fixed folder, no modes, no auto); `questions` budget: see interview-cadence | no |
 | Step 1: never write STATE; caller owns the cursor | — | n/a (S76: orchestra owns run state) | no |
 | Step 1: guard, stop on a live workflow when invoked directly | — | dropped (S76: no guard on a live workflow, plan 3 Task 3; Step 1 only stops when `docs/curator/` is missing) | no |
@@ -1010,7 +1010,7 @@ General notes:
 | Step 3: the six capability dimensions; say which are skipped | `orc-curator:shape-tech` | ported | yes |
 | Step 3: the ground-shaping calls; never ask what a later feature can change; say what each option forecloses; a deferral is a `Qn` | `orc-curator:shape-tech` | ported | yes |
 | Step 3: a dead backlog row is a FLAG, not a move | `orc-curator:shape-tech` | ported | yes |
-| Step 4: research only world questions, by the ask-vs-research policy; modes `wide`/`deep`, budget; it records nothing; a decline is an answer | `orc-curator:shape-tech` → `orc-curator:research`; when it is missing, ask the user or open a `Qn` | ported (changed, S76: the fallback until plan 4 ships research) | yes |
+| Step 4: research only world questions, by the ask-vs-research policy; modes `wide`/`deep`, budget; it records nothing; a decline is an answer | `orc-curator:shape-tech` → `orc-curator:research` | ported | yes |
 | Step 5: the user picks; show the full ranking of a wide run, not only the winner | `orc-curator:shape-tech` | ported | yes |
 | Step 5: the evidence gate (no code → minimum spine only; existing code → thin transcription, no `Dn`; a user call → TECH plus `Dn`) | `orc-curator:shape-tech` | ported | yes |
 | Step 5: never transcribe layers, paths or where conventions live | `orc-curator:shape-tech` | ported | yes |

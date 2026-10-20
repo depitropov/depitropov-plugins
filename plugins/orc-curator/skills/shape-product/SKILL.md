@@ -129,7 +129,7 @@ them: ask the gaps whose answer changes the most later decisions.
 ### Resolve a gray area: ask the user or research
 
 Decide who can answer each gap with `<plugin>/references/ask-vs-research.md`. Do not keep a copy of
-it here. It also says what to do when `orc-curator:research` is not installed.
+it here.
 
 When you research, summarise the findings in 3–5 short points for each comparable product. When the
 finding resolves the gap, write it to its destination in the table above (usually `PRODUCT.md`;

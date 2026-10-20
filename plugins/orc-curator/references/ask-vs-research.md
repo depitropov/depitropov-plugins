@@ -1,6 +1,6 @@
 # Ask the user, or research it?
 
-> **Shared policy.** `shape-product` and `shape-tech` cite it. It is policy only: no
+> **Shared policy.** `shape-product`, `shape-tech` and `research` cite it. It is policy only: no
 > flow. Each skill keeps its own questions. This file only says **who can answer** one.
 
 For each gap, decide who can answer it. A wrong choice costs much in both directions. If you research
@@ -29,8 +29,7 @@ faster and more exact than to make the user say their vague idea of the competit
 
 A gap that goes to **ask** uses one of your questions. A gap that goes to **research** does not. Use
 the skill `orc-curator:research` for it. It gathers evidence and **records nothing**: its caller
-writes the rows. When `orc-curator:research` is not installed, ask the user the question, or open a
-`Qn`.
+writes the rows.
 
 A gap that goes to **research** and is also a one-way door cannot wait for a later session. A one-way
 door is a choice where two answers give codebases that cannot cheaply become one another. Stop and ask

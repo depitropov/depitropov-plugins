@@ -81,9 +81,9 @@ dimensions again and do not answer for it.
 **(b) Show the backlog and offer to arrange it.** Step 4 filled `## Now`, `## Next` and `## Later`
 from the product talk alone, before the tech was known, and (a) can change what looks near-term.
 Show the count per horizon and the rows, and ask if a row must move before the constraints are
-derived from them. `orc-curator:backlog` is not built yet: when the user wants changes, tell them to
-edit `docs/curator/BACKLOG.md` by hand now, and wait until they say that it is done. On the setup branch, give them the full path: the folder the prompt says to work in, plus `/docs/curator/BACKLOG.md`. Say that their checkout has no such file until the branch is merged. By hand, the path is the project's own `docs/curator/BACKLOG.md`. When they want
-no change, say so and continue. This is a pause for review, not a required grooming.
+derived from them. When the user wants changes, invoke `orc-curator:backlog` with the line
+`Caller: setup` and their words. It walks the fallout and leaves the sweep to (c). When they want no
+change, say so and continue. This is a pause for review, not a required grooming.
 
 The order is important: groom before the sweep. `direction` derives from `## Now` and `## Next` as
 they are when it runs. A change after the sweep leaves `DIRECTION.md` about an arrangement that no
@@ -169,7 +169,7 @@ bootstrap copy, the reshape edits the user approved (Step 6), the commits and th
 a `TECH.md` row or a `Cn` yourself, and never ask again a dimension that shape-tech walked.
 
 **Four skills, and no others.** You invoke `orc-curator:shape-product`, `orc-curator:shape-tech`,
-`orc-curator:backlog` (when it is built, only when the user wants rows moved) and
+`orc-curator:backlog` (only when the user wants rows moved) and
 `orc-curator:direction`. Never `research` directly: the skills you invoke use it when their own
 rules say so.
 

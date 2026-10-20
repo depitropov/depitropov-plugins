@@ -15,6 +15,7 @@
 **Rulings in the plan:**
 - **Wide research and nesting (R4).** Every caller of `research` runs in the main session (`shape-tech`, `shape-product`, `direction`, and `curate` → `direction`), so its fan-out is one level deep and works on Claude Code and on Codex. When the harness cannot start agents, `research` researches each candidate in turn against the fixed axes, ranks only after the last one, and names the weaker anchoring guard in `Deviations/Warnings`.
 - **Who commits.** `research` and `backlog` commit only by hand. When a caller invokes them (`Caller: <name>`), the caller commits `docs/curator/` once, as `direction` already does (plan 2 ruling).
+- **`backlog` under `setup`.** With `Caller: setup`, `backlog` skips its sweep: setup runs `direction` next with shape-tech's `Constraints owed:` and `Worth reopening:` lines, which only setup has.
 - **Rows to `## Now`.** `backlog` moves a row to `## Now` when the user says so: that is intent, not a run (S76). A run never moves a row. "Promoting into Now is specify's" does not apply.
 - **The `refs` of a new row.** `backlog` writes the why; the brief's `Serves: Bn` line links the run, and `curate` writes the shipped-as cell. The spec stage only reads (S76).
 - **The in-flight guard** of minions' `backlog` is n/a: there is no run state to read. A run that is open on a dropped row is `curate`'s case: it asks at the end (plan 2).

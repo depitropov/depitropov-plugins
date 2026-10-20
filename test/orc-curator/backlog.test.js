@@ -22,6 +22,7 @@ test('backlog sweeps once at the end and never derives a constraint itself', () 
   assert.match(text, /orc-curator:direction/);
   assert.match(text, /Caller: backlog/);
   assert.match(text, /`## Later` only/);
+  assert.match(text, /`Caller: setup`\. Setup runs the sweep next/);
   assert.match(text, /Never read `docs\/curator\/TECH\.md` or source code/);
   assert.match(text, /Never write a `Cn`/);
   assert.match(text, /Never edit or delete a `Dn`/);

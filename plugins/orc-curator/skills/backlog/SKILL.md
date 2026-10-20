@@ -139,8 +139,10 @@ capability dimension to `shape-tech`, or a purpose change for `orc-curator:setup
 - to decide *whether* to sweep, you would have to do its arithmetic here, from a file that you do
   not read.
 
-**The one exception: skip it when each change touched `## Later` only.** Nothing reads that section,
-so nothing is owed. Say that you skipped it and why.
+**Skip it in two cases, and say which one:**
+
+- each change touched `## Later` only. Nothing reads that section, so nothing is owed;
+- `Caller: setup`. Setup runs the sweep next, with the lines of `shape-tech` that only it has.
 
 Read its return block and put its `Coverage:` line in your report. When it gives a purpose change,
 relay it word for word: it is the most important thing that either of you will say.
@@ -198,11 +200,11 @@ consequence, including the empty ones.
 Result: ok | blocked | needs-input
 Wrote: <files>
 Summary: <10 lines or fewer: one for each change, its consequences under it>
-Coverage: <the Coverage line of direction, or "sweep skipped: ## Later only">
+Coverage: <the Coverage line of direction, or "sweep skipped: ## Later only" or "sweep skipped: setup runs it">
 Escalated: <the purpose change of direction word for word, or "none">
 Deviations/Warnings: <or "none">
 ```
 
 `blocked` when `docs/curator/` does not exist. `needs-input` when a change needs a confirmation that
 the user cannot give now. `ok` when each change had its chain walked and the sweep ran (or was
-skipped for changes to `## Later` only).
+skipped for one of the two cases of Step 6).

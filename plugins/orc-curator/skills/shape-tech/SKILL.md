@@ -117,9 +117,6 @@ with its own move:
 
 Do not invoke it again with the topic in other words.
 
-When `orc-curator:research` is not installed, ask the user the question that it would settle, or
-open a `Qn`. Say so in the relay.
-
 ## Step 5: Decide with the user, then write
 
 Show each set of options and let the user pick. Then write each result by its kind. The ids, the
@@ -216,7 +213,8 @@ disagreement is a **new** row whose *Why* names what it reverses. But a call mad
 or true only *for now*, is always fair to challenge: say so in your relay and let the user decide.
 Settled is not the same as permanent.
 
-**Never make the ceremony larger than your caller set.** One named dimension means one dimension.
+**Never make the ceremony larger than your caller set.** One named dimension means one dimension
+(`<plugin>/references/right-sizing.md`).
 </HARD-GATE>
 
 ## Return
