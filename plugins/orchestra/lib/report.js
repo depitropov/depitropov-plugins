@@ -84,6 +84,7 @@ function writeReport(project, runDir, final, resolved) {
 
   const lines = ['# Run report', '', `- Status: ${final.action}`];
   if (final.reason) lines.push(`- Reason: ${final.reason}`);
+  if (final.note) lines.push(`- Note: ${final.note}`);
   if (run) lines.push(`- Branch: ${run.branch}`, `- Base: ${run.base}`);
   lines.push('', '## Plugins', '', ...list(Object.entries(resolved.slots).map(([slot, s]) => `${slot}: ${s.plugin} ${s.version}`)));
   lines.push('', '## Commits', '', ...list(commits ? commits.split('\n') : []));

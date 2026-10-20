@@ -15,9 +15,13 @@ already set up, you reshape.
 
 ## Step 1: Inputs
 
-- **From orchestra:** the input `done` (`docs/curator/.setup`) and the path of the result file. Work
-  in the worktree that the prompt names. The user is in the session.
-- **By hand:** an idea, or nothing.
+- **From orchestra, on its own branch:** the input `done` (`docs/curator/.setup`) and the path of the
+  result file. Work in the worktree that the prompt names, on the branch `curator/setup`. The user is
+  in the session.
+- **By hand**, or from `orchestra:run` on the default branch: an idea, or nothing.
+
+Setup never runs inside a feature run, so there is no task. A task the user named to start a run is
+not the product idea: do not shape it here.
 
 ## Step 2: Bootstrap
 
@@ -42,7 +46,7 @@ language…]`), `_none yet_`, or only the commented example block.
 
 ## Step 4: The product half
 
-Invoke `orc-curator:shape-product` and give it the user's idea, if there is one. In a run, the task text is a candidate `## Now` row to offer the user, not the product idea.
+Invoke `orc-curator:shape-product` and give it the user's idea, if there is one.
 
 When the project already has code (any source files outside `docs/`), say so in the call: it reads
 the README and the code first, states the existing product back to the user, writes it to
@@ -78,7 +82,7 @@ dimensions again and do not answer for it.
 from the product talk alone, before the tech was known, and (a) can change what looks near-term.
 Show the count per horizon and the rows, and ask if a row must move before the constraints are
 derived from them. `orc-curator:backlog` is not built yet: when the user wants changes, tell them to
-edit `docs/curator/BACKLOG.md` by hand now, and wait until they say that it is done. In a run, give them the full path: the folder the prompt says to work in, plus `/docs/curator/BACKLOG.md`. Say that their checkout has no such file until the branch is merged. By hand, the path is the project's own `docs/curator/BACKLOG.md`. When they want
+edit `docs/curator/BACKLOG.md` by hand now, and wait until they say that it is done. On the setup branch, give them the full path: the folder the prompt says to work in, plus `/docs/curator/BACKLOG.md`. Say that their checkout has no such file until the branch is merged. By hand, the path is the project's own `docs/curator/BACKLOG.md`. When they want
 no change, say so and continue. This is a pause for review, not a required grooming.
 
 The order is important: groom before the sweep. `direction` derives from `## Now` and `## Next` as
@@ -139,7 +143,7 @@ Then go to Step 7.
 
 ## Step 8: Result and relay
 
-When orchestra runs you, write the result JSON to the path that the prompt names: `{ "status": "ok" }`
+When orchestra runs you on its own branch, write the result JSON to the path that the prompt names: `{ "status": "ok" }`
 when the flag is written. When the product half stopped, or on an error, write
 `{ "status": "failed", "reason": "<what stopped or failed>" }`. For a stopped product interview, end the reason with "Run orchestra run again to resume the product interview." (by hand: "Run setup again to resume.").
 
@@ -151,8 +155,9 @@ Tell the user:
 - a purpose change that direction escalated, and that they run `orc-curator:setup` by hand to reshape;
 - shape-tech's `Worth reopening:` line word for word, or "none": only the user can reverse a
   `soft:` `Dn`;
-- in a run: the docs are on the run's task branch (in its worktree) until it is merged;
-- the next step: start a run with `orchestra:run`, or curate by hand.
+- on the setup branch: the docs are on `curator/setup` until it is merged;
+- the next step: on the default branch, push; on the setup branch, merge it. Then start a run with
+  `orchestra:run`, or curate by hand.
 
 ## Hard gate
 

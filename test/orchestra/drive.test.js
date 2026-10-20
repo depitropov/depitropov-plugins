@@ -375,20 +375,92 @@ test('a run started in the checkout by orchestra 0.10 gets its own failure on re
   assert.match(a.reason, /The run on task\/old started in your checkout before orchestra 0\.11\.0 and cannot resume in a worktree\. Finish it with orchestra 0\.10, or start it again\./);
 });
 
-test('with a curator: setup runs first, plan gets the curator guide, curate runs on done and is last in the report', () => {
-  const dir = project({ curator: true });
-  const setup = drive(dir, ['--task-file', '.orchestra/task.txt']);
-  assert.equal(setup.action, 'inline');
-  assert.equal(setup.skill, 'cur:setup');
-  assert.match(setup.prompt, /in this session/);
-  const root = wt(dir, setup);
+// The Curator's flag, committed and pushed on main, as setup on main leaves it.
+function setUpOnMain(dir) {
+  fs.mkdirSync(path.join(dir, 'docs/curator'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'docs/curator/.setup'), '');
+  git(dir, 'add', 'docs/curator');
+  git(dir, 'commit', '-m', 'docs(curator): setup done');
+  git(dir, 'push');
+}
+
+// Writes and commits the flag in a setup worktree, with an ok result.
+function finishSetup(dir, a) {
+  const root = wt(dir, a);
   fs.mkdirSync(path.join(root, 'docs/curator'), { recursive: true });
   fs.writeFileSync(path.join(root, 'docs/curator/.setup'), '');
   git(root, 'add', 'docs/curator');
-  git(root, 'commit', '-m', 'docs(curator): setup');
-  writeJson(path.join(root, setup.result), { status: 'ok' });
+  git(root, 'commit', '-m', 'docs(curator): setup done');
+  writeJson(path.join(root, a.result), { status: 'ok' });
+}
 
-  let a = drive(dir);
+test('with a curator not set up: the start makes no branch and no worktree, and says setup is needed', () => {
+  const dir = project({ curator: true });
+  const a = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  assert.deepEqual(a, { action: 'setup', skill: 'cur:setup', base: 'origin/main', reason: 'The Curator is configured, but it is not set up on origin/main: docs/curator/.setup is missing.' });
+  assert.equal(git(dir, 'branch', '--list', 'task/*'), '');
+  assert.equal(git(dir, 'worktree', 'list').split('\n').length, 1);
+});
+
+test('setup on its own branch: inline setup in a worktree, then the branch stays and the worktree goes', () => {
+  const dir = project({ curator: true });
+  const a = drive(dir, [], { setup: true });
+  assert.equal(a.action, 'inline');
+  assert.equal(a.skill, 'cur:setup');
+  assert.equal(a.branch, 'curator/setup');
+  assert.equal(a.worktree, '.orchestra/worktrees/curator/setup');
+  assert.equal(a.result, 'tmp/runs/curator/setup/setup.result.json');
+  assert.match(a.prompt, /in this session/);
+  finishSetup(dir, a);
+  const done = drive(dir);
+  assert.deepEqual(done, { action: 'setup-done', branch: 'curator/setup' });
+  assert.equal(git(dir, 'worktree', 'list').split('\n').length, 1);
+  assert.match(git(dir, 'log', '--oneline', 'curator/setup'), /docs\(curator\): setup done/);
+  assert.equal(drive(dir, [], { setup: true }).branch, 'curator/setup-2');
+});
+
+test('a failed setup on its branch stops once, then runs again', () => {
+  const dir = project({ curator: true });
+  const a = drive(dir, [], { setup: true });
+  writeJson(path.join(wt(dir, a), a.result), { status: 'failed', reason: 'user said no' });
+  const failed = drive(dir);
+  assert.equal(failed.action, 'failed');
+  assert.equal(failed.reason, 'user said no');
+  assert.equal(drive(dir).action, 'inline');
+  assert.match(drive(dir, [], { setup: true }).reason, /A Curator setup is open on curator\/setup\. Run orchestra run with no task to go on with it\./);
+});
+
+test('setup on its own branch fails when the Curator is set up or not configured', () => {
+  const dir = project({ curator: true });
+  setUpOnMain(dir);
+  assert.equal(drive(dir, [], { setup: true }).reason, 'The Curator is already set up on origin/main.');
+  assert.equal(drive(project(), [], { setup: true }).reason, 'No Curator is configured in .orchestra/config.json.');
+});
+
+test('a run that goes on without setup skips curate and says so in the report', () => {
+  const dir = project({ curator: true });
+  let a = drive(dir, ['--task-file', '.orchestra/task.txt'], { skipSetup: true });
+  assert.equal(a.skill, 'orc-standard-workflow:spec');
+  writeJson(path.join(wt(dir, a), a.result), { stage: 'spec', status: 'ok' });
+  a = drive(dir);
+  writeJson(path.join(wt(dir, a), a.result), { stage: 'plan', status: 'ok' });
+  a = drive(dir);
+  fs.writeFileSync(path.join(wt(dir, a), a.inputs.plan), '# Plan\n\n### T1 — a task\n');
+  writeJson(path.join(wt(dir, a), a.result), { stage: 'plan-check', status: 'ok' });
+  const code = drive(dir);
+  writeJson(path.join(wt(dir, code), code.result), { stage: 'code', status: 'ok' });
+  const review = toReview(dir);
+  writeJson(path.join(wt(dir, review), review.result), { stage: 'logic-review', status: 'ok' });
+  const done = afterReview(dir);
+  assert.equal(done.action, 'done');
+  assert.equal(done.note, 'curate skipped: the Curator is not set up');
+  assert.match(doneReport(dir, done), /^- Note: curate skipped: the Curator is not set up$/m);
+});
+
+test('with a curator set up: plan gets the curator guide, curate runs on done and is last in the report', () => {
+  const dir = project({ curator: true });
+  setUpOnMain(dir);
+  let a = drive(dir, ['--task-file', '.orchestra/task.txt']);
   assert.equal(a.skill, 'orc-standard-workflow:spec');
   assert.doesNotMatch(a.prompt, /cur:plan-guide/);
   writeJson(path.join(wt(dir, a), a.result), { stage: 'spec', status: 'ok' });
@@ -408,12 +480,17 @@ test('with a curator: setup runs first, plan gets the curator guide, curate runs
   assert.equal(curate.action, 'inline');
   assert.equal(curate.skill, 'cur:curate');
   assert.equal(curate.inputs.brief, 'docs/runs/task/add-a-discount/brief.md');
+  fs.writeFileSync(path.join(wt(dir, curate), 'docs/curator/BACKLOG.md'), '# half done\n');
+  const dirty = drive(dir, [], { resume: true });
+  assert.match(dirty.reason, /If a stopped curate left them, discard them; it runs again\./);
+  fs.rmSync(path.join(wt(dir, curate), 'docs/curator/BACKLOG.md'));
   writeJson(path.join(wt(dir, curate), curate.result), { status: 'ok' });
 
   const done = drive(dir);
   assert.equal(done.action, 'done');
-  const rows = doneReport(dir, done).split('\n').filter(l => /^\| (setup|spec|curate|phase-finish) \|/.test(l)).map(l => l.split(' | ')[0].slice(2));
-  assert.deepEqual(rows, ['setup', 'spec', 'phase-finish', 'curate']);
+  assert.equal(done.note, undefined);
+  const rows = doneReport(dir, done).split('\n').filter(l => /^\| (spec|curate|phase-finish) \|/.test(l)).map(l => l.split(' | ')[0].slice(2));
+  assert.deepEqual(rows, ['spec', 'phase-finish', 'curate']);
 });
 
 test('without a curator no action is inline', () => {
@@ -421,36 +498,4 @@ test('without a curator no action is inline', () => {
   const a = drive(dir, ['--task-file', '.orchestra/task.txt']);
   assert.equal(a.action, 'dispatch');
   assert.equal(a.skill, 'orc-standard-workflow:spec');
-});
-
-test('a failed setup retries without a false spec failure, then the spec dispatches', () => {
-  const dir = project({ curator: true });
-  const setup = drive(dir, ['--task-file', '.orchestra/task.txt']);
-  assert.equal(setup.action, 'inline');
-  const root = wt(dir, setup);
-  writeJson(path.join(root, setup.result), { status: 'failed', reason: 'user said no' });
-  const failed = drive(dir);
-  assert.equal(failed.action, 'failed');
-  assert.equal(failed.reason, 'user said no');
-  assert.equal(drive(dir).action, 'inline');
-  fs.mkdirSync(path.join(root, 'docs/curator'), { recursive: true });
-  fs.writeFileSync(path.join(root, 'docs/curator/.setup'), '');
-  git(root, 'add', 'docs/curator');
-  git(root, 'commit', '-m', 'docs(curator): setup');
-  writeJson(path.join(root, setup.result), { status: 'ok' });
-  const a = drive(dir);
-  assert.equal(a.action, 'dispatch');
-  assert.equal(a.skill, 'orc-standard-workflow:spec');
-});
-
-test('a resume after a stopped Curator skill says to discard its files', () => {
-  const dir = project({ curator: true });
-  const setup = drive(dir, ['--task-file', '.orchestra/task.txt']);
-  assert.equal(setup.action, 'inline');
-  fs.mkdirSync(path.join(wt(dir, setup), 'docs/curator'), { recursive: true });
-  fs.writeFileSync(path.join(wt(dir, setup), 'docs/curator/BACKLOG.md'), '# half done\n');
-  const a = drive(dir, [], { resume: true });
-  assert.equal(a.action, 'failed');
-  assert.match(a.reason, /docs\//);
-  assert.match(a.reason, /If a stopped Curator skill \(setup or curate\) left them, discard them; it runs again\./);
 });

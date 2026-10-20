@@ -288,7 +288,7 @@ wording change needs no entry.
 ## S76: The Curator as a slot plugin, fed by guides by role
 
 - **Date:** 2026-10-16
-- **Status:** decided
+- **Status:** decided; its setup point (option 8, setup inline before the first stage) is replaced by S77
 - **Question:** How does minions' curate part (the backlog, product, direction, decisions and questions of a vibe-coded project) become the Curator, plug into orchestra, and stay usable without it? Who calls curate after a run (O3)?
 - **Options:**
   1. What it owns.
@@ -332,3 +332,45 @@ wording change needs no entry.
 - **Decision:** As the S76 row in `docs/TENSIONS.md`, with the design in `docs/superpowers/specs/2026-10-16-curator-design.md`. Research stays out of the spec and plan stages. A code guide carries two rules: CONTEXT words in names, and only `Dn` cited in code. `setup` and `curate` run inline in the main session through a new `inline` action that only `drive.js` prints. Amendment (plan 2): curate ships a `Serves` row found in Later, and before it adds a row for `Serves: new` it checks Now, Next and Later and asks the user on a match, so no row is duplicated. The plan guide writes a `Warning:` line under `## Approach` for a `Cn` the plan cannot satisfy, and plan-check raises an applicable `Cn` with neither a task nor a `Warning:` line as Patch. Amendment (plan 3): setup writes its flag only when the product half is confirmed (a stopped product interview reruns setup; an open tech or direction question does not), and on a project with code it states the existing product back instead of exploring from zero.
 - **Cost and risk:** About 2,000 lines of source to port, in four plans. Two open runs can both edit `docs/curator/BACKLOG.md`, so their merges conflict (O10). A run that starts before the setup branch is merged runs setup again. The backlog row a run serves can be dropped while it is open; curate asks. `setup` and `curate` run in the main session, which the Codex path has not tested. A session stopped in the middle of curate runs it again from the start on resume. The Stack Skills guides change mechanism, so `orc-java-stack` and the stage skills change with plan 1.
 - **Where it lives:** the spec above; later `plugins/orc-curator/`, `plugins/orchestra/lib/protocol.js`, `plugins/orchestra/lib/check.js`, `plugins/orchestra/bin/drive.js`, `plugins/orc-standard-workflow/bin/next.js` and its stage skills, the skills `orchestra:init`, `orchestra:run` and `orchestra:writing-plugins`.
+
+## S77: The Curator's setup runs apart from a feature run
+
+- **Date:** 2026-10-20
+- **Status:** decided
+- **Question:** The first real run with the Curator ran setup inside the feature run: one branch, one
+  worktree and one conversation for both, and their questions overlapped. How should orchestra start a
+  run when a Curator is configured but not set up?
+- **Options:**
+  1. Keep setup inline before the first stage (S76). The task text pulls the product interview into
+     feature detail, and the Curator docs reach the default branch only with the feature.
+  2. Never run setup inside a feature run. Check the flag on `origin/<default>` at the start; when it is
+     missing, create no branch and let the user choose: set up on the default branch now, set up on
+     its own branch, or go on without setup. Chosen.
+  3. Run setup from `orchestra:init` only. A Curator added later never gets set up (O11).
+- **Evidence:** the run on `~/Projects-other/orchestra-sample-java`, branch
+  `task/add-a-minimum-order-value-to-pricecalcul`, base 99df3ca, plugins 0.15.0, status `done`.
+  Mechanically it worked end to end: the inline setup, the flag, the spec guide's `## Direction`, the
+  plan guide's `C1` and `Warning:` line, and an inline curate that shipped B1, closed Q1 and retired C1.
+  But setup asked 10 questions, and 3 of them (what happens below the minimum, who sets it, is an equal
+  amount accepted) were about the feature, not the product: `shape-product` saw the task text and turned
+  the feature into D4, D5, B1 and C1, which is the spec stage's work. `shape-tech` transcribed Java 21,
+  Maven, JUnit and Spotless from the code without a question, so the evidence gate works on a repo with
+  code. The run's logs were lost with the worktree at `done`. This run is the outcome of plan 3's done
+  test (Task 6 of `docs/superpowers/plans/2026-10-19-curator-setup.md`); its second run (no setup on a
+  set-up project) is still owed and runs with the new flow.
+- **Decision:** As the S77 row in `docs/TENSIONS.md`. One flag check at the start replaces the check
+  before every dispatch, so the change is mostly a deletion; it also removes the held-back first
+  dispatch, which gave the spec stage only one real dispatch on a setup run. orchestra still never
+  edits the user's checkout by itself: the setup on the default branch runs only when the user chooses
+  it, and the Curator's own skill writes and commits. The "go on" choice is not remembered: every start
+  asks again.
+- **Cost and risk:** A user with a task in mind must stop, set up, merge and start again; choice 3 lets
+  them go on. A run that starts before the setup branch is merged offers setup again. Setup by hand on
+  the default branch commits there, which the user must push. The setup skill on the default branch
+  gets no inputs and writes no result file, so orchestra cannot see it fail; the next start checks the
+  flag again.
+- **Where it lives:** `plugins/orchestra/bin/drive.js` (`start`, `startSetup`, `setupStep`),
+  `plugins/orchestra/lib/curator.js` (`setUp`), `plugins/orchestra/lib/worktree.js` (`find` by prefix),
+  `plugins/orchestra/lib/report.js` (the `Note:` line), the skills `orchestra:run`,
+  `orchestra:writing-plugins`, `orchestra:init` and `orc-curator:setup`, `docs/DESIGN.md` §5.2 and §9a,
+  `docs/superpowers/specs/2026-10-16-curator-design.md`.

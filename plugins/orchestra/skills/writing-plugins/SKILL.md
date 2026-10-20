@@ -31,7 +31,7 @@ check is the guarantee: run it when you finish (last section).
 | `measure` | `stack-skills` | The shape measurement for a gate that asks for it. `run`: a command that measures the changed code against `{base}`, the run's base commit, and prints its verdict. `rules`: optional, a skill with the stack's clean-code rules. A stack with no `measure` gives the gate no measurement. |
 | `guides` | `stack-skills`, `curator` | `{ "<role>": "<skill>" }`: a guide, a skill with short write-time rules, for the stages of one role. The roles are `spec`, `plan` and `code`. orchestra lists the guides of a stage's role in its prompt. A project turns one off with `disable`. |
 | `curate` | `curator`, required | The skill that brings the project's direction docs up to date at the end of a run. orchestra runs it in the main session, not in a subagent, when the workflow is done. |
-| `setup` | `curator`, required | `skill`: the skill that sets the Curator up in a project; it may interview the user. `done`: a file path relative to the project root. The skill writes this file as its last step. orchestra checks the file on every run and runs the skill when it is missing. |
+| `setup` | `curator`, required | `skill`: the skill that sets the Curator up in a project; it may interview the user. `done`: a file path relative to the project root. The skill writes this file as its last step. orchestra checks the file on the default branch when a run starts. When it is missing, no task branch is made, and the user chooses to set up first or to go on without it. |
 | `roles` | `workflow` | The roles of its stages, each once: `spec`, `plan`, `code`. orchestra check fails when a slot plugin declares a guide for a role that is not here. |
 
 In a command, `{plugin}` is the plugin's folder. In a gate's `run` or `grep`, `{config.<key>}` is
@@ -64,8 +64,12 @@ fixed by orchestra, not by you.
 A Curator keeps a project's direction docs current. orchestra knows only its declaration: `curate`,
 `setup` and `guides`. Both skills run in the main session, so they may ask the user questions.
 
-- `setup` runs before the first stage when the `done` file is missing. It commits its files and
-  writes `done` last, so a setup that stops half-way runs again.
+- `setup` never runs inside a feature run. When a run starts and the `done` file is missing on the
+  default branch, orchestra makes no task branch and the user chooses: set up on the default branch
+  (the skill runs by hand, with no inputs), set up on its own branch `curator/setup` (an `inline`
+  action with the input `done`), or go on without setup. The skill commits its files and writes
+  `done` last, so a setup that stops half-way runs again.
+- `curate` is skipped when the `done` file is missing in the run, and the report says so.
 - `curate` runs when the workflow is done, before the report. Its inputs are `base`, `brief` and
   `notes`. It commits its edits.
 - Each writes the result JSON `{ "status": "ok" }`, or `{ "status": "failed", "reason": "…" }`.

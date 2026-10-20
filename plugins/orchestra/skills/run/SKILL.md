@@ -52,6 +52,18 @@ The command prints one JSON line. It names the run's `branch`, and `worktree`, t
 the run is open. Tell the user both once, when the run starts. Every path in the action is relative to
 `worktree`. Act on its `action`:
 
+- `setup`: no run started, and no branch or worktree was made. Show the `reason`. Ask the user to
+  choose one of three:
+  1. **Set up on the default branch now.** Check that the checkout is on the branch that `base`
+     names (without `origin/`), that it is clean, and that it is not behind `base`. If not, say what
+     is wrong and stop. Then invoke the skill `skill` in this session, in the checkout, with no
+     inputs. It interviews the user and commits on that branch. Tell the user to push, then to start
+     the run again.
+  2. **Set up on its own branch.** Run `node <orchestra>/bin/drive.js --setup`. It prints an
+     `inline` action on a new branch `curator/setup`. Act on it as below.
+  3. **Go on without setup.** Run the start command again with `--skip-setup`. The run starts, and
+     curate is skipped at the end. The next run asks again.
+
 - `dispatch`: dispatch a general-purpose subagent with a clean context. It must be able to read and
   edit files and run shell commands. Give it the `prompt` text exactly. Wait
   until it finishes. Then run `node <orchestra>/bin/drive.js` again, with no task.
@@ -59,8 +71,11 @@ the run is open. Tell the user both once, when the run starts. Every path in the
   Curator skill that may talk to the user. Follow the `prompt` text exactly: invoke the skill it
   names, ask the user its questions, work only in `worktree`, and write the result file. Then run
   `node <orchestra>/bin/drive.js` again, with no task.
+- `setup-done`: the Curator setup is committed on `branch`, and its worktree is removed. Tell the
+  user to merge `branch` into the default branch, then to start the run again. If the action has
+  `kept`, say so as for `done`.
 - `done`: tell the user the run is done, on which `branch`, and that they read the report with
-  `git show <branch>:<report>`. If the action has `kept`, say the worktree `<worktree>` was kept and show `kept`. When the user has dealt with the files, they remove it with `git worktree remove <worktree>`.
+  `git show <branch>:<report>`. If the action has `note`, show it. If the action has `kept`, say the worktree `<worktree>` was kept and show `kept`. When the user has dealt with the files, they remove it with `git worktree remove <worktree>`.
 - `failed`: show the `reason`, the `branch`, and `<worktree>/<report>` when the action has them.
 - `decide`: show each line of `questions` and `<worktree>/<report>`. The user answers in
   `decisions.md` in the notes folder inside `<worktree>`: a **new** section `## <gate>` at the end of the file, with
@@ -70,13 +85,14 @@ the run is open. Tell the user both once, when the run starts. Every path in the
   `questions` and the answer in their words exactly. Then run `node <orchestra>/bin/drive.js --resume`.
   Otherwise tell the user to call orchestra run again after they write it.
 
-Stop after `done`, `failed` or `decide`.
+Stop after `setup`'s choice is carried out, and after `setup-done`, `done`, `failed` or `decide`.
 
 ## Permitted actions
 
-- Do not edit project files yourself. Subagents do the work in the run's worktree. Two exceptions:
-  the user's answers to a `decide`, written to `decisions.md` inside the worktree as above, and the
-  work of an `inline` action.
+- Do not edit project files yourself. Subagents do the work in the run's worktree. Three exceptions:
+  the user's answers to a `decide`, written to `decisions.md` inside the worktree as above, the
+  work of an `inline` action, and the setup skill in the checkout when the user chose it at a
+  `setup`.
 - Do not change the order, skip a dispatch or run a stage that was not printed.
 - Do not push and do not open a pull request.
 - If you cannot dispatch a subagent, stop the run. Tell the user that orchestra needs subagents:

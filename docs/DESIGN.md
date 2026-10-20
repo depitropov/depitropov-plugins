@@ -155,9 +155,12 @@ It is the only interactive skill in phase 1.
    versions.
 3. Runs `orchestra check` on the config against `resolved.json`, inside `resolve.js` (S70).
 4. Runs the **driver loop** (section 3). The driver loop and the action protocol belong to orchestra,
-   not to each workflow (S52). The driver loop also prints `inline` for the Curator: its `setup`
-   before the first stage while the `done` file is missing, and its `curate` when the workflow is
-   done. `orchestra:run` carries out an `inline` action in the main session (S76).
+   not to each workflow (S52). The driver loop also prints `inline` for the Curator's `curate` when
+   the workflow is done. `orchestra:run` carries out an `inline` action in the main session (S76).
+   Setup never runs inside a run (S77): when the Curator's `done` file is missing on
+   `origin/<default>`, the start creates no branch and returns `setup`. The user sets up on the
+   default branch, on its own branch `curator/setup` (`drive.js --setup`, an `inline` action), or
+   goes on without it (`--skip-setup`; curate is then skipped).
 5. Shows the status and the report path.
 
 Arguments that the workflow declares are forwarded unread (S41). `orchestra:run --help` lists
@@ -406,7 +409,7 @@ can also be invoked by hand on any branch. Each finding cites `file:line` and th
 | Part | Required | Meaning |
 |---|---|---|
 | `curate` | yes | The skill that updates the direction docs when the workflow is done. Runs inline in the main session; inputs `base`, `brief`, `notes`; it commits its edits. |
-| `setup` | yes | `{ skill, done }`. The skill runs inline before the first stage while the file `done` is missing; it writes `done` last. |
+| `setup` | yes | `{ skill, done }`. A run start with no `done` file on the default branch offers the skill, apart from the run: by hand on the default branch, or inline on its own branch (S77). It writes `done` last. |
 | `guides` | no | As for Stack Skills; listed before the Stack Skills guides. |
 | `manifest` skill | yes | Resolution (5.2). |
 

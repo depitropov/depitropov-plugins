@@ -31,17 +31,22 @@ function commitLeftovers(project) {
   commitAll(project, 'orchestra: commit work left uncommitted');
 }
 
+// A Curator setup that runs on its own branch, apart from any feature run (S77).
+const SETUP = 'curator/setup';
+
 // Starts or finds the run's worktree, then drives the run there. The checkout is never touched (S74).
-function drive(project, extraArgs = [], { resume = false, branch } = {}) {
+function drive(project, extraArgs = [], { resume = false, branch, setup = false, skipSetup = false } = {}) {
   project = fs.realpathSync(project);
   load(project);
-  if (extraArgs.length) return start(project, path.resolve(project, extraArgs[1]));
-  const runs = worktree.find(project).filter(r => !branch || r.branch === branch);
+  if (setup) return startSetup(project);
+  if (extraArgs.length) return start(project, path.resolve(project, extraArgs[1]), skipSetup);
+  const runs = [...worktree.find(project), ...worktree.find(project, SETUP, '')].filter(r => !branch || r.branch === branch);
   if (!runs.length) return { action: 'failed', reason: branch ? `No run on branch "${branch}".` : noRun(project) };
   if (runs.length > 1) return { action: 'failed', reason: `Several runs are open: ${runs.map(r => r.branch).join(', ')}. Name one with --branch <name>.` };
   const root = runs[0].root;
   if (configDiffers(project, root)) return { action: 'failed', reason: configReason("the run's base commit") };
   copyResolved(project, root);
+  if (runs[0].branch.startsWith(SETUP)) return answer(project, root, setupStep(root, runs[0].branch));
   return answer(project, root, step(root, [], resume));
 }
 
@@ -58,19 +63,32 @@ const readConfig = dir => JSON.parse(fs.readFileSync(path.join(dir, '.orchestra'
 const configDiffers = (project, root) => !isDeepStrictEqual(readConfig(project), readConfig(root));
 const configReason = base => `.orchestra/config.json in your checkout differs from the one on ${base}. Commit and push it, then run again.`;
 
-function start(project, taskFile) {
+// A detached worktree on origin/<default> whose config matches the checkout's, or a failed action.
+function open(project) {
   const made = worktree.create(project);
-  if (made.failed) return { action: 'failed', reason: made.failed };
+  if (made.failed) return { failed: { action: 'failed', reason: made.failed } };
+  const reason = !fs.existsSync(path.join(made.root, '.orchestra', 'config.json'))
+    ? `.orchestra/config.json is not on ${made.base}. Commit and push it, then run again.`
+    : configDiffers(project, made.root) ? configReason(made.base) : null;
+  if (reason) {
+    worktree.remove(project, made.root);
+    return { failed: { action: 'failed', reason } };
+  }
+  copyResolved(project, made.root);
+  return made;
+}
+
+function start(project, taskFile, skipSetup) {
+  const made = open(project);
+  if (made.failed) return made.failed;
   let root = made.root;
-  if (!fs.existsSync(path.join(root, '.orchestra', 'config.json'))) {
+  // Setup never runs inside a feature run (S77): with no flag on the base, no task branch is made.
+  const resolved = load(root);
+  if (!skipSetup && curator.setUp(root, resolved) === false) {
     worktree.remove(project, root);
-    return { action: 'failed', reason: `.orchestra/config.json is not on ${made.base}. Commit and push it, then run again.` };
+    const c = resolved.slots.curator;
+    return { action: 'setup', skill: `${c.plugin}:${c.declaration.setup.skill}`, base: made.base, reason: `The Curator is configured, but it is not set up on ${made.base}: ${c.declaration.setup.done} is missing.` };
   }
-  if (configDiffers(project, root)) {
-    worktree.remove(project, root);
-    return { action: 'failed', reason: configReason(made.base) };
-  }
-  copyResolved(project, root);
   const first = step(root, ['--task-file', taskFile], false);
   const name = git(root, 'branch', '--show-current');
   if (!name) {
@@ -87,6 +105,30 @@ function copyResolved(project, root) {
   fs.copyFileSync(path.join(project, '.orchestra', 'resolved.json'), path.join(root, '.orchestra', 'resolved.json'));
 }
 
+function startSetup(project) {
+  const busy = worktree.find(project, SETUP, '');
+  if (busy.length) return { action: 'failed', reason: `A Curator setup is open on ${busy[0].branch}. Run orchestra run with no task to go on with it.` };
+  const made = open(project);
+  if (made.failed) return made.failed;
+  const set = curator.setUp(made.root, load(made.root));
+  if (set !== false) {
+    worktree.remove(project, made.root);
+    return { action: 'failed', reason: set ? `The Curator is already set up on ${made.base}.` : 'No Curator is configured in .orchestra/config.json.' };
+  }
+  const taken = git(project, 'for-each-ref', '--format=%(refname:lstrip=-2)', 'refs/heads/curator', 'refs/remotes/origin/curator').split('\n');
+  let name = SETUP;
+  for (let n = 2; taken.includes(name); n++) name = `${SETUP}-${n}`;
+  git(made.root, 'switch', '-q', '-c', name);
+  fs.mkdirSync(path.join(made.root, 'tmp', 'runs', name), { recursive: true });
+  const root = worktree.rename(project, made.root, name);
+  return answer(project, root, setupStep(root, name));
+}
+
+// The setup branch has no run: inline setup until the flag is written, then the worktree goes and the branch stays.
+function setupStep(root, branch) {
+  return curator.setup(root, path.join('tmp', 'runs', branch), load(root)) || { action: 'setup-done' };
+}
+
 // The model is told the branch and the worktree on every action, so it never guesses where the commits went.
 function answer(project, root, action) {
   const prompts = {
@@ -95,7 +137,7 @@ function answer(project, root, action) {
   };
   const prompted = prompts[action.action] ? prompts[action.action](action) : action;
   const out = { ...prompted, branch: git(root, 'branch', '--show-current'), worktree: path.relative(project, root) };
-  if (action.action !== 'done') return out;
+  if (action.action !== 'done' && action.action !== 'setup-done') return out;
   const kept = worktree.remove(project, root);
   if (kept) return { ...out, kept };
   delete out.worktree;
@@ -110,14 +152,6 @@ function remember(project, a) {
   if (!list.includes(name)) fs.writeFileSync(file, JSON.stringify([...list, name]) + '\n');
 }
 
-function setupAction(project, runDir, resolved) {
-  const held = curator.setup(project, runDir, resolved);
-  if (!held) return null;
-  if (held.action === 'failed') return finish(project, held, resolved);
-  remember(project, held);
-  return held;
-}
-
 function step(project, extraArgs, resume) {
   const resolved = load(project);
   if (resume) {
@@ -125,19 +159,13 @@ function step(project, extraArgs, resume) {
     const dirty = dirtyFiles(project);
     if (dirty.length) {
       const files = dirty.slice(0, 5).join(', ') + (dirty.length > 5 ? ', …' : '');
-      return { action: 'failed', reason: `Files changed since the run stopped: ${files}. If a stopped subagent left them, commit them. If a stopped Curator skill (setup or curate) left them, discard them; it runs again. If they are yours, stash them. Then run again.` };
+      return { action: 'failed', reason: `Files changed since the run stopped: ${files}. If a stopped subagent left them, commit them. If a stopped curate left them, discard them; it runs again. If they are yours, stash them. Then run again.` };
     }
   } else if (!extraArgs.length) {
     commitLeftovers(project);
   }
   const config = JSON.parse(fs.readFileSync(path.join(project, '.orchestra', 'config.json'), 'utf8'));
   const nextJs = path.join(resolved.slots.workflow.dir, 'bin', 'next.js');
-  // On a running run, setup is checked before next.js, so a held-back dispatch never uses up the stage's dispatch count.
-  const runDir = path.join('tmp', 'runs', git(project, 'branch', '--show-current'));
-  if (!extraArgs.length && fs.existsSync(path.join(project, runDir, 'run.json'))) {
-    const held = setupAction(project, runDir, resolved);
-    if (held) return held;
-  }
   let args = extraArgs;
   for (;;) {
     const a = validateAction(callNext(nextJs, project, args));
@@ -145,13 +173,12 @@ function step(project, extraArgs, resume) {
     if (a.action === 'dispatch') {
       const bad = roleError(a, resolved.slots.workflow.declaration);
       if (bad) return finish(project, { action: 'failed', reason: bad, runDir: a.runDir }, resolved);
-      // ponytail: on the start call only, the held-back dispatch counts as one of the workflow's two dispatches of that stage; once per run that needs setup.
-      const held = setupAction(project, a.runDir, resolved);
-      if (held) return held;
       remember(project, a);
       return a;
     }
-    if (a.action === 'done') {
+    // A run that went on without setup (S77) has no Curator docs to curate.
+    if (a.action === 'done' && curator.setUp(project, resolved) === false) a.note = 'curate skipped: the Curator is not set up';
+    else if (a.action === 'done') {
       const c = curator.curate(project, a.runDir, resolved);
       if (c) return c.action === 'failed' ? finish(project, c, resolved) : c;
     }
@@ -172,7 +199,7 @@ if (require.main === module) {
   const opt = name => (argv.includes(name) ? argv[argv.indexOf(name) + 1] : undefined);
   try {
     const task = opt('--task-file');
-    console.log(JSON.stringify(drive(process.cwd(), task ? ['--task-file', task] : [], { resume: argv.includes('--resume'), branch: opt('--branch') })));
+    console.log(JSON.stringify(drive(process.cwd(), task ? ['--task-file', task] : [], { resume: argv.includes('--resume'), branch: opt('--branch'), setup: argv.includes('--setup'), skipSetup: argv.includes('--skip-setup') })));
   } catch (e) {
     console.log(JSON.stringify({ action: 'failed', reason: e.message }));
     process.exitCode = 1;

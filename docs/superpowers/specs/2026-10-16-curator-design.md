@@ -13,7 +13,8 @@ Orchestra stays free of any knowledge of direction docs. It sees only the Curato
 `curate`, `setup` and `guides`.
 
 Success: on the sample repo, with `orc-curator` in the `curator` slot:
-1. The first `orchestra:run` runs `setup` once, and the second run does not.
+1. The first `orchestra:run` stops before any branch and offers `setup`; once setup is merged, the
+   next run does not (S77).
 2. The brief names the backlog row it serves.
 3. The plan prompt lists `orc-curator:plan-guide`.
 4. At `done`, `curate` moves the row to Shipped and commits on the task branch.
@@ -33,7 +34,7 @@ Success: on the sample repo, with `orc-curator` in the `curator` slot:
 | 8 | Who writes the docs in a run | `curate` alone, at the end. Spec only reads. Accepted losses: Now no longer means "in progress", and the product answers of a failed run stay in its notes folder. |
 | 9 | Questions in a run | Allowed. `setup` and `curate` run inline in the main session and ask the user directly. Sure edits are committed with the answered ones. |
 | 10 | New `Cn` constraints | `curate` runs the direction sweep. Sure `Cn` rows are committed; the others are questions. |
-| 11 | Setup | The Curator declares a flag file. Every run checks it; a missing flag runs `setup`. |
+| 11 | Setup | The Curator declares a flag file. Every run checks it; a missing flag runs `setup`. Changed by S77: the start offers `setup` apart from the run. |
 | 12 | What the slot contract requires | `curate` and `setup`. `guides` are optional. `backlog` is plugin-only. |
 | 13 | Research in spec and plan | No. Research runs in `direction` and `shape-tech` only. |
 | 14 | A code guide | Yes: CONTEXT words in names; only `Dn` may be cited in code. |
@@ -79,8 +80,8 @@ The guard has two sides:
 ### The `inline` action
 
 `setup` and `curate` run in the main session, not in a subagent. They interview the user, and they
-may start subagents (`research` in `wide` mode). `setup` comes before the first stage and `curate`
-after the last gate, so neither fills the context of a stage.
+may start subagents (`research` in `wide` mode). `setup` runs apart from any feature run (S77) and
+`curate` after the last gate, so neither fills the context of a stage.
 
 `drive.js` returns a new action for them, `inline`, with `skill`, `inputs`, `result` and the
 worktree. The `orchestra:run` skill invokes the skill in the main session, works in the worktree,
@@ -89,13 +90,22 @@ and writes the result JSON that the skill describes. Then it calls `drive.js` ag
 
 ### Setup
 
-After `next.js` has created the task branch and before the first stage is dispatched, `drive.js`
-checks the curator's `setup.done` file in the run root. When it is missing, `drive.js` returns an
-`inline` action for the setup skill. The skill commits the docs and the flag on the task branch. On
-the next call `drive.js` checks the flag again.
+Setup never runs inside a feature run (S77). When a run starts, `drive.js` checks the curator's
+`setup.done` file in the new worktree on `origin/<default>`. When it is missing, it removes the
+worktree, creates no task branch, and returns a `setup` answer with the setup skill's name. The
+`orchestra:run` skill offers three choices:
 
-The check runs on every call, so a Curator added after `orchestra:init` gets its setup on the next
-run. A run that starts before the setup branch is merged runs setup again (O10).
+1. Set up on the default branch now. The skill checks that the checkout is on the default branch,
+   clean and up to date, then invokes the setup skill there, by hand. Setup commits on that branch;
+   the user pushes and starts the run again.
+2. Set up on its own branch. `drive.js --setup` creates the branch `curator/setup` (then `-2`, `-3`)
+   in its own worktree and returns an `inline` setup action there. When the flag is written, the
+   next call removes the worktree, keeps the branch and returns `setup-done`. The user merges it.
+3. Go on without setup (`--skip-setup`). The guides do nothing while `docs/curator/` is missing. At
+   `done`, curate is skipped and the report says so. The next run asks again.
+
+The check runs on every start, so a Curator added after `orchestra:init` gets its setup offered on
+the next run. A run that starts before the setup branch is merged offers setup again.
 
 ### Curate at the end
 
@@ -118,7 +128,7 @@ the committed docs.
 | Skill | Runs | Writes | Port of |
 |---|---|---|---|
 | `manifest` | resolution | — | the orchestra pattern |
-| `setup` | main session; first run or by hand | PRODUCT, BACKLOG, DECISIONS, QUESTIONS, the flag; runs shape-product, shape-tech, backlog, direction | `shape-project` |
+| `setup` | main session; before the first run (offered at its start) or by hand | PRODUCT, BACKLOG, DECISIONS, QUESTIONS, the flag; runs shape-product, shape-tech, backlog, direction | `shape-project` |
 | `shape-product` | main session | PRODUCT, BACKLOG Vision and rows, DECISIONS, QUESTIONS | `shape-product` |
 | `shape-tech` | main session | TECH, DECISIONS, QUESTIONS | `shape-tech` |
 | `research` | main session | `research/` notes only | `research` |

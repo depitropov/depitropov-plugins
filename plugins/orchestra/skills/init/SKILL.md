@@ -32,7 +32,7 @@ Ask the user which plugin fills each slot. Offer only the plugins of that slot. 
 plugin, propose it and ask for a yes. When the `workflow` or the `stack-skills` slot has no plugin, tell the user that orchestra needs one
 plugin for each of these two slots, and stop.
 
-The `curator` slot is optional. When a Curator plugin is in the list, ask the user if the project wants it; it keeps the project's backlog and direction docs current, and it sets up the Curator's docs on the first run. When there is none, leave the slot out.
+The `curator` slot is optional. When a Curator plugin is in the list, ask the user if the project wants it; it keeps the project's backlog and direction docs current, and its setup writes the Curator's docs before the first run. When there is none, leave the slot out.
 
 ## 4. Write
 

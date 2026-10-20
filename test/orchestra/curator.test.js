@@ -23,6 +23,15 @@ test('no curator slot: nothing to do', () => {
   assert.equal(curator.curate(dir, RUN, { slots: {} }), null);
 });
 
+test('setUp: null without a curator, else whether the flag exists', () => {
+  const dir = root();
+  assert.equal(curator.setUp(dir, { slots: {} }), null);
+  assert.equal(curator.setUp(dir, resolved), false);
+  fs.mkdirSync(path.join(dir, 'docs/curator'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'docs/curator/.setup'), '');
+  assert.equal(curator.setUp(dir, resolved), true);
+});
+
 test('a missing flag gives an inline setup; the flag ends it', () => {
   const dir = root();
   assert.deepEqual(curator.setup(dir, RUN, resolved), { action: 'inline', skill: 'cur:setup', inputs: { done: 'docs/curator/.setup' }, result: `${RUN}/setup.result.json`, runDir: RUN });

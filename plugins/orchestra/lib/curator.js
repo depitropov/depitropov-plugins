@@ -2,8 +2,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-// The Curator runs in the main session, not in a subagent, so it can ask the user (S76): setup once,
-// before the first stage, while its flag file is missing; curate when the workflow is done.
+// The Curator runs in the main session, not in a subagent, so it can ask the user (S76). Setup runs
+// apart from a feature run, on the default branch or its own branch (S77); curate when the workflow is done.
 
 function readResult(file) {
   if (!fs.existsSync(file)) return null;
@@ -32,6 +32,12 @@ function settle(project, a) {
   return { action: 'failed', reason: res.reason || `${a.skill} failed. See ${a.result}.`, runDir: a.runDir };
 }
 
+// null when no Curator is configured; else whether its flag file is in `dir`.
+function setUp(dir, resolved) {
+  const c = resolved.slots.curator;
+  return c ? fs.existsSync(path.join(dir, c.declaration.setup.done)) : null;
+}
+
 function setup(project, runDir, resolved) {
   const c = resolved.slots.curator;
   if (!c) return null;
@@ -54,4 +60,4 @@ function curate(project, runDir, resolved) {
   return settle(project, inline(c, c.declaration.curate, 'curate', runDir, { base: run.base, brief: run.spec, notes: run.docs }));
 }
 
-module.exports = { setup, curate };
+module.exports = { setUp, setup, curate };

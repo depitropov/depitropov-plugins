@@ -56,16 +56,17 @@ function rename(project, root, branch) {
 }
 
 // git prints real paths (/private/var on macOS), so both sides are compared after realpath.
-function find(project) {
+// A run's worktree has tmp/runs/<branch>/run.json; a Curator setup's has only tmp/runs/<branch>/ (S77).
+function find(project, prefix = 'task/', marker = 'run.json') {
   const dir = path.join(project, DIR);
   if (!fs.existsSync(dir)) return [];
-  const prefix = fs.realpathSync(dir) + path.sep;
+  const inside = fs.realpathSync(dir) + path.sep;
   return git(project, 'worktree', 'list', '--porcelain').split('\n\n').flatMap(block => {
     const at = (block.match(/^worktree (.+)$/m) || [])[1];
     const branch = (block.match(/^branch refs\/heads\/(.+)$/m) || [])[1];
-    if (!at || !branch || !branch.startsWith('task/') || !fs.existsSync(at)) return [];
+    if (!at || !branch || !branch.startsWith(prefix) || !fs.existsSync(at)) return [];
     const root = fs.realpathSync(at);
-    return root.startsWith(prefix) && fs.existsSync(path.join(root, 'tmp', 'runs', branch, 'run.json')) ? [{ root, branch }] : [];
+    return root.startsWith(inside) && fs.existsSync(path.join(root, 'tmp', 'runs', branch, marker)) ? [{ root, branch }] : [];
   });
 }
 
