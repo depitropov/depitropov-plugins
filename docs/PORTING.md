@@ -1108,30 +1108,30 @@ General notes:
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| A tool, not a step: the caller gives the topic; never picks its own | `orc-curator:research` | planned (Curator plan, S76) | yes |
-| Never decides the answer: evidence and decision are separate | `orc-curator:research` | planned (Curator plan, S76) | yes |
+| A tool, not a step: the caller gives the topic; never picks its own | `orc-curator:research` | ported | yes |
+| Never decides the answer: evidence and decision are separate | `orc-curator:research` | ported | yes |
 | Step 1: resolve the minions roots, `config.yml`, `mode` | fixed folder `docs/curator/` | dropped (S76: one fixed folder, no modes) | no |
 | Step 1: never writes `STATE.md` | — | n/a (no `STATE.md`; orchestra keeps run state) | no |
-| Step 2: inputs table (topics, mode, budget as a number, project context, axes) | `orc-curator:research` | planned (Curator plan, S76) | yes |
-| Step 2: default budgets (`wide` ≤ 4 candidates, `deep` ≤ 6 sources) | `orc-curator:research` | planned (Curator plan, S76) | yes |
-| Step 2: project context reads PRODUCT and TECH, "vibe only" | `orc-curator:research`, no mode gate | planned (Curator plan, S76: no modes) | yes |
-| Step 2: several topics give several notes; never merge | `orc-curator:research` | planned (Curator plan, S76) | yes |
-| Step 2: do not go hunting (no QUESTIONS, STATE or SPEC scan) | `orc-curator:research` | planned (Curator plan, S76) | yes |
-| Step 3: check `research/` first; supersede or point at the note | `docs/curator/research/` | planned (Curator plan, S76) | yes |
-| Step 3: decline table (preference, already settled `Dn`, already covered) | `orc-curator:research` | planned (Curator plan, S76) | yes |
-| Step 3: pick the mode (`wide` open space, `deep` choice made); depth is the caller's | `orc-curator:research` | planned (Curator plan, S76) | yes |
-| Step 4: `deep`: primary sources on the version in use, canonical shape, pitfalls, one worked reference, refute the load-bearing claims | `orc-curator:research` | planned (Curator plan, S76) | yes |
-| Step 5: `wide`: four beats in order (enumerate, fix the axes, one agent per candidate, rank in the coordinator) | `orc-curator:research` | planned (Curator plan, S76) | yes |
-| Step 5: one agent per candidate in one message | `orc-curator:research`; on Codex a subagent cannot start a subagent (R4), so research runs in the main session or the curate subagent does it inline | planned (Curator plan, S76; R4 limit to decide in the plan) | yes |
-| Step 5: one or two candidates means it was a `deep` question; switch and say so | `orc-curator:research` | planned (Curator plan, S76) | yes |
-| Step 6: note path `research/<date>-<slug>.md`, `Mode:`, `For:`, `Supersedes:` | `docs/curator/research/` | planned (Curator plan, S76) | yes |
-| Step 6: the note holds the complete research; confidence per finding | `orc-curator:research` | planned (Curator plan, S76) | yes |
-| Step 6: commit, vibe only | commit on the task branch in a run; by hand, the user commits | planned (Curator plan, S76: no modes) | yes |
-| Step 7: return block carries recommendation, ranking, refuted, could not settle, note path | `orc-curator:research` | planned (Curator plan, S76) | yes |
-| Step 7: write no rows, not even a `Qn`; the caller records | `orc-curator:research` | planned (Curator plan, S76) | yes |
-| Step 7: invoked directly, nothing is recorded; say so | `orc-curator:research` | planned (Curator plan, S76) | yes |
-| Hard gate: touch no file outside `research/`; never choose a topic; never research a preference; no `wide` collapse; no unchecked claim | `orc-curator:research` | planned (Curator plan, S76) | yes |
-| End of run: return block format and `ok`/`blocked`/`needs-input` | result format of `orc-curator:research` | planned (Curator plan, S76: format follows orchestra results when called in a run) | yes |
+| Step 2: inputs table (topics, mode, budget as a number, project context, axes) | `orc-curator:research` | ported | yes |
+| Step 2: default budgets (`wide` ≤ 4 candidates, `deep` ≤ 6 sources) | `orc-curator:research` | ported | yes |
+| Step 2: project context reads PRODUCT and TECH, "vibe only" | `orc-curator:research` Step 2, no mode gate | ported (changed, S76: no modes) | yes |
+| Step 2: several topics give several notes; never merge | `orc-curator:research` | ported | yes |
+| Step 2: do not go hunting (no QUESTIONS, STATE or SPEC scan) | `orc-curator:research` | ported | yes |
+| Step 3: check `research/` first; supersede or point at the note | `orc-curator:research` Step 3, `docs/curator/research/` | ported | yes |
+| Step 3: decline table (preference, already settled `Dn`, already covered) | `orc-curator:research` | ported | yes |
+| Step 3: pick the mode (`wide` open space, `deep` choice made); depth is the caller's | `orc-curator:research` | ported | yes |
+| Step 4: `deep`: primary sources on the version in use, canonical shape, pitfalls, one worked reference, refute the load-bearing claims | `orc-curator:research` | ported | yes |
+| Step 5: `wide`: four beats in order (enumerate, fix the axes, one agent per candidate, rank in the coordinator) | `orc-curator:research` | ported | yes |
+| Step 5: one agent per candidate in one message | `orc-curator:research` Step 5 beat 3: every caller runs in the main session, so the fan-out is one level (R4); with no agents, each candidate in turn, ranked last, the weaker guard named | ported (changed, plan 4 ruling, R4) | yes |
+| Step 5: one or two candidates means it was a `deep` question; switch and say so | `orc-curator:research` | ported | yes |
+| Step 6: note path `research/<date>-<slug>.md`, `Mode:`, `For:`, `Supersedes:` | `orc-curator:research` Step 6, `docs/curator/research/` | ported | yes |
+| Step 6: the note holds the complete research; confidence per finding | `orc-curator:research` | ported | yes |
+| Step 6: commit, vibe only | `orc-curator:research` Step 6: commits by hand; when a caller invoked it, the caller commits | ported (changed, plan 4 ruling) | yes |
+| Step 7: return block carries recommendation, ranking, refuted, could not settle, note path | `orc-curator:research` | ported | yes |
+| Step 7: write no rows, not even a `Qn`; the caller records | `orc-curator:research` | ported | yes |
+| Step 7: invoked directly, nothing is recorded; say so | `orc-curator:research` | ported | yes |
+| Hard gate: touch no file outside `research/`; never choose a topic; never research a preference; no `wide` collapse; no unchecked claim | `orc-curator:research` | ported | yes |
+| End of run: return block format and `ok`/`blocked`/`needs-input` | `orc-curator:research` End of run; orchestra never dispatches it, so the return block stays | ported (changed, S76: no `Next` line) | yes |
 
 #### templates/RESEARCH.md
 
