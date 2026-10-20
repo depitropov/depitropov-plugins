@@ -41,21 +41,13 @@ function drive(project, extraArgs = [], { resume = false, branch, setup = false,
   if (setup) return startSetup(project);
   if (extraArgs.length) return start(project, path.resolve(project, extraArgs[1]), skipSetup);
   const runs = [...worktree.find(project), ...worktree.find(project, SETUP, '')].filter(r => !branch || r.branch === branch);
-  if (!runs.length) return { action: 'failed', reason: branch ? `No run on branch "${branch}".` : noRun(project) };
+  if (!runs.length) return { action: 'failed', reason: branch ? `No run on branch "${branch}".` : 'No run to resume. Start a run with a task.' };
   if (runs.length > 1) return { action: 'failed', reason: `Several runs are open: ${runs.map(r => r.branch).join(', ')}. Name one with --branch <name>.` };
   const root = runs[0].root;
   if (configDiffers(project, root)) return { action: 'failed', reason: configReason("the run's base commit") };
   copyResolved(project, root);
   if (runs[0].branch.startsWith(SETUP)) return answer(project, root, setupStep(root, runs[0].branch));
   return answer(project, root, step(root, [], resume));
-}
-
-function noRun(project) {
-  const current = git(project, 'branch', '--show-current');
-  if (current.startsWith('task/') && fs.existsSync(path.join(project, 'tmp', 'runs', current, 'run.json'))) {
-    return `The run on ${current} started in your checkout before orchestra 0.11.0 and cannot resume in a worktree. Finish it with orchestra 0.10, or start it again.`;
-  }
-  return 'No run to resume. Start a run with a task.';
 }
 
 // orchestra check validated the checkout's config; the run reads the worktree's, which is the one on origin.
@@ -129,6 +121,13 @@ function setupStep(root, branch) {
   return curator.setup(root, path.join('tmp', 'runs', branch), load(root)) || { action: 'setup-done' };
 }
 
+// The run folder is git-ignored, so it would go with the worktree. A copy in the checkout keeps the logs for local debugging.
+function keepRunFolder(project, root, branch) {
+  const to = path.join(project, 'tmp', 'runs', branch);
+  fs.rmSync(to, { recursive: true, force: true });
+  fs.cpSync(path.join(root, 'tmp', 'runs', branch), to, { recursive: true });
+}
+
 // The model is told the branch and the worktree on every action, so it never guesses where the commits went.
 function answer(project, root, action) {
   const prompts = {
@@ -138,6 +137,7 @@ function answer(project, root, action) {
   const prompted = prompts[action.action] ? prompts[action.action](action) : action;
   const out = { ...prompted, branch: git(root, 'branch', '--show-current'), worktree: path.relative(project, root) };
   if (action.action !== 'done' && action.action !== 'setup-done') return out;
+  if (action.action === 'done') keepRunFolder(project, root, out.branch);
   const kept = worktree.remove(project, root);
   if (kept) return { ...out, kept };
   delete out.worktree;

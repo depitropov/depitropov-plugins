@@ -88,6 +88,8 @@ test('a run goes from task to done: code, logic-review, report, committed run fi
   assert.match(git(dir, 'ls-tree', '-r', '--name-only', done.branch, 'docs/runs'), /report\.md/);
   assert.match(git(dir, 'ls-tree', '-r', '--name-only', done.branch, 'docs/runs'), /task\.md/);
   assert.equal(git(dir, 'ls-tree', '-r', '--name-only', done.branch, 'tmp'), '');
+  assert.ok(fs.existsSync(path.join(dir, 'tmp/runs/task/add-a-discount/run.json')), 'the run folder is copied to the checkout');
+  assert.equal(git(dir, 'status', '--porcelain'), '');
   const report = doneReport(dir, done);
   assert.match(report, /- Status: done/);
   assert.match(report, /feat: discount/);
@@ -364,15 +366,6 @@ test('a resume with a local config that differs from the run\'s fails and keeps 
   assert.equal(a.action, 'failed');
   assert.match(a.reason, /differs from the one on the run's base commit/);
   assert.ok(fs.existsSync(wt(dir, first)));
-});
-
-test('a run started in the checkout by orchestra 0.10 gets its own failure on resume', () => {
-  const dir = project();
-  git(dir, 'checkout', '-q', '-b', 'task/old');
-  writeJson(path.join(dir, 'tmp/runs/task/old/run.json'), {});
-  const a = drive(dir);
-  assert.equal(a.action, 'failed');
-  assert.match(a.reason, /The run on task\/old started in your checkout before orchestra 0\.11\.0 and cannot resume in a worktree\. Finish it with orchestra 0\.10, or start it again\./);
 });
 
 // The Curator's flag, committed and pushed on main, as setup on main leaves it.
