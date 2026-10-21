@@ -1,6 +1,7 @@
 {
   "name": "depitropov-plugins",
   "owner": { "name": "Dimitar Epitropov" },
+  "allowCrossMarketplaceDependenciesOn": ["claude-plugins-official"],
   "plugins": [
     { "name": "orchestra", "source": "./plugins/orchestra", "description": "Runs one task through a configured workflow and its gates." },
     { "name": "orc-standard-workflow", "source": "./plugins/orc-standard-workflow", "description": "Headless, stack-agnostic workflow." },

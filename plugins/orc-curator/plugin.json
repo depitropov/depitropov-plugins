@@ -1,5 +1,6 @@
 {
   "name": "orc-curator",
-  "version": "0.18.0",
+  "version": "0.19.0",
+  "dependencies": ["mattpocock-skills@claude-plugins-official"],
   "description": "The Curator: keeps a project's backlog, product, direction, decisions, questions and glossary current, by hand or at the end of every orchestra run."
 }

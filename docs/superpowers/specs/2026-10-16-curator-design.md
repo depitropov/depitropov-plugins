@@ -1,5 +1,7 @@
 # The Curator: `orc-curator` (O3)
 
+> S79 replaces this spec's skill table, its setup and its guides-as-skills: see the S79 entry in `docs/DECISIONS.md`. The text below is history.
+
 Date: 2026-10-16. Source: minions, inventoried in `docs/PORTING.md` section "minions". Decision: S76.
 
 ## Goal

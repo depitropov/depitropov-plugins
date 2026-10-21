@@ -124,3 +124,12 @@ test('the procedures are plain files: a heading, no frontmatter, no harness word
     assert.doesNotMatch(text.replaceAll('`curate` commits', ''), /commit/i, f);
   }
 });
+
+test('orc-curator depends on mattpocock-skills and the marketplace allows its source (S79)', () => {
+  const dep = ['mattpocock-skills@claude-plugins-official'];
+  for (const rel of ['plugin.json', '.claude-plugin/plugin.json']) {
+    assert.deepEqual(JSON.parse(read(rel)).dependencies, dep, rel);
+  }
+  const market = JSON.parse(fs.readFileSync(path.join(DIR, '../../.claude-plugin/marketplace.json'), 'utf8'));
+  assert.deepEqual(market.allowCrossMarketplaceDependenciesOn, ['claude-plugins-official']);
+});

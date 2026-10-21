@@ -20,11 +20,11 @@ All plugins live in this repo (S30).
 |---|---|---|
 | `orchestra` | Orchestrator | `orchestra:init`, `orchestra:run` (resolution and driver), the gate runner, the fixer, the select step, `orchestra check`, the authoring skill `writing-plugins` |
 | `orc-standard-workflow` | Workflow | `next.js`, one skill per stage, its own gates, its `manifest` skill |
-| `orc-java-stack` | Stack Skills | `build`, its gates, fix guides, plan and code guides, its `manifest` skill |
+| `orc-java-stack` | Stack Skills | `build`, its gates, fix guides, its code guide as a file, its `manifest` skill |
 | `orc-ts-stack` | Stack Skills | build, its fix guide, measure and its rules skill, its manifest skill |
 | `orc-global-gates` | Global gates | The gates every workflow gets, such as `clean-code`, and its `manifest` skill (S80). The slot is optional |
 | `clean-code` | Standalone | A copy of mentorano's clean-code for use outside orchestra (S75). Not a slot plugin |
-| `orc-curator` | Curator | `curate`, `setup` (the product and tech interviews: `shape-product`, `shape-tech`), the `spec`, `plan` and `code` guides, the direction sweep, `backlog` and `research` (by hand, and from its own skills), its templates and references, its `manifest` skill |
+| `orc-curator` | Curator | `curate` (takes a diff, a map or a change in words), `setup` (records the present), the `spec`, `plan` and `code` guides as files in `guides/`, the procedures `direction`, `backlog` and `landing`, its templates and references, its `manifest` skill. It depends on `mattpocock-skills` (S79) |
 
 `orc-java-stack` here is the personal, generic rewrite. The ship.cars version lives in a second repo. The `orc-` prefix marks every plugin made to work with orchestra and keeps it apart from plugins with the same base name, such as the ship.cars `java-stack` (S56).
 Commits are copied between the two repos, and the ship.cars repo may diverge (S3).
@@ -67,7 +67,7 @@ step inside a phase from files on disk. The skills never decide the order.
   },
   "stack-skills": {
     "plugin": "orc-java-stack",
-    "disable": ["code-guide"],
+    "disable": ["guides/code.md"],
     "gates": { "crap": { "max_rounds": 5 } }
   }
 }
@@ -100,8 +100,8 @@ it and acts on it. The plugin never runs its own gates or orders them.
     "max_rounds": 3
   },
   "guides": {
-    "plan": "plan-guide",
-    "code": "code-guide"
+    "plan": "guides/plan.md",
+    "code": "guides/code.md"
   },
   "gates": [
     { "name": "crap", "phase": "implementation-check", "kind": "tool", "files": "**/*.java",
@@ -118,7 +118,7 @@ it and acts on it. The plugin never runs its own gates or orders them.
 }
 ```
 
-A Stack Skills declaration may also have `measure`: `{ "run": "<command>", "rules": "<skill>" }`. `{plugin}` and `{base}` (the run's base commit) expand in its `run` (S75). `guides` maps a role (`spec`, `plan` or `code`) to a skill (S76).
+A Stack Skills declaration may also have `measure`: `{ "run": "<command>", "rules": "<skill>" }`. `{plugin}` and `{base}` (the run's base commit) expand in its `run` (S75). `guides` maps a role (`spec`, `plan` or `code`) to a file path inside the plugin (S76, S79).
 
 A workflow's `orchestra.json` has `slot: workflow`, its `config` keys, its `roles` (the roles of
 its stages: `spec`, `plan`, `code`) and its own `gates` in the same format. It has no `build` and
@@ -402,7 +402,7 @@ orchestra writes it (S55). Steps are in run order. An empty phase shows "ok (no 
 |---|---|---|
 | `build` | yes | The full build and tests, with coverage. Its fix guide and round limit (6.3). |
 | `gates` | no | The stack's gates (6.1). |
-| `guides` | no | `{ "<role>": "<skill>" }`: short rules for the stages of one role, 5–15 per area (R3, S76). |
+| `guides` | no | `{ "<role>": "<path>" }`, a file in the plugin, for example `guides/code.md`: short rules for the stages of one role, 5–15 per area (R3, S76, S79). |
 | `measure` | no | The shape measurement and the stack's clean-code rules for a gate that asks for them, in any slot (S75, S80). |
 | `manifest` skill | yes | Resolution (5.2). |
 
@@ -419,7 +419,7 @@ can also be invoked by hand on any branch. Each finding cites `file:line` and th
 | `guides` | no | As for Stack Skills; listed before the Stack Skills guides. |
 | `manifest` skill | yes | Resolution (5.2). |
 
-`orc-curator` fills the slot. Its docs live in `docs/curator/`. Its setup interviews the user about the product and the tech, then runs the direction sweep. `backlog` (changes to the arrangement and their fallout) and `research` (evidence for its other skills) run by hand or from the Curator's own skills; they are not in the slot contract.
+`orc-curator` fills the slot. Its docs live in `docs/curator/`; its glossary is `GLOSSARY.md` at the repo root. Its `setup` records the present (the product and the tech as they stand, one commit) and leaves `BACKLOG.md` and `DIRECTION.md` empty; it then nudges to `/wayfinder`. `curate` is the one organizer, with three inputs: a diff (a finished run), a map (a landing) and a change in words; it commits once. The procedures `direction` (the sweep of Now and Next), `backlog` (changes to the arrangement) and `landing` (a map into the docs) are files that `curate` follows, not skills. Its guides are files in `guides/`, declared by path. Navigation (exploring, researching, deciding) is done with `/wayfinder` from `mattpocock-skills`, never by the Curator (S79). `orc-curator` declares that plugin in `dependencies` in its `plugin.json`, and the root `marketplace.json` lists `claude-plugins-official` in `allowCrossMarketplaceDependenciesOn`.
 
 The `curator` section of the config is optional. The design of the Curator plugin itself is in
 `docs/superpowers/specs/2026-10-16-curator-design.md` (S76).
@@ -431,7 +431,7 @@ It keeps the one-concern-per-skill shape of the current java-stack (pillar 2).
 | Part | Built from |
 |---|---|
 | `build` | The current `java-maven` rules: the wrapper, `-B`, the settings file, output to a log file, run once. Plus JaCoCo coverage |
-| `guides` | `code-guide` only: test-command facts (S68). No plan guide. |
+| `guides` | `guides/code.md` only: test-command facts (S68, S79). No plan guide. |
 | Fix guides | `fix-build`, and one per tool gate |
 
 Gates, one skill each (S68):
@@ -480,7 +480,8 @@ plugins/
     skills/{manifest,clean-code}/SKILL.md
   orc-java-stack/
     orchestra.json
-    skills/{manifest,plan-guide,code-guide,fix-build,<one per gate>,<one fix guide per tool gate>}/SKILL.md
+    guides/code.md
+    skills/{manifest,fix-build,<one per gate>,<one fix guide per tool gate>}/SKILL.md
   orc-ts-stack/
     orchestra.json
     scripts/{measure.py,languages.py,shape.py,compare.py,revisions.py,measure-ts.mjs}
