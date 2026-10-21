@@ -122,3 +122,19 @@ test('landing cuts the work into tracer bullets in Next and moves the map', () =
   for (const r of ['map:', '`Dn`', 'after B<n>']) assert.ok(landing.includes(r), r);
   assert.match(landing, /docs\/curator\/maps\/<effort>\//);
 });
+
+test('a Cn that cites a reversed Dn or a changed dimension goes to the sweep, which judges it again', () => {
+  const direction = fs.readFileSync(path.join(DIR, 'procedures/direction.md'), 'utf8');
+  assert.match(text, /a live `Cn` that a reversed `Dn` or a changed dimension contradicts/);
+  assert.match(text.split('## Step 9')[1].split('## Step 10')[0], /retire rule/);
+  assert.match(direction, /a live `Cn` that the diff, a reversed `Dn` or a changed dimension contradicts gets a fresh verdict/);
+  assert.match(direction, /A `Cn` that the shipped code, a reversed `Dn` or a changed dimension \*\*contradicts\*\*/);
+});
+
+test('a landing that ends blocked or needs-input leaves nothing behind: discard, no sweep, no commit', () => {
+  const step7 = text.split('## Step 7')[1].split('## Step 8')[0];
+  assert.match(step7, /`blocked` or `needs-input`/);
+  assert.match(step7, /discard[^]{0,200}docs\/curator\//i);
+  assert.match(step7, /do not run the sweep/i);
+  assert.match(step7, /do not commit/i);
+});

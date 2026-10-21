@@ -19,8 +19,8 @@ an agent that must not look at those later features decides it.
 ## Caller
 
 You have one caller: `curate`. It runs you when a run shipped. It gives you the constraints to mark
-satisfied, the orphans to remove, the code that may **contradict** a live `Cn`, and the diff
-evidence when it has any. The user may also ask `curate` for the sweep by hand.
+satisfied, the orphans to remove, the code, the reversed `Dn` or the changed dimension that may
+**contradict** a live `Cn`, and the evidence when it has any. The user may also ask `curate` for the sweep by hand.
 
 ## Step 1: Prepare
 
@@ -74,8 +74,8 @@ none of it depends on a note that someone left.**
 | a `Cn` whose `from Bn` is no longer in `## Now` or `## Next` | **orphan.** Delete the row (Step 5) |
 | an `## Evaluated` row whose `Bn` is no longer in `## Now` or `## Next` | **retire** that row too |
 
-From `curate` also: a live `Cn` that the diff contradicts gets a fresh verdict (Step 5), and a row
-recorded as `no constraint` that the diff undermines is owed again.
+From `curate` also: a live `Cn` that the diff, a reversed `Dn` or a changed dimension contradicts gets a fresh verdict
+(Step 5), and a row recorded as `no constraint` that the diff undermines is owed again.
 
 **A move inside `## Now` and `## Next` is not a trigger.** A row moves from `## Next` to `## Now`
 each time work on it starts, so a trigger there would fire every time and mean nothing. A move from
@@ -195,9 +195,10 @@ When you record only the rows that earned a `Cn`, all the other rows look unexam
   retire the `## Evaluated` row of that `Bn` at the same time. If you keep that row, it claims
   coverage of a row that is no longer near-term.
 - A `Cn` that the shipped code now satisfies gets `satisfied by <path>`.
-- A `Cn` that the shipped code **contradicts** is the important case. Say so clearly and give it a
-  fresh verdict. Do not delete the row in silence, and do not keep it wrong in silence. `curate`
-  gives you these cases, because it has the diff and you do not.
+- A `Cn` that the shipped code, a reversed `Dn` or a changed dimension **contradicts** is the
+  important case. Say so clearly and give it a fresh verdict: keep it, rewrite it, or delete it.
+  Do not delete the row in silence, and do not keep it wrong in silence. `curate` gives you these
+  cases, because it has the diff and the change, and you do not.
 
 ### `Qn` entries in `docs/curator/QUESTIONS.md`
 

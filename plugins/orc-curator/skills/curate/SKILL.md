@@ -146,9 +146,15 @@ changed). Then go to Step 9.
 
 ## Step 7: A map
 
-Follow `<plugin>/procedures/landing.md` with the effort. Read its return block. Keep its
-`Markers:` and `Missing:` lines for the summary. Apply the retire rule (Step 8) to each line of its
-`Reversed:`. Then go to Step 9.
+Follow `<plugin>/procedures/landing.md` with the effort. Read its return block.
+
+When it returns `blocked` or `needs-input`, discard its uncommitted edits under `docs/curator/`
+(restore them from the last commit), so that a rerun does not append the same `Dn` and `Qn` rows
+again. Tell the user the reason. Do not run the sweep and do not commit. The map stays in
+`.scratch/<effort>/`, so the user can land it again.
+
+When it returns `ok`, keep its `Markers:` and `Missing:` lines for the summary. Apply the retire
+rule (Step 8) to each line of its `Reversed:`. Then go to Step 9.
 
 ## Step 8: A change in words
 
@@ -169,16 +175,17 @@ Sort the change. When it is not clear which kind it is, ask the user.
 **The retire rule.** For a reversed `Dn`, or a capability dimension that changed,
 retire the `## Evaluated` row of each near-term `Bn` (in `## Now` or `## Next`) when one of
 these cites the old `Dn` or names the dimension: the row text of the `Bn`, a `Cn` with `from Bn`,
-or the `outcome` cell of its `## Evaluated` row. Delete only the `## Evaluated` row. Leave the `Cn`
-rows: the sweep decides if they still hold. With no `## Evaluated` row, the sweep treats the `Bn`
-as owed and derives fresh constraints.
+or the `outcome` cell of its `## Evaluated` row. Delete only the `## Evaluated` row. Do not delete
+a `Cn` with `from Bn` of such a row. Keep it as evidence for the sweep:
+a live `Cn` that a reversed `Dn` or a changed dimension contradicts. Name the `Cn`. With no `## Evaluated` row, the
+sweep treats the `Bn` as owed and derives fresh constraints.
 
 Then go to Step 9.
 
 ## Step 9: The sweep
 
-Follow `<plugin>/procedures/direction.md` once, with the line `Caller: curate` and the diff
-evidence from Step 6 when there is any. Do not report what the sweep can count: a moved row, a
+Follow `<plugin>/procedures/direction.md` once, with the line `Caller: curate` and the evidence
+when there is any: the diff evidence from Step 6, and each `Cn` that the retire rule named. Do not report what the sweep can count: a moved row, a
 missing `## Evaluated` row, an orphan. Never write a `Cn` yourself; the sweep writes it.
 
 Read its return block and keep its `Coverage:` line for the summary. For each
