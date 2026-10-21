@@ -14,7 +14,7 @@ const errors = d => checkDeclaration(d, writePlugin(tmp('st-'), 'st', d), 'st/or
 test('a valid declaration passes', () => {
   assert.deepEqual(errors(stack({
     config: { 'entity-pattern': { type: 'string', default: '@Entity' } },
-    guides: { code: 'code-guide' },
+    guides: { code: 'guides/code.md' },
     measure: { run: 'python3 "{plugin}/m.py" --base {base}', rules: 'rules-ts' },
     gates: [
       { name: 'ops', phase: 'implementation-check', kind: 'agent', skill: 'review-ops', files: ['**/*.java', '**/*.sql'] },
@@ -24,6 +24,19 @@ test('a valid declaration passes', () => {
     ],
   })), []);
   assert.deepEqual(errors({ slot: 'workflow', config: { n: { type: 'number', default: 2 } }, gates: [] }), []);
+});
+
+test('a guide is a path to a file inside the plugin', () => {
+  const d = stack({ guides: { code: 'guides/code.md' } });
+  const dir = writePlugin(tmp('st-'), 'st', d);
+  assert.deepEqual(checkDeclaration(d, dir, 'st/orchestra.json'), []);
+  fs.rmSync(path.join(dir, 'guides/code.md'));
+  const out = checkDeclaration(d, dir, 'st/orchestra.json').join('\n');
+  assert.match(out, /guide "code" names the file "guides\/code\.md", which is not in the plugin\. Fix: .*guides\/code\.md/);
+  for (const bad of ['../x.md', '/abs/code.md', 'guides/../../x.md']) {
+    const e = errors(stack({ guides: { code: bad } })).join('\n');
+    assert.match(e, /guide "code"/, bad);
+  }
 });
 
 test('each broken declaration rule gives one line with the rule and its fix', () => {
@@ -85,7 +98,7 @@ test('the measure rules skill must exist in skills/', () => {
 
 const curator = (extra = {}) => ({ slot: 'curator', curate: 'curate', setup: { skill: 'setup', done: 'docs/curator/.setup' }, ...extra });
 const wf = { slot: 'workflow', config: { 'tasks-per-coder': { type: 'number', default: 2 } }, roles: ['spec', 'plan', 'code'], gates: [] };
-const st = stack({ guides: { code: 'code-guide' }, gates: [{ name: 'fmt', phase: 'finish', kind: 'tool', run: 'x', always: true }] });
+const st = stack({ guides: { code: 'guides/code.md' }, gates: [{ name: 'fmt', phase: 'finish', kind: 'tool', run: 'x', always: true }] });
 
 function project(config, declarations) {
   const dir = makeRepo();
@@ -102,8 +115,8 @@ function project(config, declarations) {
 test('a guide for a role the workflow has no stage for fails, unless the config disables it', () => {
   const noCode = { ...wf, roles: ['spec', 'plan'] };
   const out = checkProject(project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' } }, { workflow: noCode, 'stack-skills': st }));
-  assert.deepEqual(out, ['.orchestra/config.json: st declares a "code" guide, but the workflow wf has no code stage. Fix: add "code-guide" to "stack-skills.disable", or choose a workflow with a code stage.']);
-  const off = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', disable: ['code-guide'] } };
+  assert.deepEqual(out, ['.orchestra/config.json: st declares a "code" guide, but the workflow wf has no code stage. Fix: add "guides/code.md" to "stack-skills.disable", or choose a workflow with a code stage.']);
+  const off = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', disable: ['guides/code.md'] } };
   assert.deepEqual(checkProject(project(off, { workflow: noCode, 'stack-skills': st })), []);
 });
 
@@ -129,7 +142,7 @@ test('a gate name declared by two slots fails, unless one section disables it', 
 test('a valid project config passes', () => {
   const config = {
     workflow: { plugin: 'wf', 'tasks-per-coder': 3 },
-    'stack-skills': { plugin: 'st', disable: ['code-guide', 'fmt'], gates: { fmt: { max_rounds: 4 } } },
+    'stack-skills': { plugin: 'st', disable: ['guides/code.md', 'fmt'], gates: { fmt: { max_rounds: 4 } } },
   };
   assert.deepEqual(checkProject(project(config, { workflow: wf, 'stack-skills': st })), []);
 });
@@ -304,15 +317,15 @@ test('the project must ignore the run worktrees', () => {
 });
 
 test('a valid curator declaration passes, and the curator section is optional', () => {
-  const cur = curator({ guides: { spec: 'spec-guide', plan: 'plan-guide' } });
+  const cur = curator({ guides: { spec: 'guides/spec.md', plan: 'guides/plan.md' } });
   const config = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, curator: { plugin: 'cur' } };
   assert.deepEqual(checkProject(project(config, { workflow: wf, 'stack-skills': st, curator: cur })), []);
   assert.deepEqual(checkProject(project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' } }, { workflow: wf, 'stack-skills': st })), []);
 });
 
 test('a curator guide for a role the workflow lacks names the curator section in its fix', () => {
-  const cur = curator({ guides: { spec: 'spec-guide' } });
+  const cur = curator({ guides: { spec: 'guides/spec.md' } });
   const config = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, curator: { plugin: 'cur' } };
   const out = checkProject(project(config, { workflow: { ...wf, roles: ['plan', 'code'] }, 'stack-skills': st, curator: cur }));
-  assert.deepEqual(out, ['.orchestra/config.json: cur declares a "spec" guide, but the workflow wf has no spec stage. Fix: add "spec-guide" to "curator.disable", or choose a workflow with a spec stage.']);
+  assert.deepEqual(out, ['.orchestra/config.json: cur declares a "spec" guide, but the workflow wf has no spec stage. Fix: add "guides/spec.md" to "curator.disable", or choose a workflow with a spec stage.']);
 });

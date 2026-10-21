@@ -23,7 +23,13 @@ function writePlugin(dir, name, declaration) {
   if (declaration) {
     writeJson(path.join(dir, 'orchestra.json'), declaration);
     const d = declaration;
-    skills.push(...[d.build && d.build.guide, d.measure && d.measure.rules, d.curate, d.setup && d.setup.skill, ...Object.values(d.guides || {}), ...(d.gates || []).flatMap(g => [g.skill, g.guide])].filter(Boolean));
+    skills.push(...[d.build && d.build.guide, d.measure && d.measure.rules, d.curate, d.setup && d.setup.skill, ...(d.gates || []).flatMap(g => [g.skill, g.guide])].filter(Boolean));
+    for (const g of Object.values(d.guides || {})) {
+      if (typeof g === 'string' && !g.startsWith('/') && !g.includes('..')) {
+        fs.mkdirSync(path.dirname(path.join(dir, g)), { recursive: true });
+        fs.writeFileSync(path.join(dir, g), '# A guide\n');
+      }
+    }
   }
   for (const s of skills) {
     fs.mkdirSync(path.join(dir, 'skills', s), { recursive: true });

@@ -1,8 +1,3 @@
----
-name: spec-guide
-description: A guide for the spec stage of an orchestra run: what to read in the project's direction docs and the Direction section to add to the brief. Invoked by the stage, not by hand.
----
-
 # Spec guide
 
 Rules for the spec stage when the project has `docs/curator/`. When that folder does not exist, do nothing.

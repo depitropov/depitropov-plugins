@@ -27,7 +27,7 @@ The glossary of this project. Use these names and no others.
 | **Fix guide** | A skill, owned by the gate's declarer, that says how to fix one tool's findings. |
 | **Triage** | Sorting each finding of a judging stage or an agent gate into Decide, Patch, Evaluate or Noise. The contract is the skill `orchestra:triage`. |
 | **Role** | What a workflow stage does, from a fixed list: `spec`, `plan`, `code`. A workflow declares its roles and tags each dispatch with one. Guides are given by role (S76). |
-| **Guide** | A skill with short write-time rules for one role, declared by a slot plugin under `guides.<role>`. orchestra lists the guides for a dispatch's role in its prompt (S76). |
+| **Guide** | A file with short write-time rules for one role, inside a slot plugin and declared by its path under `guides.<role>`. orchestra tells the stage to read the guides for a dispatch's role, by absolute path (S76, S79). |
 | **Run folder** | `tmp/runs/<branch>/`. The orchestration state of one run: results, checkpoints, logs, `run.json`, `stages.json`. Git-ignored. Inside the run root. |
 | **Notes folder** | `docs/runs/<branch>/`. What a human reads about one run: `task.md`, `brief.md`, `plan.md`, `decisions.md`, review notes, `report.md`. Committed. Inside the run root. |
 | **Worktree** | The git worktree of one run, `.orchestra/worktrees/<branch>`. Git-ignored. Removed when the run is done; the branch stays. |

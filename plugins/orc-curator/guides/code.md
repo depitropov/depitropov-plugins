@@ -1,8 +1,3 @@
----
-name: code-guide
-description: A guide for the code stage of an orchestra run: names and the ids that a code comment may cite. Invoked by the stage, not by hand.
----
-
 # Code guide
 
 Rules for the code stage when the project has `docs/curator/`. When that folder does not exist, do nothing.

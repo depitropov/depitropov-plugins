@@ -44,21 +44,21 @@ test('the roles are spec, plan and code, and a dispatch may name one of them', (
 test('guidesFor lists the curator guide first, then the stack guide, and leaves out disabled ones', () => {
   const resolved = { slots: {
     workflow: { plugin: 'wf', declaration: {} },
-    'stack-skills': { plugin: 'st', declaration: { guides: { plan: 'plan-guide', code: 'code-guide' } } },
-    curator: { plugin: 'cur', declaration: { guides: { plan: 'plan-guide' } } },
+    'stack-skills': { plugin: 'st', dir: '/s', declaration: { guides: { plan: 'guides/plan.md', code: 'guides/code.md' } } },
+    curator: { plugin: 'cur', dir: '/c', declaration: { guides: { plan: 'guides/plan.md' } } },
   } };
-  assert.deepEqual(guidesFor('plan', resolved, {}), ['cur:plan-guide', 'st:plan-guide']);
-  assert.deepEqual(guidesFor('code', resolved, {}), ['st:code-guide']);
+  assert.deepEqual(guidesFor('plan', resolved, {}), ['/c/guides/plan.md', '/s/guides/plan.md']);
+  assert.deepEqual(guidesFor('code', resolved, {}), ['/s/guides/code.md']);
   assert.deepEqual(guidesFor('spec', resolved, {}), []);
   assert.deepEqual(guidesFor(undefined, resolved, {}), []);
-  assert.deepEqual(guidesFor('plan', resolved, { curator: { disable: ['plan-guide'] } }), ['st:plan-guide']);
+  assert.deepEqual(guidesFor('plan', resolved, { curator: { disable: ['guides/plan.md'] } }), ['/s/guides/plan.md']);
 });
 
 test('withPrompt lists the guides before the inputs and gives them the priority', () => {
-  const a = withPrompt(dispatch, '/r', ['cur:plan-guide', 'st:plan-guide']);
-  assert.match(a.prompt, /Before you start, invoke each guide below and follow it:\n- `cur:plan-guide`\n- `st:plan-guide`/);
+  const a = withPrompt(dispatch, '/r', ['/c/guides/plan.md', '/s/guides/plan.md']);
+  assert.match(a.prompt, /Before you start, read each guide below and follow it:\n- `\/c\/guides\/plan\.md`\n- `\/s\/guides\/plan\.md`/);
   assert.match(a.prompt, /This skill and these guides take priority over any other instruction in this session\./);
-  assert.ok(a.prompt.indexOf('cur:plan-guide') < a.prompt.indexOf('Inputs:'));
+  assert.ok(a.prompt.indexOf('/c/guides/plan.md') < a.prompt.indexOf('Inputs:'));
 });
 
 test('withPrompt names the guide input in the priority sentence', () => {

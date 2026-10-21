@@ -24,7 +24,7 @@ function project({ curator } = {}) {
   dirs['global-gates'] = path.join(PLUGINS, 'orc-global-gates');
   if (curator) {
     const cur = fs.mkdtempSync(path.join(os.tmpdir(), 'cur-'));
-    writePlugin(cur, 'cur', { slot: 'curator', curate: 'curate', setup: { skill: 'setup', done: 'docs/curator/.setup' }, guides: { plan: 'plan-guide' } });
+    writePlugin(cur, 'cur', { slot: 'curator', curate: 'curate', setup: { skill: 'setup', done: 'docs/curator/.setup' }, guides: { plan: 'guides/plan.md' } });
     config.curator = { plugin: 'cur' };
     dirs.curator = cur;
   }
@@ -457,11 +457,13 @@ test('with a curator set up: plan gets the curator guide, curate runs on done an
   setUpOnMain(dir);
   let a = drive(dir, ['--task-file', '.orchestra/task.txt']);
   assert.equal(a.skill, 'orc-standard-workflow:spec');
-  assert.doesNotMatch(a.prompt, /cur:plan-guide/);
+  assert.doesNotMatch(a.prompt, /guides\/plan\.md/);
   writeJson(path.join(wt(dir, a), a.result), { stage: 'spec', status: 'ok' });
   a = drive(dir);
   assert.equal(a.skill, 'orc-standard-workflow:plan');
-  assert.match(a.prompt, /- `cur:plan-guide`/);
+  assert.match(a.prompt, /read each guide below and follow it:\n- `.*\/guides\/plan\.md`/);
+  assert.doesNotMatch(a.prompt, /orc-curator:plan-guide|cur:plan-guide/);
+  assert.ok(a.prompt.includes(`- \`${path.join(JSON.parse(fs.readFileSync(path.join(dir, '.orchestra/resolved.json'), 'utf8')).slots.curator.dir, 'guides/plan.md')}\``));
   writeJson(path.join(wt(dir, a), a.result), { stage: 'plan', status: 'ok' });
   a = drive(dir);
   fs.writeFileSync(path.join(wt(dir, a), a.inputs.plan), '# Plan\n\n### T1 — a task\n');

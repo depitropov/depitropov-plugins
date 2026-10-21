@@ -6,7 +6,12 @@ const path = require('node:path');
 
 const DIR = path.join(__dirname, '../../plugins/orc-curator');
 const SKILLS = fs.readdirSync(path.join(DIR, 'skills')).filter(s => s !== 'manifest');
-const skillText = Object.fromEntries(SKILLS.map(s => [s, fs.readFileSync(path.join(DIR, 'skills', s, 'SKILL.md'), 'utf8')]));
+const GUIDES = ['spec', 'plan', 'code'];
+const NAMES = [...SKILLS, ...GUIDES.map(r => `${r}-guide`)];
+const skillText = {
+  ...Object.fromEntries(SKILLS.map(s => [s, fs.readFileSync(path.join(DIR, 'skills', s, 'SKILL.md'), 'utf8')])),
+  ...Object.fromEntries(GUIDES.map(r => [`${r}-guide`, fs.readFileSync(path.join(DIR, 'guides', `${r}.md`), 'utf8')])),
+};
 const matrix = fs.readFileSync(path.join(DIR, 'CONTRACTS.md'), 'utf8');
 
 // The rows of the table under a heading: first cell's backticked name → the skills named in the other cells.
@@ -16,7 +21,7 @@ function rows(heading) {
   for (const line of section.split('\n').filter(l => /^\| `/.test(l))) {
     const [first, ...rest] = line.split('|').slice(1, -1);
     const key = first.match(/`([^`]+)`/)[1];
-    const named = [...rest.join('|').matchAll(/`([a-z-]+)`/g)].map(m => m[1]).filter(s => SKILLS.includes(s));
+    const named = [...rest.join('|').matchAll(/`([a-z-]+)`/g)].map(m => m[1]).filter(s => NAMES.includes(s));
     out[key] = new Set([...(out[key] || []), ...named]);
   }
   return out;
@@ -25,7 +30,7 @@ function rows(heading) {
 function agree(table, mentions) {
   const problems = [];
   for (const [key, named] of Object.entries(table)) {
-    for (const s of SKILLS) {
+    for (const s of NAMES) {
       const says = mentions(key).test(skillText[s]);
       if (named.has(s) && !says) problems.push(`${key}: the matrix names ${s}, which never names it`);
       if (!named.has(s) && says) problems.push(`${key}: ${s} names it, and the matrix does not`);

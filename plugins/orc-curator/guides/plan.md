@@ -1,8 +1,3 @@
----
-name: plan-guide
-description: A guide for the plan stage of an orchestra run, and for its plan check: how to use the project's direction docs in the plan. Invoked by the stage, not by hand.
----
-
 # Plan guide
 
 Rules for the plan stage and the plan-check stage when the project has `docs/curator/`. When that folder does not exist, do nothing. The plan-check stage checks each point below.

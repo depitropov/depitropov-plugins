@@ -67,15 +67,21 @@ function checkDeclaration(d, dir, where) {
     if (typeof name !== 'string') fail(`${what} names no skill`, 'name a skill of this plugin');
     else if (!skillExists(dir, name)) fail(`${what} names skill "${name}", which is not in skills/`, `add skills/${name}/SKILL.md or fix the name`);
   };
+  // A guide is a file inside the plugin, named by a path relative to the plugin folder (S79).
+  const file = (value, what) => {
+    if (typeof value !== 'string') fail(`${what} names no file`, 'name a guide file of this plugin, such as "guides/code.md"');
+    else if (path.isAbsolute(value) || value.split(/[\\/]/).includes('..')) fail(`${what} names "${value}", which is not inside the plugin`, 'use a path relative to the plugin folder, with no ".."');
+    else if (!fs.existsSync(path.join(dir, value))) fail(`${what} names the file "${value}", which is not in the plugin`, `add ${path.join(dir, value)} or fix the path`);
+  };
   const placeholders = (text, what) => {
     for (const m of String(text).matchAll(PLACEHOLDER)) {
       if (!Object.hasOwn(config, m[1])) fail(`${what} uses {config.${m[1]}}, which "config" does not declare`, `declare "${m[1]}" under "config" or fix the name`);
     }
   };
-  if (d.guides !== undefined && !isObject(d.guides)) fail('"guides" is not an object', 'write { "<role>": "<guide skill>" }');
+  if (d.guides !== undefined && !isObject(d.guides)) fail('"guides" is not an object', 'write { "<role>": "<path of a guide file in the plugin>" }');
   for (const [role, name] of Object.entries(isObject(d.guides) ? d.guides : {})) {
     if (!ROLES.includes(role)) fail(`unknown guide role "${role}"`, `use one of ${ROLES.join(', ')}`);
-    skill(name, `guide "${role}"`);
+    file(name, `guide "${role}"`);
   }
   if (d.roles !== undefined && (!Array.isArray(d.roles) || !d.roles.every(r => ROLES.includes(r)) || new Set(d.roles).size !== d.roles.length)) {
     fail(`"roles" is ${JSON.stringify(d.roles)}`, `list the role of each of your stages once, from ${ROLES.join(', ')}`);

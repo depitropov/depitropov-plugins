@@ -2,7 +2,7 @@
   "slot": "stack-skills",
   "config": {},
   "build": { "run": "./mvnw -B -fae $(grep -q spotless-maven-plugin pom.xml 2>/dev/null && echo -Dspotless.check.skip=true) verify", "guide": "fix-build", "max_rounds": 3 },
-  "guides": { "code": "code-guide" },
+  "guides": { "code": "guides/code.md" },
   "gates": [
     { "name": "ops", "phase": "implementation-check", "kind": "agent", "skill": "review-ops", "files": ["**/*.java", "**/*.sql"] },
     { "name": "testing", "phase": "conventions-check", "kind": "agent", "skill": "review-testing", "files": "**/src/test/**/*.java" },

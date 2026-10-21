@@ -93,7 +93,7 @@ test('spec, plan and plan-check run in order with their inputs', () => {
 });
 
 test('spec, plan, plan-check and code carry their role, and no guide input', () => {
-  const dir = project({ guides: { plan: 'plan-guide', code: 'code-guide' } });
+  const dir = project({ guides: { plan: 'guides/plan.md', code: 'guides/code.md' } });
   const spec = next(dir, '.orchestra/task.txt');
   assert.equal(spec.role, 'spec');
   const plan = pass(dir, spec);

@@ -16,7 +16,7 @@ test('orc-curator passes orchestra check and declares the curator slot', () => {
     config: {},
     curate: 'curate',
     setup: { skill: 'setup', done: 'docs/curator/.setup' },
-    guides: { spec: 'spec-guide', plan: 'plan-guide', code: 'code-guide' },
+    guides: { spec: 'guides/spec.md', plan: 'guides/plan.md', code: 'guides/code.md' },
   });
 });
 

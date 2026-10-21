@@ -31,7 +31,7 @@ A `global-gates` plugin holds the gates that every workflow gets. Such a gate re
 | `gates` | `workflow`, `global-gates`, `stack-skills` | The checks after the code. See "A gate". |
 | `build` | `stack-skills`, required | `run`: the full build and the tests. `guide`: its fix guide skill. `max_rounds`: fixer rounds, default 2. |
 | `measure` | `stack-skills` | The shape measurement for a gate that asks for it. `run`: a command that measures the changed code against `{base}`, the run's base commit, and prints its verdict. `rules`: optional, a skill with the stack's clean-code rules. A stack with no `measure` gives the gate no measurement. |
-| `guides` | `stack-skills`, `curator` | `{ "<role>": "<skill>" }`: a guide, a skill with short write-time rules, for the stages of one role. The roles are `spec`, `plan` and `code`. orchestra lists the guides of a stage's role in its prompt. A project turns one off with `disable`. |
+| `guides` | `stack-skills`, `curator` | `{ "<role>": "<path>" }`: a guide, a path to a guide file inside the plugin (for example `guides/code.md`: no frontmatter, short write-time rules), for the stages of one role. The roles are `spec`, `plan` and `code`. orchestra tells the stage to read the guides of its role. A project turns one off with `disable`. |
 | `curate` | `curator`, required | The skill that brings the project's direction docs up to date at the end of a run. orchestra runs it in the main session, not in a subagent, when the workflow is done. |
 | `setup` | `curator`, required | `skill`: the skill that sets the Curator up in a project; it may interview the user. `done`: a file path relative to the project root. The skill writes this file as its last step. orchestra checks the file on the default branch when a run starts. When it is missing, no task branch is made, and the user chooses to set up first or to go on without it. |
 | `roles` | `workflow` | The roles of its stages, each once: `spec`, `plan`, `code`. orchestra check fails when a slot plugin declares a guide for a role that is not here. |
@@ -81,7 +81,7 @@ A Curator keeps a project's direction docs current. orchestra knows only its dec
 ## The project config
 
 A project's `.orchestra/config.json` has one section per slot. orchestra owns three keys in it:
-`plugin`, `disable` (gate or guide names to turn off) and `gates`
+`plugin`, `disable` (gate names or guide paths to turn off) and `gates`
 (`{ "<gate>": { "max_rounds": <n> } }`). Every other key must be one your `config` declares.
 `.gitignore` must ignore `.orchestra/*` except `.orchestra/config.json`: each run works in a worktree
 under `.orchestra/worktrees/`. orchestra check fails otherwise.

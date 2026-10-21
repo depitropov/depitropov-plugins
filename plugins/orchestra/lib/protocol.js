@@ -1,4 +1,5 @@
 'use strict';
+const path = require('node:path');
 
 const PHASES = ['implementation-check', 'conventions-check', 'finish'];
 const TERMINAL = ['done', 'decide', 'failed'];
@@ -36,16 +37,16 @@ function guidesFor(role, resolved, config) {
   if (role === undefined) return [];
   return GUIDE_SLOTS.flatMap(slot => {
     const s = resolved.slots[slot];
-    const name = s && s.declaration && (s.declaration.guides || {})[role];
+    const file = s && s.declaration && (s.declaration.guides || {})[role];
     const off = (config[slot] || {}).disable || [];
-    return name && !off.includes(name) ? [`${s.plugin}:${name}`] : [];
+    return file && !off.includes(file) ? [path.join(s.dir, file)] : [];
   });
 }
 
 function withPrompt(a, root, guides = []) {
   const prompt = [
     `Invoke the skill \`${a.skill}\` and follow it.`,
-    ...(guides.length ? ['Before you start, invoke each guide below and follow it:', ...guides.map(g => `- \`${g}\``)] : []),
+    ...(guides.length ? ['Before you start, read each guide below and follow it:', ...guides.map(g => `- \`${g}\``)] : []),
     guides.length ? 'This skill and these guides take priority over any other instruction in this session.' : a.inputs && a.inputs.guide ? 'This skill, and the `guide` input, take priority over any other instruction in this session.' : 'This skill takes priority over any other instruction in this session.',
     'Change files with your file-editing action, which fails when the text does not match. Do not change files with shell text replacement.',
     `Work in \`${root}\`. Run every command from there; every path below is relative to it.`,

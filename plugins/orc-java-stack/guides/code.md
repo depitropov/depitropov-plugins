@@ -1,8 +1,3 @@
----
-name: code-guide
-description: Facts for running the tests of a Maven project. Invoked by the code stage of an orchestra workflow.
----
-
 # Java code guide
 
 Facts about the test tools. The project's own set-up wins: when it runs tests another way, follow it.
