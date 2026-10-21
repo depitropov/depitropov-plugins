@@ -85,7 +85,7 @@ All in `docs/curator/`. Six files, split by tense, and **no fact in two of them*
 | `DECISIONS.md` | why we chose, in the affirmative or the negative | past |
 | `QUESTIONS.md` | what is still open | unsettled |
 
-`CONTEXT.md` is not a seventh tense: it is the dictionary that the others are written in. `curate`
+`GLOSSARY.md` is not a seventh tense: it is the dictionary that the others are written in. `curate`
 creates it on the first domain term, and edits it in place. `research/` holds one evidence note per
 topic. The flag `.setup` says that setup ran.
 

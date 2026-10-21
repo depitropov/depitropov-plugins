@@ -25,7 +25,7 @@ forbid a write, or to say who else writes it.
 | `DECISIONS.md` | `setup` (the template, and a reshape `Dn`), `shape-product`, `shape-tech`, `backlog` (reversals), `curate` | never: append-only | never | `spec-guide`, `code-guide` (the `Dn` a comment may cite), `direction`, `research` (already settled), `shape-product` and `shape-tech` (the `soft:` rows) | — |
 | `QUESTIONS.md` | `setup` (the template), `shape-product`, `shape-tech`, `direction`, `backlog` (a question the user asked), `curate` | `setup` (flip to answered), `shape-tech`, `direction`, `backlog` and `curate` (close) | never: closed, not deleted | `setup` (the reshape agenda), `shape-tech` and `direction` (the agenda), `backlog` | `research` |
 | `TECH.md` | `setup` (the template), `shape-tech` | `shape-tech`, `curate` (refresh from the code) | — | `spec-guide`, `plan-guide`, `direction`, `research` | `backlog` |
-| `CONTEXT.md` | `curate` (creates it on the first term) | `curate` (edit in place) | `curate` (a retired term) | `spec-guide`, `plan-guide`, `code-guide` | `setup` |
+| `GLOSSARY.md` | `curate` (creates it on the first term) | `curate` (edit in place) | `curate` (a retired term) | `spec-guide`, `plan-guide`, `code-guide` | `setup` |
 | `research/` | `setup` (the folder), `research` (one note per topic) | never: a new note supersedes | never | `direction`, `shape-tech`, `research` (supersede check) | — |
 
 `setup` writes only through its calls, plus the template copy, the reshape edits the user approved,
@@ -44,6 +44,8 @@ its own questions and its own procedure.
 | `interview-cadence.md` | `shape-product`, `shape-tech` |
 | `right-sizing.md` | `shape-tech`, `research` |
 | `glossary.md` | `curate` |
+| `product.md` | curate and setup (wired in S79, tasks 3 and 4) |
+| `tech.md` | curate and setup (wired in S79, tasks 3 and 4) |
 
 `glossary.md` has one reader today. Its second reader is the glossary gate (O13), when it is built.
 

@@ -50,9 +50,17 @@ test('the plan guide makes DIRECTION binding and keeps the plan to this task', (
   assert.match(text, /Never write a `Bn`, `Cn`, `Dn` or `Qn`/);
 });
 
-test('the code guide keeps CONTEXT names and cites only Dn in code', () => {
+test('the code guide keeps GLOSSARY names and cites only Dn in code', () => {
   const text = read('code');
-  assert.match(text, /docs\/curator\/CONTEXT\.md/);
+  assert.match(text, /GLOSSARY\.md/);
   assert.match(text, /`Dn`/);
   for (const id of ['`Cn`', '`Bn`', '`Tn`', '`ACn`']) assert.ok(text.includes(id), id);
+});
+
+test('every skill and guide that read the glossary name GLOSSARY.md and none names CONTEXT.md', () => {
+  const d = path.join(PLUGINS, 'orc-curator');
+  const files = ['skills/curate/SKILL.md', 'skills/setup/SKILL.md', 'guides/spec.md', 'guides/plan.md', 'guides/code.md', 'references/glossary.md'];
+  for (const f of files) assert.match(fs.readFileSync(path.join(d, f), 'utf8'), /GLOSSARY\.md/, f);
+  const walk = p => fs.statSync(p).isDirectory() ? fs.readdirSync(p).flatMap(n => walk(path.join(p, n))) : [p];
+  for (const f of walk(d)) assert.doesNotMatch(fs.readFileSync(f, 'utf8'), /CONTEXT\.md/, f);
 });

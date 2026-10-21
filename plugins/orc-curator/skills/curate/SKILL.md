@@ -38,7 +38,7 @@ Read all of these before you write anything:
 - `<notes>/decisions.md` when it exists. It holds the product answers of the run: sections
   `## <gate>` with lines `- <question> → <answer>`.
 - Every doc under `docs/curator/`: `BACKLOG.md`, `PRODUCT.md`, `DIRECTION.md`, `DECISIONS.md`,
-  `QUESTIONS.md`, `CONTEXT.md`, `TECH.md`. Read `DECISIONS.md` twice over: for the next `Dn`
+  `QUESTIONS.md`, `TECH.md`, and `GLOSSARY.md` at the repo root. Read `DECISIONS.md` twice over: for the next `Dn`
   (highest existing plus one, never a count of rows) and for a decision that a candidate
   contradicts.
 
@@ -96,7 +96,7 @@ Never edit or delete a `Dn`.
 | an idea, a want for later, a `Deferred` line | `docs/curator/BACKLOG.md`: `## Next` when it is shaped and near-term, else `## Later`. The next `Bn`. Keep its refs |
 | a `Question` line | `docs/curator/QUESTIONS.md`: a new `## Qn — <question> · open` entry |
 | a question that the shipped code settled | `docs/curator/QUESTIONS.md`: change the heading to `· answered → Dn` and add one sentence on how the code settled it. Close only on evidence in the diff, never on intent, a plan or an inference. Never delete an entry |
-| a domain term that the diff added, renamed or retired | `docs/curator/CONTEXT.md`, per the glossary reference. Only terms specific to this domain. Edit the entry in place; a rename puts the old word under `_Avoid_`. Create the file lazily on the first term |
+| a domain term that the diff added, renamed or retired | `GLOSSARY.md` at the repo root, per the glossary reference. Only terms specific to this domain. Edit the entry in place; a rename puts the old word under `_Avoid_`. Create the file lazily on the first term |
 | a change to what the project runs on | `docs/curator/TECH.md`, the capability row, refreshed from the code |
 
 A question is never a backlog row. Layers and where code goes are not direction docs: NOOP.
@@ -109,7 +109,7 @@ Every doc here grows unless you also remove. Nothing else in a run removes.
   is still unbuilt aspiration moves to `## Vision` of the backlog; do not delete the intent.
 - **`## Vision`.** Keep the prose and the rows telling one story, in both directions. Rewrite prose
   that promises a row that is dropped or in `## Later`.
-- **`CONTEXT.md`.** Delete a term whose concept the diff retired. A term that one file stopped using
+- **`GLOSSARY.md`.** Delete a term whose concept the diff retired. A term that one file stopped using
   is not retired.
 
 **Removal is tiered by confidence.** Delete outright only on a plain contradiction: a claim about a

@@ -43,7 +43,7 @@ const escape = s => s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
 
 test('the docs matrix agrees with the skill texts', () => {
   const table = rows('The docs');
-  for (const doc of ['PRODUCT.md', 'BACKLOG.md', 'DIRECTION.md', 'DECISIONS.md', 'QUESTIONS.md', 'TECH.md', 'CONTEXT.md', 'research/']) assert.ok(table[doc], doc);
+  for (const doc of ['PRODUCT.md', 'BACKLOG.md', 'DIRECTION.md', 'DECISIONS.md', 'QUESTIONS.md', 'TECH.md', 'GLOSSARY.md', 'research/']) assert.ok(table[doc], doc);
   assert.deepEqual(agree(table, k => new RegExp(`\\b${escape(k)}`)), []);
 });
 

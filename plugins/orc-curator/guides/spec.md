@@ -4,7 +4,7 @@ Rules for the spec stage when the project has `docs/curator/`. When that folder 
 
 1. Read `docs/curator/BACKLOG.md`: the Vision, Now and Next. Never Later. A task must not depend on a bet that nobody has checked.
 2. Read `docs/curator/PRODUCT.md` for why the product has its shape, and what it deliberately is not. It does not say what the product does. Do not write a criterion for something it refuses.
-3. Read `docs/curator/TECH.md` and `docs/curator/CONTEXT.md`. Write the brief in the words of CONTEXT. A synonym that CONTEXT rejects gets built under a second name.
+3. Read `docs/curator/TECH.md` and `GLOSSARY.md` at the repo root. Write the brief in the words of GLOSSARY. A synonym that GLOSSARY rejects gets built under a second name.
 4. Match the task to one row of BACKLOG by your own judgement. Do not stretch: when no row clearly fits, the task is `new`.
 5. A want that the task puts off ("later", "not now but we want it") is a `Deferred` line with the reason. It is not a non-goal. A non-goal stays under `Scope: Out`.
 6. A gap about this project that only the user can close, or about how the world works, is a `Question` line. Do not guess it, and do not research it. A `Question` line never stops the run: the spec proceeds on its stated assumption. A gap without which an acceptance criterion cannot be written is a `business fact:` line of the brief instead; that one stops the run for the human.

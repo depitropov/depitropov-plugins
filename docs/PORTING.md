@@ -1073,18 +1073,18 @@ General notes:
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Header: ubiquitous language, committed; "lives at the repo root in both modes" | `plugins/orc-curator/templates/CONTEXT.md`; the file goes in the docs folder, not the repo root and not `docs/CONTEXT.md` (in this repo that is orchestra's own glossary) | ported (changed, S76 location; no modes) | yes |
-| A glossary and nothing else; only domain-specific terms; be opinionated with `_Avoid_` | `plugins/orc-curator/templates/CONTEXT.md` | ported | yes |
-| Entries edited in place; delete when the concept leaves the code | `plugins/orc-curator/templates/CONTEXT.md` | ported | yes |
-| Nothing blocks on it | `plugins/orc-curator/templates/CONTEXT.md` | ported | yes |
-| Body: domain line, `## Language`, commented examples, `###` grouping note | `plugins/orc-curator/templates/CONTEXT.md` | ported | yes |
+| Header: ubiquitous language, committed; "lives at the repo root in both modes" | `plugins/orc-curator/templates/GLOSSARY.md` (S79); the file goes at the repo root as `GLOSSARY.md` | ported (changed, S76 location; no modes) | yes |
+| A glossary and nothing else; only domain-specific terms; be opinionated with `_Avoid_` | `plugins/orc-curator/templates/GLOSSARY.md` | ported | yes |
+| Entries edited in place; delete when the concept leaves the code | `plugins/orc-curator/templates/GLOSSARY.md` | ported | yes |
+| Nothing blocks on it | `plugins/orc-curator/templates/GLOSSARY.md` | ported | yes |
+| Body: domain line, `## Language`, commented examples, `###` grouping note | `plugins/orc-curator/templates/GLOSSARY.md` | ported | yes |
 
 #### references/glossary.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
 | Shared policy, cited by every skill that reads or writes CONTEXT | `plugins/orc-curator/references/glossary.md` | ported | yes |
-| The file: repo root, same in both modes, committed | `plugins/orc-curator/references/glossary.md` names `docs/curator/CONTEXT.md` (see templates/CONTEXT.md) | ported (changed, S76 location; no modes) | yes |
+| The file: repo root, same in both modes, committed | `plugins/orc-curator/references/glossary.md` names `GLOSSARY.md` at the repo root (see templates/GLOSSARY.md) | ported (changed, S76 location; no modes) | yes |
 | Created lazily, on the first term | `plugins/orc-curator/references/glossary.md` | ported | yes |
 | A glossary and nothing else | `plugins/orc-curator/references/glossary.md` | ported | yes |
 | Format: copy the template; bold name, 1–2 sentences, `_Avoid_` | `plugins/orc-curator/references/glossary.md` | ported | yes |

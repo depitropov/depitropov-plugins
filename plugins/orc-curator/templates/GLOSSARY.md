@@ -1,7 +1,7 @@
-# Context: [domain name]
+# [domain name]
 
 > **The ubiquitous language of the project:** the words in which this domain is discussed, specified,
-> planned and coded. The file lives in `docs/curator/` and is committed. A vocabulary that only one
+> planned and coded. The file is `GLOSSARY.md` at the repo root and is committed. A vocabulary that only one
 > person can see is not ubiquitous.
 >
 > **A glossary and nothing else.** No implementation detail, no schema, no class names, no decisions.

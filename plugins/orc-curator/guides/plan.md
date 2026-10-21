@@ -8,7 +8,7 @@ Rules for the plan stage and the plan-check stage when the project has `docs/cur
 4. For a row marked `satisfied by <path>`, read that file. Do not derive the shape again.
 5. Read BACKLOG (Vision, Now, Next): context, never scope. A later row may make you choose a shape that will not need undoing. It never adds a task. Never read Later.
 6. Read `docs/curator/PRODUCT.md` and `docs/curator/TECH.md`.
-7. Use the words of `docs/curator/CONTEXT.md` in the approach and in the task titles. Take `_Avoid_` literally. When CONTEXT and the real code clearly disagree, write a `Warning:` line under `## Approach` that names both. Never rename without a word.
+7. Use the words of `GLOSSARY.md` at the repo root in the approach and in the task titles. Take `_Avoid_` literally. When GLOSSARY and the real code clearly disagree, write a `Warning:` line under `## Approach` that names both. Never rename without a word.
 8. Plan only this task. No nearby improvement and no task for a later row. A missing cross-task rule is a `Warning:` line that names it.
 9. Never write a `Bn`, `Cn`, `Dn` or `Qn` into the plan as a new item, and never edit `docs/curator/DIRECTION.md`. Only a `Cn` that already exists may be named, as a reference.
 

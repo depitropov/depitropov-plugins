@@ -1,12 +1,12 @@
 # Glossary — the ubiquitous language of the project
 
-> **Shared policy.** Every skill that writes or reads `docs/curator/CONTEXT.md` cites it. It is policy
+> **Shared policy.** Every skill that writes or reads `GLOSSARY.md` cites it. It is policy
 > only: the format, what earns a term, and the rules for change. When a skill asks about a term is the
 > business of that skill.
 
 ## The file
 
-`docs/curator/CONTEXT.md`, committed. A vocabulary that only one person can see is not ubiquitous.
+`GLOSSARY.md` at the repo root, committed. When `GLOSSARY-MAP.md` exists, follow it to the right `GLOSSARY.md`. `mattpocock-skills:domain-modeling` writes the same file, in the same format, during a burst. A vocabulary that only one person can see is not ubiquitous.
 
 **Created lazily.** There is no file until the first term really resolves. An empty glossary is worse
 than none: it reads as "this project has no domain language" and not as "nobody has written one yet".
@@ -17,7 +17,7 @@ to look for facts that already live somewhere else.
 
 ## Format
 
-The shape of the file is the template `templates/CONTEXT.md` of this plugin. Copy it when you create
+The shape of the file is the template `templates/GLOSSARY.md` of this plugin. Copy it when you create
 the file, and follow it when you add a term. In short: one line that says what the domain is, then
 `## Language`, then for each term a bold name, one or two sentences of definition, and an `_Avoid_:`
 line that lists the words it beat. Group under `###` subheadings when natural clusters appear. A flat
@@ -48,7 +48,7 @@ words that nobody uses, and then nobody trusts any of it.
 ## Never a gate
 
 **Nothing blocks on this file.** No skill refuses to go on because a term is not defined, because
-`CONTEXT.md` is missing, or because the diff used a word that is not in it. A missing file is a no-op,
+`GLOSSARY.md` is missing, or because the diff used a word that is not in it. A missing file is a no-op,
 everywhere. Drift is **flagged**, never enforced: a reader raises it as a finding that the human can
 dismiss. A glossary that can stop work is a glossary that people avoid.
 

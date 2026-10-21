@@ -27,8 +27,8 @@ not the product idea: do not shape it here.
 
 1. For each of `BACKLOG.md`, `PRODUCT.md`, `DIRECTION.md`, `DECISIONS.md`, `QUESTIONS.md` and
    `TECH.md`: when `docs/curator/<FILE>` does not exist, copy `<plugin>/templates/<FILE>` there.
-   Never overwrite a file that exists. Do not copy `CONTEXT.md`: `orc-curator:curate` creates it on
-   the first domain term.
+   Never overwrite a file that exists. Do not copy `GLOSSARY.md`: `orc-curator:curate` creates it at the
+   repo root on the first domain term.
 2. Create `docs/curator/research/` with an empty `.gitkeep` when it does not exist.
 
 ## Step 3: Route on the fill state

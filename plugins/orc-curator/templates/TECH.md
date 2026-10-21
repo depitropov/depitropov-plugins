@@ -31,6 +31,7 @@
 > invented row.
 
 - [language / runtime] — why in `DECISIONS.md` [`Dn`, if decided]
+- architecture style — a `hard:` `Dn`. Module boundaries are contexts in `GLOSSARY-MAP.md`, never paths.
 - [test runner] — why in `DECISIONS.md` [`Dn`, if decided]
 
 ## Where conventions live

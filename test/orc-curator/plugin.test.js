@@ -7,7 +7,7 @@ const { checkPlugin } = require('../../plugins/orchestra/lib/check');
 
 const DIR = path.join(__dirname, '../../plugins/orc-curator');
 const read = rel => fs.readFileSync(path.join(DIR, rel), 'utf8');
-const DOCS = ['BACKLOG', 'PRODUCT', 'DIRECTION', 'DECISIONS', 'QUESTIONS', 'CONTEXT', 'TECH'];
+const DOCS = ['BACKLOG', 'PRODUCT', 'DIRECTION', 'DECISIONS', 'QUESTIONS', 'GLOSSARY', 'TECH'];
 
 test('orc-curator passes orchestra check and declares the curator slot', () => {
   assert.deepEqual(checkPlugin(DIR), []);
@@ -42,7 +42,7 @@ test('the templates and references name no minions paths, modes or state', () =>
 test('setup bootstraps from the templates, runs the interviews and the sweep, and writes the flag last', () => {
   const text = read('skills/setup/SKILL.md');
   assert.match(text, /docs\/curator\//);
-  assert.match(text, /Do not copy `CONTEXT\.md`/);
+  assert.match(text, /Do not copy `GLOSSARY\.md`/);
   assert.match(text, /never overwrite/i);
   for (const s of ['orc-curator:shape-product', 'orc-curator:shape-tech', 'orc-curator:direction']) assert.ok(text.includes(s), s);
   assert.match(text, /Caller: setup/);
@@ -106,4 +106,16 @@ test('no skill or reference falls back for a Curator skill that is missing', () 
 test('the marketplace lists orc-curator', () => {
   const m = JSON.parse(fs.readFileSync(path.join(__dirname, '../../.claude-plugin/marketplace.json'), 'utf8'));
   assert.ok(m.plugins.some(p => p.name === 'orc-curator' && p.source === './plugins/orc-curator'));
+});
+
+test('the references product and tech hold rules only', () => {
+  const p = read('references/product.md');
+  for (const s of ['would deleting one backlog row make it false', 'Never list features', 'one paragraph', '3 or 4 lines', '2 to 4 entries', 'cite the `Dn`']) assert.ok(p.includes(s), s);
+  const t = read('references/tech.md');
+  for (const s of ['runs as', 'deploys to', 'persists', 'integrates with', 'authenticates', 'hard constraints', '50 lines', 'never a path', 'a transcription has no `Dn`', 'one place']) assert.ok(t.includes(s), s);
+  for (const f of [t, read('templates/TECH.md')]) assert.match(f, /architecture style.*`hard:`.*`Dn`/);
+  assert.match(t, /GLOSSARY-MAP\.md/);
+  for (const f of [p, t]) assert.doesNotMatch(f, /^## Step/m);
+  assert.match(read('references/glossary.md'), /GLOSSARY-MAP\.md/);
+  assert.match(read('references/glossary.md'), /domain-modeling/);
 });

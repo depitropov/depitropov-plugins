@@ -25,11 +25,11 @@ test('before it adds a row for Serves: new, it checks Now, Next and Later for a 
   assert.match(text, /check `## Now`, `## Next` and `## Later`/i);
 });
 
-test('it subtracts as well as adds: PRODUCT, Vision, QUESTIONS, CONTEXT and DIRECTION', () => {
+test('it subtracts as well as adds: PRODUCT, Vision, QUESTIONS, GLOSSARY and DIRECTION', () => {
   assert.match(text, /docs\/curator\/PRODUCT\.md/);
   assert.match(text, /## Vision/);
   assert.match(text, /answered → D/);
-  assert.match(text, /docs\/curator\/CONTEXT\.md/);
+  assert.match(text, /GLOSSARY\.md/);
   for (const check of ['satisfied by', 'orphan', 'retire']) assert.match(text, new RegExp(check, 'i'), check);
   assert.match(text, /orc-curator:direction/);
   assert.match(text, /Caller: curate/);
