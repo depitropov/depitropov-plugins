@@ -91,7 +91,7 @@ function project(config, declarations) {
   const dir = makeRepo();
   const slots = {};
   for (const [slot, d] of Object.entries(declarations)) {
-    const name = { workflow: 'wf', 'stack-skills': 'st', curator: 'cur' }[slot];
+    const name = { workflow: 'wf', 'stack-skills': 'st', curator: 'cur', 'global-gates': 'gg' }[slot];
     slots[slot] = { plugin: name, version: '0.0.1', dir: writePlugin(tmp(`${name}-`), name, d), declaration: d };
   }
   writeJson(path.join(dir, '.orchestra/config.json'), config);
@@ -105,6 +105,25 @@ test('a guide for a role the workflow has no stage for fails, unless the config 
   assert.deepEqual(out, ['.orchestra/config.json: st declares a "code" guide, but the workflow wf has no code stage. Fix: add "code-guide" to "stack-skills.disable", or choose a workflow with a code stage.']);
   const off = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', disable: ['code-guide'] } };
   assert.deepEqual(checkProject(project(off, { workflow: noCode, 'stack-skills': st })), []);
+});
+
+test('a global-gates declaration takes only slot, config and gates', () => {
+  const gate = { name: 'shape', phase: 'implementation-check', kind: 'agent', skill: 'review-shape', always: true, measure: true };
+  assert.deepEqual(errors({ slot: 'global-gates', config: {}, gates: [gate] }), []);
+  for (const key of ['guides', 'build', 'measure']) {
+    assert.match(errors({ slot: 'global-gates', gates: [], [key]: {} }).join('\n'), new RegExp(`unknown key "${key}" for slot global-gates`));
+  }
+});
+
+test('a gate name declared by two slots fails, unless one section disables it', () => {
+  const shape = { name: 'shape', phase: 'implementation-check', kind: 'agent', skill: 'review-shape', always: true };
+  const wf2 = { slot: 'workflow', roles: ['code'], gates: [shape] };
+  const gg = { slot: 'global-gates', gates: [shape] };
+  const config = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, 'global-gates': { plugin: 'gg' } };
+  assert.deepEqual(checkProject(project(config, { workflow: wf2, 'stack-skills': st, 'global-gates': gg })),
+    ['.orchestra/config.json: gate "shape" is declared by both wf and gg. Fix: add "shape" to the "disable" list of one of the two sections, or rename it in one plugin.']);
+  config['global-gates'].disable = ['shape'];
+  assert.deepEqual(checkProject(project(config, { workflow: wf2, 'stack-skills': st, 'global-gates': gg })), []);
 });
 
 test('a valid project config passes', () => {

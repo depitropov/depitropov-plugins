@@ -5,7 +5,7 @@ const PHASE_ORDER = {
   'conventions-check': ['tool', 'agent'],
   finish: ['agent', 'tool', 'build'],
 };
-const PROVIDERS = ['workflow', 'stack-skills'];
+const PROVIDERS = ['workflow', 'global-gates', 'stack-skills'];
 
 function globToRegExp(glob) {
   let re = '';

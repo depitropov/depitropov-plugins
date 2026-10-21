@@ -20,6 +20,18 @@ const resolved = {
   },
 };
 
+test('collect orders the providers workflow, global-gates, stack-skills, and honours disable', () => {
+  const withGlobal = { slots: { ...resolved.slots, 'global-gates': { plugin: 'gg', dir: '/p/gg', declaration: { gates: [
+    { name: 'clean-code', phase: 'implementation-check', kind: 'agent', skill: 'clean-code', always: true, measure: true },
+  ] } } } };
+  const gates = collect(withGlobal, {}, 'implementation-check');
+  assert.deepEqual(gates.map(g => g.name), ['logic-review', 'clean-code', 'crap', 'arch']);
+  assert.equal(gates[1].provider, 'global-gates');
+  assert.equal(gates[1].plugin, 'gg');
+  const off = collect(withGlobal, { 'global-gates': { disable: ['clean-code'] } }, 'implementation-check');
+  assert.deepEqual(off.map(g => g.name), ['logic-review', 'crap', 'arch']);
+});
+
 test('globToRegExp matches paths like a shell glob with **', () => {
   assert.ok(globToRegExp('**/*.java').test('src/main/A.java'));
   assert.ok(globToRegExp('**/*.java').test('A.java'));

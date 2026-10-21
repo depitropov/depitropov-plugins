@@ -9,13 +9,13 @@ const { DIR } = require('./worktree');
 
 // The contract of a plugin declaration and of the project config. The skill writing-plugins explains
 // every word in these lists; a test fails when one is missing there.
-const SLOTS = ['workflow', 'stack-skills', 'curator'];
-// A project may leave the curator slot empty: then it runs with no Curator (S76).
+const SLOTS = ['workflow', 'stack-skills', 'global-gates', 'curator'];
+// A project may leave the curator and global-gates slots empty: then it runs with no Curator (S76) and no global gates (S80).
 const REQUIRED_SLOTS = ['workflow', 'stack-skills'];
 const KINDS = ['tool', 'agent'];
 const FIXES = ['self', 'fixer', 'none'];
 const CONFIG_TYPES = ['string', 'number', 'boolean'];
-const DECLARATION_KEYS = { workflow: ['slot', 'config', 'roles', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'measure', 'guides', 'gates'], curator: ['slot', 'config', 'curate', 'setup', 'guides'] };
+const DECLARATION_KEYS = { workflow: ['slot', 'config', 'roles', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'measure', 'guides', 'gates'], curator: ['slot', 'config', 'curate', 'setup', 'guides'], 'global-gates': ['slot', 'config', 'gates'] };
 const GATE_KEYS = ['name', 'phase', 'kind', 'skill', 'run', 'fix', 'guide', 'max_rounds', 'files', 'grep', 'when', 'always', 'measure'];
 const BUILD_KEYS = ['run', 'guide', 'max_rounds'];
 const MEASURE_KEYS = ['run', 'rules'];
@@ -282,6 +282,21 @@ function checkProject(project) {
         if (!ROLES.includes(role) || roles.includes(role) || off.includes(name)) continue;
         out.push(`${CONFIG}: ${s.plugin} declares a "${role}" guide, but the workflow ${wf.plugin} has no ${role} stage. Fix: add "${name}" to "${slot}.disable", or choose a workflow with a ${role} stage.`);
       }
+    }
+  }
+  // The runner keys result files by gate name, so a name belongs to one slot (S80).
+  const owner = {};
+  for (const slot of SLOTS) {
+    const s = slots[slot];
+    const section = config[slot];
+    if (!s || !isObject(section) || section.plugin !== s.plugin || !isObject(s.declaration) || s.declaration.slot !== slot || !Array.isArray(s.declaration.gates)) continue;
+    const off = Array.isArray(section.disable) ? section.disable : [];
+    for (const g of s.declaration.gates) {
+      if (!isObject(g) || off.includes(g.name)) continue;
+      if (owner[g.name] && owner[g.name] !== s.plugin) {
+        out.push(`${CONFIG}: gate "${g.name}" is declared by both ${owner[g.name]} and ${s.plugin}. Fix: add "${g.name}" to the "disable" list of one of the two sections, or rename it in one plugin.`);
+      }
+      owner[g.name] = s.plugin;
     }
   }
   // A run's worktree lives in the project (S74). Not ignored, it shows in the user's git status.

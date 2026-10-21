@@ -438,3 +438,20 @@ wording change needs no entry.
 - **Where it lives:** `docs/research/R9-navigation-and-curation.md`; later `plugins/orc-curator/`
   (`skills/curate`, `skills/setup`, `procedures/`, `references/`, `templates/`, `.claude-plugin/plugin.json`),
   `.claude-plugin/marketplace.json`, `docs/DESIGN.md`, `docs/CONTEXT.md`, the Curator spec.
+
+---
+
+## S80: Gates that every workflow gets, in their own slot
+
+- **Date:** 2026-10-21
+- **Status:** decided
+- **Question:** `clean-code` reads only what every workflow gives (the brief, the base, the notes, the measure), yet it lives in `orc-standard-workflow`. A second workflow, for example one built on Superpowers, would need its own copy. Where do gates that every workflow gets live?
+- **Options:**
+  1. A new optional slot, `global-gates`. Chosen. Any workflow gets the gates, and each gate is declared once.
+  2. Let a gate name a skill of another plugin, `plugin:skill`. Smaller, but both workflows must be installed and each declares the gate again.
+  3. Put the gates in the Curator slot (O13). The wrong owner: the Curator keeps the direction docs, not the checks.
+  4. Move `logic-review` too. Rejected: it needs the given-when-then brief of `orc-standard-workflow:spec`.
+- **Evidence:** The conversation of 2026-10-21 and the adapter backlog (O8) in `docs/TENSIONS.md`.
+- **Decision:** As the S80 row in `docs/TENSIONS.md`. The slot is optional, its declaration holds `slot`, `config` and `gates`, and the provider order is workflow, global-gates, stack-skills. A gate name is unique across a project's slots.
+- **Cost and risk:** An existing project loses `clean-code` until it adds the new section. The Superpowers review must cover what `logic-review` covered. O7 (General Knowledge) stays open.
+- **Where it lives:** `plugins/orchestra/lib/{check,gates}.js`, `plugins/orchestra/skills/{writing-plugins,init}/SKILL.md`, the tests in `test/orchestra/`, and the plugin `plugins/orc-global-gates/` (Task 2).
