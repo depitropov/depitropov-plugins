@@ -1,0 +1,154 @@
+Follow-ups from the S79 refactor of the Curator (navigation and curation, October 2026)
+
+The task reviews and the final whole-branch review of the S79 plan
+(docs/superpowers/plans/2026-10-21-curator-navigation-curation.md) found these minor points.
+Each one was parked on purpose: none of them blocks a run. Each item says what we saw, why it
+can wait, and what to do.
+
+orchestra
+---------
+
+1. A guide path may name a folder.
+   What we saw: `file()` in plugins/orchestra/lib/check.js uses `fs.existsSync`, so a guide
+   value such as "guides" or "." passes the check.
+   Why it waits: the stage fails loudly when it tries to read a folder.
+   What to do: use `fs.statSync(...).isFile()` in a try/catch, and add "guides" to the bad
+   values in test/orchestra/check.test.js.
+
+2. No check that a guide path stays inside the plugin after a symlink.
+   Why it waits: plugin authors are trusted, and the limit is known.
+   What to do: resolve the real path and compare it with the plugin folder, if a plugin ever
+   ships symlinks.
+
+3. The java guide's rules are not tested.
+   What we saw: test/orc-curator/guides.test.js checks only that
+   plugins/orc-java-stack/guides/code.md has no frontmatter and no harness words.
+   Why it waits: the move from skill to file was a pure rename.
+   What to do: assert two or three of its rules, as the Curator guides do.
+
+4. The Codex marketplace has no allow list.
+   What we saw: .claude-plugin/marketplace.json has `allowCrossMarketplaceDependenciesOn`;
+   .agents/plugins/marketplace.json has none.
+   Why it waits: we do not know if Codex has an equivalent. Plan 5 (Codex) is paused (S71).
+   What to do: check it when plan 5 starts.
+
+5. DESIGN §12 names a script that does not exist.
+   What we saw: the layout lists `scripts/gen-manifests.js`. It was wrong before S79.
+   What to do: remove the line, or write the script.
+
+orc-curator: curate and its procedures
+--------------------------------------
+
+6. curate Step 12 contradicts Step 7 on the glossary.
+   What we saw: Step 12 says to discard in GLOSSARY.md "as in Step 7"; Step 7 keeps the
+   glossary at a landing and restores only docs/curator/.
+   Why it waits: Step 2 stops curate when the glossary has uncommitted changes, so a diff run
+   starts with a clean glossary.
+   What to do: say in Step 12 which glossary edits a failed run discards.
+
+7. The soft-row challenge also runs for a bug report.
+   What we saw: curate Step 8 shows the touched `soft:` decisions before it sorts the change,
+   so it also asks "still true?" when the change is a bug.
+   What to do: say "before you write a `Dn` or a `Qn`".
+
+8. A landing commits all uncommitted glossary edits.
+   What we saw: at a landing, curate cannot tell the burst's glossary edits from other edits
+   the user made, so it commits both.
+   Why it waits: they are glossary edits the user made, and the summary shows the commit.
+   What to do: show the glossary diff before the commit and let the user exclude a term.
+
+9. A stopped landing leaves copied research notes behind.
+   What we saw: the discard restores tracked files from the last commit; a research note that
+   the landing copied into docs/curator/research/ is a new file and stays.
+   What to do: remove the files the landing created when it stops.
+
+10. The diff path does not apply the retire rule to a TECH change.
+    What we saw: the words path retires the `## Evaluated` rows that depend on a changed
+    dimension; the diff path does not.
+    Why it waits: Step 6 already passes a live `Cn` that the shipped code contradicts to the
+    sweep.
+    What to do: apply the retire rule when a diff changes a TECH row.
+
+11. The first landing on a repo with old ADRs creates many `hard:` decisions.
+    What we saw: every ADR in docs/adr/ that no `Dn` links lands as its own `hard:` `Dn`,
+    also an ADR written before the Curator or outside a burst.
+    Why it waits: curate shows every marker before the commit.
+    What to do: land only the ADRs that are new since the burst started, or let the words path
+    link an ADR that the user names.
+
+12. Weak tests for curate.
+    What we saw: several assertions in test/orc-curator/curate.test.js match single words
+    ("once", "no `Dn`", "diagnosing-bugs"). The reconcile branch ("discard nothing, name the
+    files") has no test.
+    What to do: slice each step and assert inside it, as the setup test does for its Step 3.
+
+13. The direction test misses two wrong versions.
+    What we saw: test/orc-curator/direction.test.js checks the changed-dimension strings one
+    by one, and forbids only `orc-curator:setup`, so a bare "run setup" would pass.
+    What to do: assert the branch and the nudge in the same verdict row.
+
+14. Long lines and wording in the procedures.
+    What we saw: very long unwrapped lines in procedures/backlog.md and procedures/direction.md;
+    backlog Step 3 says "not saved in git yet" only to avoid the word "commit".
+    What to do: wrap the lines; say "not yet in a commit" and exempt that phrase in the
+    procedure test.
+
+orc-curator: setup
+------------------
+
+15. A rerun after a stopped present interview asks again.
+    What we saw: setup Step 4 does not say to skip what PRODUCT.md or TECH.md already says.
+    What to do: add "Skip what a file already says."
+
+16. "Leave that section empty" is unclear.
+    What we saw: the templates hold bracket placeholders, so it is not clear if the placeholder
+    stays.
+    What to do: say which.
+
+17. "Only curate writes a Dn or a Qn" is too broad in the setup hard gate.
+    What to do: say "setup writes none".
+
+18. The setup test checks that the flag is written last, but not where.
+    What to do: assert the order of the steps.
+
+19. The setup description does not say that a set-up project is redirected.
+    What to do: add half a sentence.
+
+20. One long line in setup Step 3 ("no step of the present").
+    What to do: wrap it and reword it.
+
+orc-curator: references, templates, README and PORTING
+------------------------------------------------------
+
+21. references/glossary.md does not say what GLOSSARY-MAP.md is.
+    What to do: one clause: a map from each context to its GLOSSARY.md.
+
+22. The glossary test matches strings only.
+    What we saw: test/orc-curator/plugin.test.js checks "GLOSSARY-MAP.md" and "domain-modeling",
+    not the "follow it" rule.
+    What to do: match the rule.
+
+23. The GLOSSARY template heading changed from "# Context: [domain name]" to "# [domain name]".
+    Why it waits: it is cosmetic and correct.
+    What to do: nothing, unless someone misses the old heading.
+
+24. The README says "The Curator never explores" next to direction's research call.
+    What to do: say "never explores the direction; research is evidence only".
+
+25. Template wording.
+    What we saw: in templates/BACKLOG.md the orphan-sweep line is too long; in
+    templates/DIRECTION.md the Size sentence "It reaches one verdict per near-term backlog row
+    first" reads badly.
+    What to do: rewrite both sentences.
+
+26. One PORTING row is marked "Applicable? yes" for a dropped part.
+    What we saw: the row "a wide ranking goes to the user" in the minions research block.
+    What to do: set it to "no", like the other dropped rows.
+
+Done test still owed
+--------------------
+
+27. No burst has been landed on a real project yet.
+    What to do: in the sample project, chart a small map with /wayfinder, resolve two tickets
+    (one that writes an ADR), then ask curate to land the map. Check the hard and soft markers,
+    the research note copy, the out-of-scope choice and the map move.
