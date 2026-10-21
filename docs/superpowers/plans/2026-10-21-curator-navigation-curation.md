@@ -10,7 +10,7 @@
 
 **Spec:** the S79 entry in `docs/DECISIONS.md`, and `docs/research/R9-navigation-and-curation.md` ("Recommendation"). Both travel with this plan.
 
-**Source:** this is a refactor of `plugins/orc-curator` at 0.17.0. It ports nothing new. It moves `skills/direction` and `skills/backlog` (themselves ports of minions) and drops minions content. Read `docs/PORTING.md` "Steps for every port" before Tasks 2 and 5. Each drop cites S79 in its PORTING row.
+**Source:** this is a refactor of `plugins/orc-curator` at 0.18.0. It ports nothing new. It moves `skills/direction` and `skills/backlog` (themselves ports of minions) and drops minions content. Read `docs/PORTING.md` "Steps for every port" before Tasks 2 and 5. Each drop cites S79 in its PORTING row.
 
 **Rulings in the plan:**
 - **Guides are files; `manifest` stays a skill (S79 (7)).** No skill is hidden: S33 allows only `name` and `description` in a frontmatter. A guide is a file inside the plugin, and its declaration names the path. The manifest stays a skill, because orchestra finds a plugin's folder only through it. The stage and gate skills of the workflow and of the Stack Skills stay skills; moving them is a later decision.
@@ -25,7 +25,7 @@
 
 ## Global Constraints
 
-- All six plugins move to version `0.18.0` in the last task, in both `plugin.json` and `.claude-plugin/plugin.json`.
+- All seven plugins move to version `0.19.0` in the last task, in both `plugin.json` and `.claude-plugin/plugin.json`.
 - The docs folder stays `docs/curator/`. The glossary is `GLOSSARY.md` at the repo root (or the files that `GLOSSARY-MAP.md` lists). Maps land in `docs/curator/maps/<effort>/`.
 - Ids `Bn`, `Cn`, `Dn`, `Qn`: independent; the next is the highest plus one; never reused. `DECISIONS.md` is append-only, and each `Why` opens with `hard:` or `soft:`. Cite `references/recording-rules.md`; do not copy it.
 - Every `SKILL.md` frontmatter has only `name` and `description`, and `name` equals the folder name. A guide file and a procedure file have no frontmatter, start with `# `, and name no harness tool.
@@ -124,16 +124,16 @@
 
 ### Task 6: The dependency, the design and the version
 
-**Files:** Modify `plugins/orc-curator/plugin.json` and `.claude-plugin/plugin.json` (add `"dependencies": ["mattpocock-skills@claude-plugins-official"]`), `.claude-plugin/marketplace.json` (add `"allowCrossMarketplaceDependenciesOn": ["claude-plugins-official"]`), `docs/DESIGN.md` (§2 `orc-curator` row, §9a), `docs/superpowers/specs/2026-10-16-curator-design.md` (a header line that S79 replaces its skill table and setup), `docs/CONTEXT.md` (the Curator row), the twelve manifests, `test/orc-curator/plugin.test.js`.
+**Files:** Modify `plugins/orc-curator/plugin.json` and `.claude-plugin/plugin.json` (add `"dependencies": ["mattpocock-skills@claude-plugins-official"]`), `.claude-plugin/marketplace.json` (add `"allowCrossMarketplaceDependenciesOn": ["claude-plugins-official"]`), `docs/DESIGN.md` (§2 `orc-curator` row, §9a), `docs/superpowers/specs/2026-10-16-curator-design.md` (a header line that S79 replaces its skill table and setup), `docs/CONTEXT.md` (the Curator row), the fourteen manifests, `test/orc-curator/plugin.test.js`.
 
 - [ ] First check the live Claude Code docs pages `plugins/dependencies` and `plugins/manifest-reference` for the exact field names. If they differ from this plan, stop and tell the user.
 - [ ] Test: both orc-curator manifests list the dependency; the marketplace has the allow list; `checkPlugin` still passes on every plugin.
 - [ ] Run `npm test`: it fails.
 - [ ] Edit the manifests and the marketplace. DESIGN §2 and §9a: setup records the present; curate takes three inputs; navigation is `/wayfinder`. The Curator row of `docs/CONTEXT.md`: the same. DESIGN §2 and §9a also say that guides are files.
-- [ ] All twelve manifests `0.17.0` → `0.18.0`; `npm test`; commit `docs: the Curator after S79 in the design; plugins 0.18.0 (S79)`.
+- [ ] All fourteen manifests `0.18.0` → `0.19.0`; `npm test`; commit `docs: the Curator after S79 in the design; plugins 0.19.0 (S79)`.
 
 ## After the plan
 
 Run one burst and one landing on a sample project: chart a map with `/wayfinder`, resolve two tickets (one with an ADR), then "curate this map". Check Review Focus 1 and 5 on the real files.
 
-Tell the user which sections of `docs/guide.html` are out of date (the Curator's skills and flows, the new terms burst and landing, "Built and not built", version 0.18.0), and offer to update them.
+Tell the user which sections of `docs/guide.html` are out of date (the Curator's skills and flows, the new terms burst and landing, "Built and not built", version 0.19.0), and offer to update them.
