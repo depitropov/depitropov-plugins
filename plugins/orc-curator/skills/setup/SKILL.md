@@ -33,7 +33,7 @@ Setup never runs inside a feature run, so there is no task.
 ## Step 3: Already set up
 
 When the flag `docs/curator/.setup` exists, the project is already set up. Step 2 added only the
-files that were missing. Write nothing else. Commit what Step 2 added, if anything
+files that were missing. Write nothing else: no `Dn`, no row, and no step of the present. Commit what Step 2 added, if anything
 (`docs(curator): setup`). Say:
 
 "To change the present or the plan, run `curate` with a change in words. To set the direction, run `/wayfinder <topic>`."

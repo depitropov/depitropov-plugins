@@ -61,6 +61,16 @@ test('setup records the present, writes the flag last and nudges to a burst', ()
   assert.match(text, /\{ "status": "failed"/);
   assert.ok(text.includes('To set the direction of the project, run `/wayfinder <your idea>`.'));
   assert.ok(text.includes('To change the present or the plan, run `curate` with a change in words. To set the direction, run `/wayfinder <topic>`.'));
+  const set = text.split(/^## /m).find(x => x.startsWith('Step 3'));
+  assert.ok(set, 'Step 3 exists');
+  assert.match(set, /docs\/curator\/\.setup/);
+  assert.match(set, /only the\s+files that were missing/);
+  assert.match(set, /Write nothing else/);
+  assert.match(set, /no `Dn`/i);
+  assert.match(set, /no row/i);
+  assert.match(set, /\bStop\.\s*$/);
+  assert.doesNotMatch(set, /Step 4/);
+  assert.ok(set.includes('To change the present or the plan, run `curate` with a change in words. To set the direction, run `/wayfinder <topic>`.'));
   assert.doesNotMatch(text, /shape-product|shape-tech|backlog/);
   assert.doesNotMatch(text, /\/minions:|\.minions|STATE\.md|config\.yml|\bmaintain\b|\bvibe\b|--auto/);
 });
