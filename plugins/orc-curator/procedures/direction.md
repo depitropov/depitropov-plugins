@@ -1,15 +1,10 @@
----
-name: direction
-description: Keeps docs/curator/DIRECTION.md true to the near-term backlog (Now and Next) — the constraints (Cn) that near-term rows put on the code written today. Normally invoked by curate after a run, by backlog after a change to the arrangement, or by setup at project start; also by hand. For each owed backlog row it gives one verdict — no constraint, a Cn, research first, an open Qn, escalate one capability dimension, or a purpose change. A sweep, not a design act — it never designs a feature and never edits the backlog.
----
-
-# Direction
+# Direction procedure
 
 You keep `docs/curator/DIRECTION.md` in agreement with `## Now` and `## Next` of
 `docs/curator/BACKLOG.md`. Each near-term row gets a constraint on the code written today, or a
 record that it owes none.
 
-**You are a sweep, not a designer.** Your nearest sibling is `curate`, not `shape-tech`. Your job is
+**You are a sweep, not a designer.** Your job is
 to find what is out of agreement and put it back. `Cn` rows are the output, but the work is to
 decide *if* a row constrains anything.
 
@@ -17,25 +12,19 @@ The gap that you close: the plan stage plans one task only, and the spec stage m
 mechanisms. Without this sweep, the first feature sets the shape that every later feature gets, and
 an agent that must not look at those later features decides it.
 
-You run in the main session, because you may ask the user. Ask one question at a time.
+`curate` runs you inline in the main session, so you may ask the user. Ask one question at a time. You never explore: an answer that you do not have becomes a `Qn` and a nudge to the user.
 
-`<plugin>` is the folder two levels above this skill's folder.
+`<plugin>` is the folder of the orc-curator plugin, the folder that holds `procedures/`.
 
-## Callers
+## Caller
 
-| Caller | When |
-|---|---|
-| `curate` | a run shipped. Constraints to mark satisfied, orphans to remove, and code that may **contradict** a live `Cn`. Its prompt has the line `Caller: curate` and, when it has one, the diff evidence |
-| `backlog` | after a change to the arrangement: a row added, dropped or moved, or the backlog groomed |
-| `setup` | at project start, when the backlog gets its first `## Now` and `## Next` rows. It may pass shape-tech's `Constraints owed:` and `Worth reopening:` lines: treat them as in the escalate verdict (a verdict for each owed item in the same sweep; show `Worth reopening:` to the user) |
-| by hand | the user asks for it |
-
-A caller names itself with a `Caller: <name>` line. The flow is the same for each caller. Only the
-quantity of change is different.
+You have one caller: `curate`. It runs you when a run shipped. It gives you the constraints to mark
+satisfied, the orphans to remove, the code that may **contradict** a live `Cn`, and the diff
+evidence when it has any. The user may also ask `curate` for the sweep by hand.
 
 ## Step 1: Prepare
 
-When `docs/curator/` does not exist, tell the user to run `orc-curator:setup` first, write nothing,
+When `docs/curator/` does not exist, tell the user that the Curator is not set up, write nothing,
 and return `Result: blocked`.
 
 When `docs/curator/DIRECTION.md` does not exist, copy `<plugin>/templates/DIRECTION.md` there.
@@ -113,13 +102,13 @@ you skip in silence looks the same as a row that you never saw.
 |---|---|---|
 | **no constraint** | the row adds something and touches no shape that other things depend on | record it with a one-line why. **This is the most frequent verdict, and it is not a failure.** It makes the sweep give the same result when you run it again |
 | **write a `Cn`** | the row demands something of the code written now | Step 5 |
-| **research first** | the demand depends on how the world works, not on what the user wants (see below) | invoke `orc-curator:research` (Step 4), then give the verdict again |
+| **research first** | the demand depends on how the world works, not on what the user wants (see below) | Step 4, then give the verdict again |
 | **open a `Qn`** | the gap is a *product* question: what the user wants, who it is for, which behaviour | write a `## Qn — <question> · open` entry and go on. The spec of a later run settles it. **But** when it constrains the code written now, it is a `Cn` |
-| **escalate one dimension** | the row sets or changes a **capability dimension**: runs-as, deploys-to, persists, integrates-with, authenticates, a hard constraint | invoke `orc-curator:shape-tech` for **that one dimension**, with the line `Caller: direction`. Use its answer, then write your `Cn`. Read its `Constraints owed:` line and give a verdict for each item in the same sweep: a `Cn` with `from Bn`, or `no constraint`. Show its `Worth reopening:` line to the user as it is. You never edit a `Dn` |
-| **purpose change** | the row changes what the product is *for*, or who it is for | **stop and name it:** "this changes who the product is for: run `orc-curator:setup`". Do not run a small product interview yourself. A purpose change needs the full setup, and a human who chooses to start it |
+| **changed dimension** | the row sets or changes a **capability dimension**: runs-as, deploys-to, persists, integrates-with, authenticates, a hard constraint | when the row states the answer, give back to `curate` a line `known: <dimension> → <answer>`. `curate` records it in `TECH.md` by `references/tech.md` and a `Dn`. When the row does not state it, write a `Qn` and give the nudge: "To <purpose>, run `/wayfinder <topic>`." Then write your `Cn` only for what the row does state |
+| **purpose change** | the row changes what the product is *for*, or who it is for | **stop and name it:** "this changes who the product is for". Give the nudge "To set the new direction, run `/wayfinder <topic>`." Do not run a product interview yourself. Only the user can start wayfinder |
 
-**Escalate to `shape-tech`. Never write `TECH.md` yourself.** A capability dimension is a row in
-`TECH.md`, and that file has one writer.
+**Never write `TECH.md` yourself.** A capability dimension is a row in `TECH.md`, and that file has
+one writer: `curate`.
 
 **Ask the user, or research?** Intent, preference, taste, business model, audience, strategy, and
 what the users of *this* project need: only the user knows, so ask. How comparable products do it,
@@ -127,7 +116,7 @@ what is standard in the category, the words the category uses, and what a librar
 on the version in use: research, from primary sources. Do not search the web to avoid asking the
 user, and do not make the user describe the market when research is faster and more accurate. A
 research question that is also a one-way door (two answers give code that cannot easily become the
-other) cannot wait: escalate it.
+other) cannot wait: write a `Qn` and give the nudge. It is not a research call.
 
 **Ask the user only what changes a constraint.** Ask one question at a time, because each answer
 changes which question is worth asking next. Ask as few as you can. "Social login or stored email
@@ -144,8 +133,8 @@ A deferral is an answer: it becomes an open `Qn`. Each answer goes into a file i
 
 **When the sweep shows that a row is dead, flag it. Do not move it.** "We will not do B7" changes
 the arrangement of the backlog, and that change has consequences (constraints, vision prose,
-reversed decisions, questions that no longer matter) that belong to `orc-curator:backlog`. Name the
-row and the constraints that would go with it, tell the user to run `orc-curator:backlog`, and derive from
+reversed decisions, questions that no longer matter) that belong to `backlog`. Name the
+row and the constraints that would go with it, tell the user to ask `curate` for a backlog change, and derive from
 the backlog as it is today.
 
 ## Step 4: Research, when a verdict asks for it
@@ -153,20 +142,18 @@ the backlog as it is today.
 **Optional, and often skipped.** A **reduction** (a dropped feature that makes a schema smaller, a
 demoted row that retires constraints) needs no research.
 
-Invoke `orc-curator:research` with the topics, the mode and a breadth budget as a number. Use
-`deep` when the approach is settled and you must know what it demands. Use `wide` when the options
-are really open. It writes one complete note for each topic in `docs/curator/research/` and
-**records nothing else**: it is evidence, not authority. Read its return block: the recommendation,
-what it **refuted**, and what it could not settle. **You write each row that the evidence earns.** A
-run that takes a recommendation and records nothing wasted it.
+Invoke the skill `mattpocock-skills:research` with three things: the topic, the path
+`docs/curator/research/<yyyy-mm-dd>-<topic>.md`, and the first line `For: B<n>`. It writes one note
+and **records nothing else**: it is evidence, not authority. Read the `## Recommendation` of the
+note. **You write each row that the evidence earns.** A run that takes a recommendation and records
+nothing wasted it.
 
-**It can decline, and a decline is an answer.** `Result: blocked` with a reason: *preference*: it
-was never a constraint question, so ask the user or open a `Qn`. *Already settled*: use that `Dn`.
-*Already covered by a note*: read that note. Do not invoke it again with the topic in other words.
+When the note shows a choice between real options, or a one-way door, do not research again and do
+not choose. Write a `Qn` and give the nudge: "To <purpose>, run `/wayfinder <topic>`." When the
+recommendation holds for each option, write the `Cn` without a question.
 
-**Give the `Ranking:` line of a `wide` run to the user, not only its winner.** When the constraint
-depends on the option, the user chooses from the ranked options. When it holds for each option, say
-so and write the `Cn` without a question.
+When a note for this row already exists (its `For:` line), read it. Do not invoke the skill again
+with the topic in other words.
 
 ## Step 5: Write
 
@@ -193,7 +180,7 @@ Follow the template. Its `## Size` section has the cap below.
 
 One row for each backlog row that got a verdict: `| Bn | horizon at eval | date | outcome |`. The
 `outcome` is the `Cn` ids it earned, or `no constraint — <one-line why>`, or `Qn <id>`, or
-`escalated to shape-tech — <dimension>`.
+`known — <dimension>`.
 
 `horizon at eval` is the horizon of the row **today**, not the horizon of the last time. **Overwrite**
 the row of that `Bn`. Do not add a second one. This table is a coverage record, not a history, and
@@ -214,14 +201,12 @@ When you record only the rows that earned a `Cn`, all the other rows look unexam
 
 ### `Qn` entries in `docs/curator/QUESTIONS.md`
 
-An entry for each product gap, and for each thing that research could not settle. Research writes
-none of these. Close each `· open` entry that this run answered.
+An entry for each product gap, each thing that research could not settle, and each changed
+dimension that the row does not answer. Research writes none of these. Close each `· open` entry that this run answered.
 
-### Commit
+### Files
 
-By hand: `git add docs/curator && git commit -m "docs(direction): <n> constraints"`.
-When a caller invoked you (`Caller: curate`, `backlog` or `setup`), do not commit. The caller
-commits once.
+You write the files and stop there. `curate` commits.
 
 ## Step 6: Relay
 
@@ -231,17 +216,16 @@ is a healthy result.
 
 Then report **each row that you evaluated and its verdict**, also the `no constraint` rows. That
 list is the value of the run. Then each `Cn` with its `from Bn` and status, the `Qn` ids, if
-research ran and what it concluded, what you escalated, and each constraint that the code already satisfies (that is good news: say it). **Name
+research ran and what it concluded, each `known:` line and each nudge, and each constraint that the code already satisfies (that is good news: say it). **Name
 what you left to a later feature on purpose**, so that a short run does not look lazy.
 
-When a caller invoked you, give this back to the caller and let it go on. Otherwise stop.
+Give this back to `curate` and let it go on.
 
 ## Hard gate
 
 <HARD-GATE>
 **Constraints only. Never a design, never code.** You write `docs/curator/DIRECTION.md` and
-`docs/curator/QUESTIONS.md`, and nothing else. **Never write `TECH.md`**: escalate the dimension to
-`shape-tech`. No product code, no brief or plan of a run. **Never edit `docs/curator/BACKLOG.md`**:
+`docs/curator/QUESTIONS.md`, and nothing else. **Never write `TECH.md`**: give back a `known:` line, or a `Qn` and a nudge. No product code, no brief or plan of a run. **Never edit `docs/curator/BACKLOG.md`**:
 the backlog is your input. `backlog` makes each change to the arrangement. A row that you think
 should move is a flag in your relay, never an edit.
 
@@ -265,11 +249,9 @@ Result: ok | blocked | needs-input
 Wrote: <files, or "nothing — every near-term row was already current">
 Coverage: <N near-term rows · M already current · K evaluated this run · J orphans retired>
 Summary: <one line per row evaluated, with its verdict>
-Escalated: <"shape-tech — <dimension>" | "setup — purpose change" | "none">
+Escalated: <"known: <dimension> → <answer>" lines | the nudge for a `Qn` or a purpose change | "none">
 Deviations/Warnings: <or "none">
 ```
-
-When `shape-tech` gave a `Worth reopening:` line that is not `none`, put it in `Deviations/Warnings:`, with the `soft:` `Dn` it names.
 
 `blocked` when `docs/curator/` does not exist. `needs-input` when a question that changes a
 constraint needs the user and the user cannot answer now. `ok` when each near-term row has a

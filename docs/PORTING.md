@@ -758,118 +758,122 @@ General notes:
 
 #### skills/direction/SKILL.md
 
+Moved to `plugins/orc-curator/procedures/direction.md` by S79 (a procedure, not a skill).
+
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Description: keeps DIRECTION true to Now and Next; one verdict per owed row; a sweep, not a design act | `orc-curator:direction` | ported | yes |
-| "Normally invoked by another skill"; direct use rare and not advertised | `orc-curator:direction` callers: `curate`, `backlog`, `setup`, by hand; direct use allowed | ported (changed, S76) | yes |
-| Runs inline, because Step 3 may ask the user | `orc-curator:direction`: runs in the main session, by hand or from `curate`, and asks the user | ported (changed, S76) | yes |
-| "A sweep, not a designer"; nearest sibling is curate | `orc-curator:direction` | ported | yes |
-| The gap it closes: planner gated to one feature, spec forbidden to design, so the first feature sets the shape | `orc-curator:direction` | ported | yes |
-| Callers table: backlog, curate, shape-project, direct | `orc-curator:direction` callers: `curate` (`Caller: curate` + diff evidence), `backlog`, `setup`, by hand | ported (changed, S76) | yes |
+| Description: keeps DIRECTION true to Now and Next; one verdict per owed row; a sweep, not a design act | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| "Normally invoked by another skill"; direct use rare and not advertised | `plugins/orc-curator/procedures/direction.md` callers: `curate`, `backlog`, `setup`, by hand; direct use allowed | ported (changed, S76) | yes |
+| Runs inline, because Step 3 may ask the user | `plugins/orc-curator/procedures/direction.md`: runs in the main session, by hand or from `curate`, and asks the user | ported (changed, S76) | yes |
+| "A sweep, not a designer"; nearest sibling is curate | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| The gap it closes: planner gated to one feature, spec forbidden to design, so the first feature sets the shape | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Callers table: backlog, curate, shape-project, direct | `plugins/orc-curator/procedures/direction.md`: `curate` is the only caller (S79: direction has one caller; no `Caller:` line) | ported (changed, S79) | yes |
 | Callers: curate only routes here (HITL), not a mandate | — | dropped (S76: curate runs the sweep in every run; sure `Cn`s committed, for the rest the Curator asks the user) | no |
 | Step 1: resolve `.minions/` or `docs/minions/` roots, `.minions-root`, `disabled` | fixed docs folder `docs/curator/` | dropped (S76: fixed folder) | no |
-| Step 1: stop when no `config.yml`, run init first | `orc-curator:direction` Step 1: no `docs/curator/` → tell the user to run `orc-curator:setup`, `Result: blocked` | ported (changed, S76) | yes |
+| Step 1: stop when no `config.yml`, run init first | `plugins/orc-curator/procedures/direction.md` Step 1: no `docs/curator/` → tell the user that the Curator is not set up, `Result: blocked` | ported (changed, S79) | yes |
 | Step 1: read `mode`, `auto`, `questions` from `config.yml` | — | dropped (S76: one mode; no Curator config yet) | no |
 | Step 1: never writes `STATE.md`; the caller owns the cursor | orchestra owns the run state (run folder) | n/a (S76: no STATE.md) | no |
-| Step 1: pauses are in-turn questions, never a workflow pause | `orc-curator:direction`: questions to the user in the session, one at a time; no Decide | ported (changed, S76) | yes |
+| Step 1: pauses are in-turn questions, never a workflow pause | `plugins/orc-curator/procedures/direction.md`: questions to the user in the session, one at a time; no Decide | ported (changed, S76) | yes |
 | Step 1: guard, stop on direct use while a workflow is in flight | — | n/a (S76: each run works in its own worktree from a base commit (S74), so a sweep on the checkout does not move a running plan; the merge brings them together) | no |
-| Step 1: create DIRECTION.md from the template if absent | `orc-curator:direction` + template | ported | yes |
+| Step 1: create DIRECTION.md from the template if absent | `plugins/orc-curator/procedures/direction.md` + template | ported | yes |
 | Step 1: migrate an old DIRECTION.md that has no `## Evaluated` | — | n/a (new projects only; no old minions files to migrate) | no |
-| Step 1: never write a row into a section that is not there; add missing template sections | `orc-curator:direction` | ported | yes |
-| Step 2: read BACKLOG Vision, Now, Next; never Later | `orc-curator:direction` | ported | yes |
-| Step 2: read DIRECTION (a re-derive), DECISIONS, open QUESTIONS | `orc-curator:direction` | ported | yes |
-| Step 2: read TECH.md to see when a row flips a dimension | `orc-curator:direction` | ported | yes |
-| Step 2: read PRODUCT.md only to spot a purpose change; vibe only, never in maintain | `orc-curator:direction`: PRODUCT always read, for a purpose change only | ported (changed, S76) | yes |
-| Step 2: read research notes by their `For:` line; never research again | `orc-curator:direction` | ported | yes |
-| Step 2: read the real code the Now rows touch; never assume structure; ignore docs and config | `orc-curator:direction` | ported | yes |
-| Step 2: state back the agenda in 8 lines or fewer | `orc-curator:direction` | ported | yes |
-| Step 3: what is owed is set arithmetic, four conditions (owed, current, orphan Cn, retire ledger row) | `orc-curator:direction` | ported | yes |
-| Step 3: movement within Now/Next is not a trigger; Later → Next is caught as owed | `orc-curator:direction` | ported | yes |
-| Step 3: `horizon at eval` is information, a second look is judgement | `orc-curator:direction` | ported | yes |
-| Step 3: a quiet sweep is valid; do not make work | `orc-curator:direction` | ported | yes |
-| Step 3: never take a re-derive cue from a note | `orc-curator:direction` | ported | yes |
-| Step 3: exactly one verdict per owed row, say which and why | `orc-curator:direction` | ported | yes |
-| Verdict: no constraint (most common, not a failure) | `orc-curator:direction` | ported | yes |
-| Verdict: write a `Cn` | `orc-curator:direction` | ported | yes |
-| Verdict: research first (arbiter `ask-vs-research.md`) | `orc-curator:direction` invokes `orc-curator:research`; the ask-vs-research split inline | ported (changed, S76) | yes |
-| Verdict: open a `Qn` for a product gap, unless it constrains code now | `orc-curator:direction` | ported | yes |
-| Verdict: escalate one capability dimension to shape-tech | `orc-curator:direction` invokes `orc-curator:shape-tech` (`Caller: direction`) | ported (changed, S76) | yes |
-| Verdict: FLAG a purpose change; vibe only | `orc-curator:direction`: verdict `purpose change`, names `orc-curator:setup`; always, no mode | ported (changed, S76) | yes |
-| Escalate to shape-tech, never write TECH.md (one owner per file) | `orc-curator:direction` | ported | yes |
-| Ask only what changes a constraint; one at a time; budget from `questions` (`interview-cadence.md`) | `orc-curator:direction`: one question at a time, as few as possible, the interview-cadence rules inline; no `questions` budget (no Curator config) | ported (changed, S76) | yes |
-| A dead row: flag it, do not move it; tell the user to groom | `orc-curator:direction` | ported | yes |
-| Step 4: research is optional; a reduction needs none | `orc-curator:direction` | ported | yes |
-| Step 4: invoke research with topics, mode (`deep`/`wide`) and a breadth budget (`right-sizing.md`) | `orc-curator:direction` → `orc-curator:research`; the `deep`/`wide` and budget dials inline (no right-sizing reference) | ported (changed, S76) | yes |
-| Step 4: read the return block; every row the evidence earns is yours to write | `orc-curator:direction` | ported | yes |
-| Step 4: a research decline is an answer (preference, already settled, already covered); never re-invoke reworded | `orc-curator:direction` | ported | yes |
-| Step 4: a `wide` ranking goes to the user when the constraint depends on the choice | `orc-curator:direction` | ported | yes |
-| Step 5: ids and mutation per `recording-rules.md` | `plugins/orc-curator/references/recording-rules.md`, cited by `orc-curator:direction` Step 5 | ported | yes |
-| Step 5: `from Bn` mandatory | `orc-curator:direction` + template | ported | yes |
-| Step 5: forward pressure, never forward design | `orc-curator:direction` + template | ported | yes |
-| Step 5: no architecture doctrine | `orc-curator:direction` | ported | yes |
-| Step 5: status `unsatisfied` or `satisfied by <path>`; check the file | `orc-curator:direction` + template | ported | yes |
-| Step 5: 50-row soft cap, name the likely cause, never truncate | `orc-curator:direction` + template | ported | yes |
-| Step 5: an `## Evaluated` row for every verdict; overwrite, not append; write the `no constraint` rows | `orc-curator:direction` | ported | yes |
-| Step 5: retire orphans with their ledger row; mark satisfied; a contradicted `Cn` gets a fresh verdict | `orc-curator:direction` | ported | yes |
-| Step 5: `Qn` entries for product gaps and what research did not settle; close answered ones | `orc-curator:direction` | ported | yes |
-| Step 5: commit, vibe only | `orc-curator:direction`: by hand commits `docs(direction): <n> constraints`; a caller (`curate`, `backlog`, `setup`) commits once | ported (changed, S76) | yes |
-| Step 6: relay leads with the coverage line; every evaluated row and verdict; what was left to later | `orc-curator:direction` | ported | yes |
-| Step 6: hand back to the caller; else stop unless `auto` | `orc-curator:direction`: hand back to the caller, else stop; `auto` dropped | ported (changed, S76) | yes |
-| Hard gate: constraints only; writes DIRECTION and QUESTIONS only | `orc-curator:direction` | ported | yes |
+| Step 1: never write a row into a section that is not there; add missing template sections | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 2: read BACKLOG Vision, Now, Next; never Later | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 2: read DIRECTION (a re-derive), DECISIONS, open QUESTIONS | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 2: read TECH.md to see when a row flips a dimension | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 2: read PRODUCT.md only to spot a purpose change; vibe only, never in maintain | `plugins/orc-curator/procedures/direction.md`: PRODUCT always read, for a purpose change only | ported (changed, S76) | yes |
+| Step 2: read research notes by their `For:` line; never research again | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 2: read the real code the Now rows touch; never assume structure; ignore docs and config | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 2: state back the agenda in 8 lines or fewer | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 3: what is owed is set arithmetic, four conditions (owed, current, orphan Cn, retire ledger row) | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 3: movement within Now/Next is not a trigger; Later → Next is caught as owed | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 3: `horizon at eval` is information, a second look is judgement | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 3: a quiet sweep is valid; do not make work | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 3: never take a re-derive cue from a note | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 3: exactly one verdict per owed row, say which and why | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Verdict: no constraint (most common, not a failure) | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Verdict: write a `Cn` | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Verdict: research first (arbiter `ask-vs-research.md`) | `plugins/orc-curator/procedures/direction.md` Step 4 invokes `mattpocock-skills:research` with the topic, the path `docs/curator/research/<yyyy-mm-dd>-<topic>.md` and `For: B<n>`; a real choice or a one-way door is a `Qn` plus the nudge; the ask-vs-research split inline | ported (changed, S79) | yes |
+| Verdict: open a `Qn` for a product gap, unless it constrains code now | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Verdict: escalate one capability dimension to shape-tech | `plugins/orc-curator/procedures/direction.md`: the verdict `changed dimension`: a stated answer goes back to `curate` as `known: <dimension> → <answer>`; an unstated one is a `Qn` plus the wayfinder nudge (S79) | ported (changed, S79) | yes |
+| Verdict: FLAG a purpose change; vibe only | `plugins/orc-curator/procedures/direction.md`: verdict `purpose change`, gives the nudge "To set the new direction, run `/wayfinder …`"; always, no mode | ported (changed, S79) | yes |
+| Escalate to shape-tech, never write TECH.md (one owner per file) | `plugins/orc-curator/procedures/direction.md`: never write `TECH.md`; `curate` is its writer (S79) | ported (changed, S79) | yes |
+| Ask only what changes a constraint; one at a time; budget from `questions` (`interview-cadence.md`) | `plugins/orc-curator/procedures/direction.md`: one question at a time, as few as possible, the interview-cadence rules inline; no `questions` budget (no Curator config) | ported (changed, S76) | yes |
+| A dead row: flag it, do not move it; tell the user to groom | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 4: research is optional; a reduction needs none | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 4: invoke research with topics, mode (`deep`/`wide`) and a breadth budget (`right-sizing.md`) | `plugins/orc-curator/procedures/direction.md` Step 4: one `mattpocock-skills:research` call; the `deep`/`wide` dials and the breadth budget are dropped (S79: a plain research note) | ported (changed, S79) | yes |
+| Step 4: read the return block; every row the evidence earns is yours to write | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 4: a research decline is an answer (preference, already settled, already covered); never re-invoke reworded | `plugins/orc-curator/procedures/direction.md` Step 4: a note that already exists for the row is read, never researched again; the decline cases are dropped (S79: no research skill of ours) | ported (changed, S79) | yes |
+| Step 4: a `wide` ranking goes to the user when the constraint depends on the choice | — | dropped (S79: a plain research note has no `Ranking:` line; a choice between options is a `Qn` plus the nudge) | yes |
+| Step 5: ids and mutation per `recording-rules.md` | `plugins/orc-curator/references/recording-rules.md`, cited by `plugins/orc-curator/procedures/direction.md` Step 5 | ported | yes |
+| Step 5: `from Bn` mandatory | `plugins/orc-curator/procedures/direction.md` + template | ported | yes |
+| Step 5: forward pressure, never forward design | `plugins/orc-curator/procedures/direction.md` + template | ported | yes |
+| Step 5: no architecture doctrine | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 5: status `unsatisfied` or `satisfied by <path>`; check the file | `plugins/orc-curator/procedures/direction.md` + template | ported | yes |
+| Step 5: 50-row soft cap, name the likely cause, never truncate | `plugins/orc-curator/procedures/direction.md` + template | ported | yes |
+| Step 5: an `## Evaluated` row for every verdict; overwrite, not append; write the `no constraint` rows | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 5: retire orphans with their ledger row; mark satisfied; a contradicted `Cn` gets a fresh verdict | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 5: `Qn` entries for product gaps and what research did not settle; close answered ones | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 5: commit, vibe only | `plugins/orc-curator/procedures/direction.md`: the procedure never commits; `curate` commits | ported (changed, S79) | yes |
+| Step 6: relay leads with the coverage line; every evaluated row and verdict; what was left to later | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Step 6: hand back to the caller; else stop unless `auto` | `plugins/orc-curator/procedures/direction.md`: hand back to `curate` | ported (changed, S79) | yes |
+| Hard gate: constraints only; writes DIRECTION and QUESTIONS only | `plugins/orc-curator/procedures/direction.md` | ported | yes |
 | Hard gate: never STATE.md | — | n/a (S76: no STATE.md) | no |
-| Hard gate: never TECH.md; no code, SPEC, PLAN, feature folders; no BACKLOG edits | `orc-curator:direction` (SPEC/PLAN become the brief and plan of a run) | ported (changed, S76) | yes |
-| Hard gate: never read Later | `orc-curator:direction` | ported | yes |
-| Hard gate: never a schema or interface for an unbuilt feature | `orc-curator:direction` | ported | yes |
-| Hard gate: never edit or delete a `Dn`; challenge a thin call in the relay | `orc-curator:direction` | ported | yes |
-| Return block: Result, Wrote, Coverage, Summary, Escalated, Deviations/Warnings, Next | `orc-curator:direction` return block, without `Next:`; `Escalated` names `setup — purpose change` | ported (changed, S76) | yes |
-| Result values: `blocked` (workflow owns the cursor), `needs-input`, `ok`; `ok` with `Wrote: nothing` is normal | `orc-curator:direction`: `blocked` when `docs/curator/` does not exist; the cursor reason is n/a | ported (changed, S76) | yes |
+| Hard gate: never TECH.md; no code, SPEC, PLAN, feature folders; no BACKLOG edits | `plugins/orc-curator/procedures/direction.md` (SPEC/PLAN become the brief and plan of a run) | ported (changed, S76) | yes |
+| Hard gate: never read Later | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Hard gate: never a schema or interface for an unbuilt feature | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Hard gate: never edit or delete a `Dn`; challenge a thin call in the relay | `plugins/orc-curator/procedures/direction.md` | ported | yes |
+| Return block: Result, Wrote, Coverage, Summary, Escalated, Deviations/Warnings, Next | `plugins/orc-curator/procedures/direction.md` return block, without `Next:`; `Escalated` names the `known:` lines and the nudges | ported (changed, S79) | yes |
+| Result values: `blocked` (workflow owns the cursor), `needs-input`, `ok`; `ok` with `Wrote: nothing` is normal | `plugins/orc-curator/procedures/direction.md`: `blocked` when `docs/curator/` does not exist; the cursor reason is n/a | ported (changed, S76) | yes |
 
 #### skills/backlog/SKILL.md
 
+Moved to `plugins/orc-curator/procedures/backlog.md` by S79 (a procedure, not a skill).
+
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Description: changes what is planned, walks the fallout, hands constraints to direction; never starts work | `orc-curator:backlog`: by hand, and by `setup` with `Caller: setup`; not in the slot contract (S76) | ported (changed, S76) | yes |
-| Runs inline; confirms judgement calls with the user | `orc-curator:backlog`, in the main session | ported | yes |
-| Owns every judgement change and its consequence chain; the front door for changing the plan | `orc-curator:backlog` | ported | yes |
-| Never decides what a change demands of code; reads no TECH and no code | `orc-curator:backlog` | ported | yes |
-| Interface: plain words, no flags; table of add, drop, move, groom, reconcile | `orc-curator:backlog` | ported | yes |
-| Several operations in one request; sweep once at the end | `orc-curator:backlog` | ported | yes |
+| Description: changes what is planned, walks the fallout, hands constraints to direction; never starts work | `plugins/orc-curator/procedures/backlog.md`: called by `curate` only (S79) | ported (changed, S79) | yes |
+| Runs inline; confirms judgement calls with the user | `plugins/orc-curator/procedures/backlog.md`, run inline by `curate` in the main session | ported (changed, S79) | yes |
+| Owns every judgement change and its consequence chain; the front door for changing the plan | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Never decides what a change demands of code; reads no TECH and no code | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Interface: plain words, no flags; table of add, drop, move, groom, reconcile | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Several operations in one request; sweep once at the end | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
 | Step 1: resolve minions roots, `config.yml`, read `mode` | fixed docs folder; `setup` marker | dropped (S76: fixed folder, one mode) | no |
 | Step 1: never writes STATE.md | — | n/a (S76: no STATE.md) | no |
-| Step 1: guard, stop when demoting or dropping the row of an in-flight feature | — | n/a (S76: no STATE; a run works from its base in a worktree). `orc-curator:backlog` Step 1 says so; `curate` asks at the end of the run | no |
-| Step 2: read BACKLOG (all), DIRECTION, DECISIONS, QUESTIONS | `orc-curator:backlog` | ported | yes |
-| Step 3 normal path: restate each change as `Bn: from → to`; confirm before touching; groom shows counts | `orc-curator:backlog` | ported | yes |
-| Step 3 reconcile path: detect hand edits by diffing against what other files assume; `git diff` | `orc-curator:backlog` | ported | yes |
-| Hand-editing BACKLOG is legal | `orc-curator:backlog` Step 3 + template | ported | yes |
-| Step 4: next `Bn` = highest plus one; never reused; item is one line | `orc-curator:backlog` | ported | yes |
-| Step 4: refs empty, `specify` fills them | `orc-curator:backlog` Step 4: the why in the cell; the brief's `Serves: Bn` line links the run; `orc-curator:curate` writes the shipped-as cell | ported (changed, S76: single writer, spec only reads) | yes |
-| Step 4: horizon by confidence (Now, Next, Later table); say which was picked | `orc-curator:backlog` | ported | yes |
-| Step 4: a question is never a row, it goes to QUESTIONS | `orc-curator:backlog` | ported | yes |
-| Step 4: extend Vision when it does not cover the new row | `orc-curator:backlog` | ported | yes |
-| Step 4: a purpose-sized row: say so, do not act; direction reaches the verdict | `orc-curator:backlog` | ported | yes |
-| Step 5: check every chain row, say you checked | `orc-curator:backlog` | ported | yes |
-| Chain: dropped (delete cited `Cn` + ledger row, rewrite Vision, `Dn` reversal, close moot `Qn`) | `orc-curator:backlog` | ported | yes |
-| Chain: demoted to Later = dropped; say it to the user | `orc-curator:backlog` | ported | yes |
-| Chain: added to Now/Next (owed, sweep; extend Vision) | `orc-curator:backlog` | ported | yes |
-| Chain: added to Later (nothing) | `orc-curator:backlog` | ported | yes |
-| Chain: promoted Later → Next (owed, sweep; extend Vision) | `orc-curator:backlog` | ported | yes |
-| Chain: promoted Next → Now (nothing; specify does it) | `orc-curator:backlog` Step 5 "moved between Next and Now": nothing owed; the user moves rows, a run never does | ported (changed, S76: single writer; Now no longer means in progress) | yes |
-| Chain: item text materially rewritten (retire the ledger row, leave `Cn`s) | `orc-curator:backlog` | ported | yes |
-| Chain: reordered inside a section (nothing) | `orc-curator:backlog` | ported | yes |
-| Step 5 verify: every `Cn` cites a live Now/Next row; no Vision for Later or gone rows; ids kept | `orc-curator:backlog` | ported | yes |
-| Step 6: invoke direction once at the end; idempotent; skip only for Later-only changes | `orc-curator:backlog` Step 6 → `orc-curator:direction` with `Caller: backlog` | ported | yes |
-| Step 6: fold the Coverage line; relay a purpose-change FLAG verbatim | `orc-curator:backlog` | ported | yes |
-| Step 7: report every change and its consequences, empty ones too; what was not done | `orc-curator:backlog` | ported | yes |
-| Step 7: commit vibe only; maintain commits nothing (root gitignored) | `orc-curator:backlog` Step 7: commits by hand; with `Caller: setup`, setup commits | ported (changed, S76: one mode; plan 4 ruling) | yes |
-| Hard gate: arrangement only; the files and edits it may make | `orc-curator:backlog` | ported | yes |
-| Hard gate: no code, SPEC, PLAN, PRODUCT, TECH, STATE | `orc-curator:backlog` (STATE n/a) | ported | yes |
-| Hard gate: only skill invoked is direction | `orc-curator:backlog` | ported | yes |
-| Hard gate: never read TECH or code | `orc-curator:backlog` | ported | yes |
-| Hard gate: never author a `Cn`; only delete unlicensed ones | `orc-curator:backlog` | ported | yes |
-| Hard gate: never edit or delete a `Dn`; a reversal opens with `hard:`/`soft:`, usually `soft:` | `orc-curator:backlog` | ported | yes |
-| Hard gate: never start work; suggest `/minions:feature` | `orc-curator:backlog` Step 7 and hard gate: suggest `orchestra:run`; a row goes to Now only when the user says so | ported (changed, S76) | yes |
-| Hard gate: never drop silently; confirm every deletion | `orc-curator:backlog` | ported | yes |
-| Return block: Result, Wrote, Summary, Coverage, Escalated, Deviations/Warnings, Next | `orc-curator:backlog` End of run | ported (changed, S76: no `Next` line; `blocked` when `docs/curator/` is missing) | yes |
+| Step 1: guard, stop when demoting or dropping the row of an in-flight feature | — | n/a (S76: no STATE; a run works from its base in a worktree). `plugins/orc-curator/procedures/backlog.md` Step 1 says so; `curate` asks at the end of the run | no |
+| Step 2: read BACKLOG (all), DIRECTION, DECISIONS, QUESTIONS | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Step 3 normal path: restate each change as `Bn: from → to`; confirm before touching; groom shows counts | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Step 3 reconcile path: detect hand edits by diffing against what other files assume; `git diff` | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Hand-editing BACKLOG is legal | `plugins/orc-curator/procedures/backlog.md` Step 3 + template | ported | yes |
+| Step 4: next `Bn` = highest plus one; never reused; item is one line | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Step 4: refs empty, `specify` fills them | `plugins/orc-curator/procedures/backlog.md` Step 4: the why in the cell; the brief's `Serves: Bn` line links the run; `curate` writes the shipped-as cell | ported (changed, S79) | yes |
+| Step 4: horizon by confidence (Now, Next, Later table); say which was picked | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Step 4: a question is never a row, it goes to QUESTIONS | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Step 4: extend Vision when it does not cover the new row | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Step 4: a purpose-sized row: say so, do not act; direction reaches the verdict | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Step 5: check every chain row, say you checked | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Chain: dropped (delete cited `Cn` + ledger row, rewrite Vision, `Dn` reversal, close moot `Qn`) | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Chain: demoted to Later = dropped; say it to the user | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Chain: added to Now/Next (owed, sweep; extend Vision) | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Chain: added to Later (nothing) | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Chain: promoted Later → Next (owed, sweep; extend Vision) | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Chain: promoted Next → Now (nothing; specify does it) | `plugins/orc-curator/procedures/backlog.md` Step 5 "moved between Next and Now": nothing owed; the user moves rows, a run never does | ported (changed, S76: single writer; Now no longer means in progress) | yes |
+| Chain: item text materially rewritten (retire the ledger row, leave `Cn`s) | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Chain: reordered inside a section (nothing) | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Step 5 verify: every `Cn` cites a live Now/Next row; no Vision for Later or gone rows; ids kept | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Step 6: invoke direction once at the end; idempotent; skip only for Later-only changes | `plugins/orc-curator/procedures/backlog.md` Step 6: gives back to `curate`, which runs the sweep once with `direction`; the skip rule is stated as "nothing owed" for a `## Later`-only change | ported (changed, S79) | yes |
+| Step 6: fold the Coverage line; relay a purpose-change FLAG verbatim | `plugins/orc-curator/procedures/backlog.md`: no coverage line; `curate` relays a purpose change | ported (changed, S79) | yes |
+| Step 7: report every change and its consequences, empty ones too; what was not done | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Step 7: commit vibe only; maintain commits nothing (root gitignored) | `plugins/orc-curator/procedures/backlog.md` Step 7: the procedure never commits; `curate` commits | ported (changed, S79) | yes |
+| Hard gate: arrangement only; the files and edits it may make | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Hard gate: no code, SPEC, PLAN, PRODUCT, TECH, STATE | `plugins/orc-curator/procedures/backlog.md` (STATE n/a) | ported | yes |
+| Hard gate: only skill invoked is direction | `plugins/orc-curator/procedures/backlog.md` hard gate: invokes no skill and no other procedure | ported (changed, S79) | yes |
+| Hard gate: never read TECH or code | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Hard gate: never author a `Cn`; only delete unlicensed ones | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Hard gate: never edit or delete a `Dn`; a reversal opens with `hard:`/`soft:`, usually `soft:` | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Hard gate: never start work; suggest `/minions:feature` | `plugins/orc-curator/procedures/backlog.md` Step 7 and hard gate: suggest `orchestra:run`; a row goes to Now only when the user says so | ported (changed, S79) | yes |
+| Hard gate: never drop silently; confirm every deletion | `plugins/orc-curator/procedures/backlog.md` | ported | yes |
+| Return block: Result, Wrote, Summary, Coverage, Escalated, Deviations/Warnings, Next | `plugins/orc-curator/procedures/backlog.md` End of run: Result, Wrote, Summary, Deviations/Warnings; the sweep state is in the Summary | ported (changed, S79) | yes |
 | Result `blocked` when a change strands an in-flight feature | — | n/a (S76: no in-flight state, see the Step 1 guard row) | no |
 
 #### templates/DIRECTION.md

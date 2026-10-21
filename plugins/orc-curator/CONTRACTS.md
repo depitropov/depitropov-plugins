@@ -45,7 +45,7 @@ its own questions and its own procedure.
 | `right-sizing.md` | `shape-tech`, `research` |
 | `glossary.md` | `curate` |
 | `product.md` | curate and setup (wired in S79, tasks 3 and 4) |
-| `tech.md` | curate and setup (wired in S79, tasks 3 and 4) |
+| `tech.md` | `direction`, curate and setup (wired in S79, tasks 3 and 4) |
 
 `glossary.md` has one reader today. Its second reader is the glossary gate (O13), when it is built.
 

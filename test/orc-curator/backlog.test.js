@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const text = fs.readFileSync(path.join(__dirname, '../../plugins/orc-curator/skills/backlog/SKILL.md'), 'utf8');
+const text = fs.readFileSync(path.join(__dirname, '../../plugins/orc-curator/procedures/backlog.md'), 'utf8');
 
 test('backlog takes plain words for each operation and confirms before it touches a file', () => {
   for (const op of ['**add**', '**drop**', '**move**', '**groom**', '**reconcile**']) assert.ok(text.includes(op), op);
@@ -18,16 +18,15 @@ test('backlog walks the consequence chain for every change and reports the empty
   assert.match(text, /including the empty ones/i);
 });
 
-test('backlog sweeps once at the end and never derives a constraint itself', () => {
-  assert.match(text, /orc-curator:direction/);
-  assert.match(text, /Caller: backlog/);
-  assert.match(text, /`## Later` only/);
-  assert.match(text, /`Caller: setup`\. Setup runs the sweep next/);
+test('backlog is called by curate, runs no sweep and never derives a constraint itself', () => {
+  assert.match(text, /`curate` runs the sweep/);
+  assert.doesNotMatch(text, /Caller: (backlog|setup)|orc-curator:direction/);
   assert.match(text, /Never read `docs\/curator\/TECH\.md` or source code/);
   assert.match(text, /Never write a `Cn`/);
   assert.match(text, /Never edit or delete a `Dn`/);
   assert.match(text, /references\/recording-rules\.md/);
-  for (const line of ['Result:', 'Wrote:', 'Coverage:', 'Escalated:', 'Deviations/Warnings:']) assert.ok(text.includes(line), line);
+  for (const line of ['Result:', 'Wrote:', 'Summary:', 'Deviations/Warnings:']) assert.ok(text.includes(line), line);
+  assert.doesNotMatch(text.split('## End of run')[1], /Coverage:|Escalated:/);
 });
 
 test('backlog carries no minions state or modes', () => {

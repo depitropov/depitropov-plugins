@@ -7,9 +7,11 @@ const path = require('node:path');
 const DIR = path.join(__dirname, '../../plugins/orc-curator');
 const SKILLS = fs.readdirSync(path.join(DIR, 'skills')).filter(s => s !== 'manifest');
 const GUIDES = ['spec', 'plan', 'code'];
-const NAMES = [...SKILLS, ...GUIDES.map(r => `${r}-guide`)];
+const PROCEDURES = fs.readdirSync(path.join(DIR, 'procedures')).map(f => f.replace(/\.md$/, ''));
+const NAMES = [...SKILLS, ...PROCEDURES, ...GUIDES.map(r => `${r}-guide`)];
 const skillText = {
   ...Object.fromEntries(SKILLS.map(s => [s, fs.readFileSync(path.join(DIR, 'skills', s, 'SKILL.md'), 'utf8')])),
+  ...Object.fromEntries(PROCEDURES.map(r => [r, fs.readFileSync(path.join(DIR, 'procedures', `${r}.md`), 'utf8')])),
   ...Object.fromEntries(GUIDES.map(r => [`${r}-guide`, fs.readFileSync(path.join(DIR, 'guides', `${r}.md`), 'utf8')])),
 };
 const matrix = fs.readFileSync(path.join(DIR, 'CONTRACTS.md'), 'utf8');
@@ -55,7 +57,7 @@ test('the references table agrees with the skill texts', () => {
 
 test('the README names every skill, the three flows and the verdict ladder', () => {
   const readme = fs.readFileSync(path.join(DIR, 'README.md'), 'utf8');
-  for (const s of fs.readdirSync(path.join(DIR, 'skills'))) assert.ok(readme.includes(`\`${s}\``), s);
+  for (const s of [...fs.readdirSync(path.join(DIR, 'skills')), ...PROCEDURES]) assert.ok(readme.includes(`\`${s}\``), s);
   for (const h of ['**A:', '**B:', '**C:', 'What `direction` decides']) assert.ok(readme.includes(h), h);
   assert.match(readme, /CONTRACTS\.md/);
 });
