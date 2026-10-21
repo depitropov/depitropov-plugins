@@ -39,35 +39,30 @@ test('the templates and references name no minions paths, modes or state', () =>
   }
 });
 
-test('setup bootstraps from the templates, runs the interviews and the sweep, and writes the flag last', () => {
+test('setup records the present, writes the flag last and nudges to a burst', () => {
   const text = read('skills/setup/SKILL.md');
-  assert.match(text, /docs\/curator\//);
-  assert.match(text, /Do not copy `GLOSSARY\.md`/);
   assert.match(text, /never overwrite/i);
-  for (const s of ['orc-curator:shape-product', 'orc-curator:shape-tech', 'orc-curator:direction']) assert.ok(text.includes(s), s);
-  assert.match(text, /Caller: setup/);
-  assert.match(text, /template-shaped/);
+  for (const f of ['BACKLOG', 'PRODUCT', 'DIRECTION', 'DECISIONS', 'QUESTIONS', 'TECH']) assert.ok(text.includes(`${f}.md`), f);
+  assert.match(text, /Do not copy `GLOSSARY\.md`/);
+  assert.match(text, /docs\/curator\/research\//);
+  assert.match(text, /docs\/curator\/maps\//);
+  assert.match(text, /\.scratch\//);
+  assert.match(text, /\.gitignore/);
+  assert.match(text, /no source files outside `docs\/`[^.]*ask nothing/i);
+  assert.match(text, /references\/tech\.md/);
+  assert.match(text, /references\/product\.md/);
+  assert.match(text, /no `Dn`/);
+  for (const q of ['what it is', 'who it is for', 'why it exists', 'deliberately is not']) assert.ok(text.includes(q), q);
+  assert.match(text, /one at a time/i);
+  assert.match(text, /never (invoke|run)s? `?(orc-curator:)?direction/i);
   assert.match(text, /docs\/curator\/\.setup/);
-  assert.match(text, /last/);
+  assert.match(text, /flag last/i);
   assert.match(text, /\{ "status": "ok" \}/);
-  assert.match(text, /except the result file/);
+  assert.match(text, /\{ "status": "failed"/);
+  assert.ok(text.includes('To set the direction of the project, run `/wayfinder <your idea>`.'));
+  assert.ok(text.includes('To change the present or the plan, run `curate` with a change in words. To set the direction, run `/wayfinder <topic>`.'));
+  assert.doesNotMatch(text, /shape-product|shape-tech|backlog/);
   assert.doesNotMatch(text, /\/minions:|\.minions|STATE\.md|config\.yml|\bmaintain\b|\bvibe\b|--auto/);
-});
-
-test('setup reshapes a set-up project on approval and always ends with the sweep', () => {
-  const text = read('skills/setup/SKILL.md');
-  assert.match(text, /reshape/i);
-  assert.match(text, /approv/i);
-  assert.match(text, /every open `Qn`/);
-  assert.match(text, /invoke `orc-curator:backlog` with the line\s+`Caller: setup`/);
-});
-
-test('setup resumes an unconfirmed product half and respects existing code', () => {
-  const text = read('skills/setup/SKILL.md');
-  assert.match(text, /Ask the user whether the product shape was confirmed/);
-  assert.match(text, /When the project already has code/);
-  assert.match(text, /goes wide only on what is not built yet/);
-  assert.match(text, /purpose change/);
 });
 
 test('the interview and research references are shipped', () => {

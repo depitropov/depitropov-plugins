@@ -18,19 +18,19 @@ forbid a write, or to say who else writes it.
 
 | Doc | Adds | Updates | **Removes** | Reads | Names only |
 |---|---|---|---|---|---|
-| `PRODUCT.md` | `setup` (the template), `shape-product`, `curate`, `landing` (Deliberately not, Why it's shaped this way) | `shape-product`, `curate` | `curate` (what the diff made false: tiered, a question when not plain) | `spec-guide`, `plan-guide`, `direction`, `research`, `shape-tech` | `backlog` |
-| `BACKLOG.md` | `setup` (the template, and a reshape row on approval), `shape-product` (Vision and rows), `backlog` (add), `curate` (deferred work, a row for `Serves: new`), `landing` (the cut, into Next) | `backlog` (move), `curate` (move to Shipped) | `backlog` (drop), `curate` (Vision prose that shipped) | `spec-guide`, `setup` (the counts), `backlog`, `direction`, `shape-tech` | — |
+| `PRODUCT.md` | `setup` (the template, and the present on a project with code), `shape-product`, `curate`, `landing` (Deliberately not, Why it's shaped this way) | `shape-product`, `curate` | `curate` (what the diff made false: tiered, a question when not plain) | `spec-guide`, `plan-guide`, `direction`, `research`, `shape-tech` | `backlog` |
+| `BACKLOG.md` | `setup` (the template), `shape-product` (Vision and rows), `backlog` (add), `curate` (deferred work, a row for `Serves: new`), `landing` (the cut, into Next) | `backlog` (move), `curate` (move to Shipped) | `backlog` (drop), `curate` (Vision prose that shipped) | `spec-guide`, `backlog`, `direction`, `shape-tech` | — |
 | `DIRECTION.md` `## Constraints` | `setup` (the template), **`direction` (the only author)** | `curate` (satisfied) | `curate` (retire, orphans), `backlog` (orphans), `direction` (orphans) | `plan-guide` | `shape-tech`, `research` |
 | `DIRECTION.md` `## Evaluated` | `direction` (one row per verdict) | `direction` (overwrite in place) | `direction` (rows whose `Bn` left Now and Next), `backlog` (on a drop, a demotion, or a change of meaning), `curate` (the retire rule: a reversed `Dn` or a changed dimension) | — | — |
-| `DECISIONS.md` | `setup` (the template, and a reshape `Dn`), `shape-product`, `shape-tech`, `backlog` (reversals), `curate`, `landing` (`hard:` from an ADR, `soft:` from a ticket answer) | never: append-only | never | `spec-guide`, `code-guide` (the `Dn` a comment may cite), `direction`, `research` (already settled), `shape-product` and `shape-tech` (the `soft:` rows) | — |
-| `QUESTIONS.md` | `setup` (the template), `shape-product`, `shape-tech`, `direction`, `backlog` (a question the user asked), `curate`, `landing` (the fog) | `setup` (flip to answered), `shape-tech`, `direction`, `backlog`, `curate` and `landing` (close) | never: closed, not deleted | `setup` (the reshape agenda), `shape-tech` and `direction` (the agenda), `backlog` | `research` |
-| `TECH.md` | `setup` (the template), `shape-tech` | `shape-tech`, `curate` (refresh from the code, a known dimension), `landing` (a dimension that a map answer settles) | — | `spec-guide`, `plan-guide`, `direction`, `research` | `backlog` |
+| `DECISIONS.md` | `setup` (the template), `shape-product`, `shape-tech`, `backlog` (reversals), `curate`, `landing` (`hard:` from an ADR, `soft:` from a ticket answer) | never: append-only | never | `spec-guide`, `code-guide` (the `Dn` a comment may cite), `direction`, `research` (already settled), `shape-product` and `shape-tech` (the `soft:` rows) | — |
+| `QUESTIONS.md` | `setup` (the template), `shape-product`, `shape-tech`, `direction`, `backlog` (a question the user asked), `curate`, `landing` (the fog) | `shape-tech`, `direction`, `backlog`, `curate` and `landing` (close) | never: closed, not deleted | `shape-tech` and `direction` (the agenda), `backlog` | `research` |
+| `TECH.md` | `setup` (the template, and a transcription of the code), `shape-tech` | `shape-tech`, `curate` (refresh from the code, a known dimension), `landing` (a dimension that a map answer settles) | — | `spec-guide`, `plan-guide`, `direction`, `research` | `backlog` |
 | `GLOSSARY.md` | `curate` (creates it on the first term) | `curate` (edit in place) | `curate` (a retired term) | `spec-guide`, `plan-guide`, `code-guide` | `setup` |
 | `research/` | `setup` (the folder), `research` (one note per topic), `landing` (copied from the `research/*` branches) | never: a new note supersedes | never | `direction`, `shape-tech`, `research` (supersede check) | — |
-| `maps/` | `landing` (the map of a landed burst, moved from `.scratch/<effort>/`) | never: a closed record | never | `landing` (the `map:` refs of the cut) | `curate` (permitted actions) |
+| `maps/` | `setup` (the folder), `landing` (the map of a landed burst, moved from `.scratch/<effort>/`) | never: a closed record | never | `landing` (the `map:` refs of the cut) | `curate` (permitted actions) |
 
-`setup` writes only through its calls, plus the template copy, the reshape edits the user approved,
-and the flag. `curate` reads every doc.
+`setup` calls no skill. It writes the template copy, the present (the `TECH.md` transcription and the
+`PRODUCT.md` answers), the `.scratch/` line in `.gitignore`, and the flag. `curate` reads every doc.
 
 ## The shared policy
 
@@ -40,13 +40,13 @@ its own questions and its own procedure.
 
 | Reference | Readers |
 |---|---|
-| `recording-rules.md` | `setup`, `shape-product`, `shape-tech`, `direction`, `backlog`, `curate`, `landing` |
+| `recording-rules.md` | `shape-product`, `shape-tech`, `direction`, `backlog`, `curate`, `landing` |
 | `ask-vs-research.md` | `shape-product`, `shape-tech`, `research` |
 | `interview-cadence.md` | `shape-product`, `shape-tech` |
 | `right-sizing.md` | `shape-tech`, `research` |
 | `glossary.md` | `curate` |
-| `product.md` | `curate`, `landing`, setup (wired in S79, task 4) |
-| `tech.md` | `direction`, `curate`, `landing`, setup (wired in S79, task 4) |
+| `product.md` | `curate`, `landing`, `setup` |
+| `tech.md` | `direction`, `curate`, `landing`, `setup` |
 
 `glossary.md` has one reader today. Its second reader is the glossary gate (O13), when it is built.
 
