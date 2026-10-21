@@ -4,7 +4,7 @@
 
 **Goal:** Make orc-curator a curator only: exploring moves to mattpocock `/wayfinder` bursts. `setup` records the present once. `curate` becomes the one organizer, with three inputs: a diff, a map, a change in words.
 
-**Architecture:** Two visible entries, `setup` and `curate`, plus the skills orchestra calls by name (`manifest`, the three guides). `direction` and `backlog` stop being skills. They become **procedures**: plain `.md` files in `plugins/orc-curator/procedures/` that `curate` reads and follows inline, in the main session. The rules for a good `PRODUCT.md` and `TECH.md` become two references. `shape-product`, `shape-tech` and `research` are removed. The glossary is `GLOSSARY.md` at the repo root.
+**Architecture:** orc-curator keeps three skills: `setup` and `curate`, which the user types, and `manifest`, which orchestra calls by name. Guides of every slot plugin become files (`guides/*.md`) that a stage reads by path. `direction` and `backlog` stop being skills. They become **procedures**: plain `.md` files in `plugins/orc-curator/procedures/` that `curate` reads and follows inline, in the main session. The rules for a good `PRODUCT.md` and `TECH.md` become two references. `shape-product`, `shape-tech` and `research` are removed. The glossary is `GLOSSARY.md` at the repo root.
 
 **Tech Stack:** Markdown skills and procedures; Node 22 `node:test` text tests.
 
@@ -13,7 +13,7 @@
 **Source:** this is a refactor of `plugins/orc-curator` at 0.17.0. It ports nothing new. It moves `skills/direction` and `skills/backlog` (themselves ports of minions) and drops minions content. Read `docs/PORTING.md` "Steps for every port" before Tasks 2 and 5. Each drop cites S79 in its PORTING row.
 
 **Rulings in the plan:**
-- **No hidden skills (S33 wins over S79 (7)).** `checkSkills` in `plugins/orchestra/lib/check.js` allows only `name` and `description` in a `SKILL.md` frontmatter (S33, the multi-harness rule). `user-invocable: false` would break it. `manifest` and the guides stay visible, and their descriptions already say "not for direct use". S79 (7) is amended in Task 6. **Needs the user's word before Task 6.**
+- **Guides are files; `manifest` stays a skill (S79 (7)).** No skill is hidden: S33 allows only `name` and `description` in a frontmatter. A guide is a file inside the plugin, and its declaration names the path. The manifest stays a skill, because orchestra finds a plugin's folder only through it. The stage and gate skills of the workflow and of the Stack Skills stay skills; moving them is a later decision.
 - **A procedure is not a skill.** It has no frontmatter. Its first line is `# <Name> procedure`. It follows the skill writing rules: simple English, action names, no harness tool names. A procedure never commits: `curate` commits once. A procedure may ask the user, because `curate` runs it inline in the main session.
 - **Procedures and references.** A procedure holds flow (`direction`, `backlog`, `landing`). A reference holds rules only (`product`, `tech`, `glossary`, `recording-rules`). `CONTRACTS.md` keeps its rule that a reference earns its place at two readers.
 - **The nudge.** Every nudge to navigation uses one form: "To <purpose>, run `/wayfinder <topic>`." It is a suggestion, never a step that the skill takes. Only the user can start wayfinder.
@@ -28,7 +28,7 @@
 - All six plugins move to version `0.18.0` in the last task, in both `plugin.json` and `.claude-plugin/plugin.json`.
 - The docs folder stays `docs/curator/`. The glossary is `GLOSSARY.md` at the repo root (or the files that `GLOSSARY-MAP.md` lists). Maps land in `docs/curator/maps/<effort>/`.
 - Ids `Bn`, `Cn`, `Dn`, `Qn`: independent; the next is the highest plus one; never reused. `DECISIONS.md` is append-only, and each `Why` opens with `hard:` or `soft:`. Cite `references/recording-rules.md`; do not copy it.
-- Every `SKILL.md` frontmatter has only `name` and `description`, and `name` equals the folder name.
+- Every `SKILL.md` frontmatter has only `name` and `description`, and `name` equals the folder name. A guide file and a procedure file have no frontmatter, start with `# `, and name no harness tool.
 - Skill and procedure text is ASD-STE-100 simple English, with the names in `docs/CONTEXT.md` (Navigation, Burst, Landing).
 - `curate` and `direction` never explore. An unknown answer becomes a `Qn` plus a nudge.
 - Each task that moves or drops content updates its `docs/PORTING.md` rows in the same commit.
@@ -44,17 +44,33 @@
 
 ---
 
+### Task 0: Guides are files, for every slot plugin
+
+**Files:** Modify `plugins/orchestra/lib/check.js` (the `guides` rule, the `disable` names), `plugins/orchestra/lib/protocol.js` (`guidesFor`, `withPrompt`), `plugins/orchestra/skills/writing-plugins/SKILL.md` (the `guides` row), `test/orchestra/check.test.js`, `test/orchestra/protocol.test.js`, `test/orchestra/drive.test.js`, `test/orc-standard-workflow/next.test.js` (only where it names a guide skill). Move `plugins/orc-curator/skills/{spec,plan,code}-guide/SKILL.md` → `plugins/orc-curator/guides/{spec,plan,code}.md` and `plugins/orc-java-stack/skills/code-guide/SKILL.md` → `plugins/orc-java-stack/guides/code.md`; update both `orchestra.json` files. Modify `test/orc-curator/guides.test.js`, `test/orc-curator/plugin.test.js`, and `docs/CONTEXT.md` (the **Guide** row).
+
+**Interfaces:**
+- Declaration: `"guides": { "<role>": "<path relative to the plugin folder>" }`, for example `{ "plan": "guides/plan.md" }`.
+- Produces `guidesFor(role, resolved, config) -> string[]`: absolute paths, `path.join(resolved.slots[slot].dir, value)`, the Curator's first. A value listed in `config[slot].disable` is left out, as today.
+- Produces the prompt lines `Before you start, read each guide below and follow it:` and one `- \`<absolute path>\`` per guide.
+
+- [ ] Test (`check.test.js`): a guide value that is a path to an existing file inside the plugin passes; a missing file fails with a fix that names the path; a value with `..` or an absolute path fails; `disable` accepts a guide's declared path. The old "guide skill does not exist" case is replaced.
+- [ ] Test (`protocol.test.js`, `drive.test.js`): the dispatch prompt of a `plan` role names the absolute file `<dir>/guides/plan.md` after "read each guide below and follow it", and no `orc-curator:plan-guide`; a disabled guide is left out.
+- [ ] Test (`guides.test.js`, which also reads `plugins/orc-java-stack/guides/code.md`): the guide files exist, have no frontmatter, start with `# `, and keep today's rules; `skills/` has no `*-guide` folder.
+- [ ] Run `npm test`: they fail.
+- [ ] Change `check.js` (a `file(value, what)` helper next to `skill(name, what)`), `protocol.js`, the two declarations, and move the four guides (drop the frontmatter, keep the body). Update the `guides` row of `writing-plugins`: "a path to a guide file inside the plugin; orchestra tells the stage to read it". The **Guide** row of `docs/CONTEXT.md`: "A file with short write-time rules for one role …".
+- [ ] PORTING: rows whose "Where now" names a moved guide skill point at the new file. Then `npm test` (the packaging test runs `checkPlugin` on every plugin), and commit `feat(orchestra): guides are files, not skills (S79)`.
+
 ### Task 1: The references `product` and `tech`, and the glossary rename
 
-**Files:** Create `plugins/orc-curator/references/product.md`, `plugins/orc-curator/references/tech.md`. Rename `templates/CONTEXT.md` → `templates/GLOSSARY.md`. Modify `templates/TECH.md`, `references/glossary.md`, `skills/curate/SKILL.md`, `skills/setup/SKILL.md`, `skills/spec-guide/SKILL.md`, `skills/plan-guide/SKILL.md`, `skills/code-guide/SKILL.md`, `test/orc-curator/plugin.test.js`, `test/orc-curator/guides.test.js`, `test/orc-curator/curate.test.js`.
+**Files:** Create `plugins/orc-curator/references/product.md`, `plugins/orc-curator/references/tech.md`. Rename `templates/CONTEXT.md` → `templates/GLOSSARY.md`. Modify `templates/TECH.md`, `references/glossary.md`, `skills/curate/SKILL.md`, `skills/setup/SKILL.md`, `guides/spec.md`, `guides/plan.md`, `guides/code.md`, `test/orc-curator/plugin.test.js`, `test/orc-curator/guides.test.js`, `test/orc-curator/curate.test.js`.
 
 **Interfaces:** Produces `<plugin>/references/product.md` and `<plugin>/references/tech.md`, read by `setup` (Task 4) and `curate` (Task 3).
 
 - [ ] Test (`plugin.test.js`): `references/product.md` has "would deleting one backlog row make it false", "Never list features", the section budgets, and "cite the `Dn`". `references/tech.md` lists the six capability rows (`runs as`, `deploys to`, `persists`, `integrates with`, `authenticates`, `hard constraints`), "50 lines", "never a path", "a transcription has no `Dn`", "one place", and an "architecture style" line in the spine that cites a `hard:` `Dn` (module boundaries are contexts in `GLOSSARY-MAP.md`, never paths). `templates/TECH.md` gets the same spine line. Neither file has a step list (no `## Step`).
-- [ ] Test (`guides.test.js`, `curate.test.js`): every skill names `GLOSSARY.md` and no skill names `CONTEXT.md`. The code guide's test title becomes "the code guide keeps GLOSSARY names and cites only Dn in code". `glossary.md` names `GLOSSARY-MAP.md` and says to follow it.
+- [ ] Test (`guides.test.js`, `curate.test.js`): every skill and guide file names `GLOSSARY.md` and no skill names `CONTEXT.md`. The code guide's test title becomes "the code guide keeps GLOSSARY names and cites only Dn in code". `glossary.md` names `GLOSSARY-MAP.md` and says to follow it.
 - [ ] Run `npm test`: the new tests fail.
 - [ ] Write `product.md` from the `PRODUCT.md` template guidance and the routing rows of `skills/shape-product/SKILL.md` ("Where each answer goes": only the present-tense rows). Write `tech.md` from `templates/TECH.md` and `skills/shape-tech/SKILL.md` ("The evidence gate", "Each dimension in exactly one place", the capability list). Both hold rules only.
-- [ ] Rename the template. Change `CONTEXT.md` → `GLOSSARY.md` (at the repo root, not in `docs/curator/`) in the glossary reference, curate (Step 5 routing row and Step 6), setup (Step 2) and the three guides. The glossary reference adds: when `GLOSSARY-MAP.md` exists, follow it to the right `GLOSSARY.md`; `domain-modeling` writes the same file during a burst.
+- [ ] Rename the template. Change `CONTEXT.md` → `GLOSSARY.md` (at the repo root, not in `docs/curator/`) in the glossary reference, curate (Step 5 routing row and Step 6), setup (Step 2) and the three guide files. The glossary reference adds: when `GLOSSARY-MAP.md` exists, follow it to the right `GLOSSARY.md`; `domain-modeling` writes the same file during a burst.
 - [ ] PORTING: the `templates/CONTEXT.md` row's "Where now" is `templates/GLOSSARY.md` (S79). Then `npm test`, and commit `refactor(orc-curator): the product and tech references; GLOSSARY.md at the root (S79)`.
 
 ### Task 2: `direction` and `backlog` become procedures
@@ -101,19 +117,19 @@
 
 **Files:** Delete `skills/shape-product/`, `skills/shape-tech/`, `skills/research/`, `references/interview-cadence.md`, `references/ask-vs-research.md`, `references/right-sizing.md`, `templates/RESEARCH.md`, `test/orc-curator/shape.test.js`, `test/orc-curator/research.test.js`. Modify `README.md`, `CONTRACTS.md`, `test/orc-curator/plugin.test.js`, `test/orc-curator/contracts.test.js`, `docs/PORTING.md` (the minions blocks of `shape-product`, `shape-tech`, `research`, the three references and the template).
 
-- [ ] Test: the plugin's `skills/` are exactly `code-guide`, `curate`, `manifest`, `plan-guide`, `setup`, `spec-guide`; `procedures/` is exactly `backlog.md`, `direction.md`, `landing.md`; no file in the plugin names `shape-product`, `shape-tech`, `orc-curator:research`, `interview-cadence`, `ask-vs-research`, `right-sizing` or `CONTEXT.md`. The README test asks for the two visible entries, the procedures, the three flows ("set up", "a burst and its landing", "a run"), "a change in words", and `/wayfinder`.
+- [ ] Test: the plugin's `skills/` are exactly `curate`, `manifest`, `setup`; `guides/` is exactly `code.md`, `plan.md`, `spec.md`; `procedures/` is exactly `backlog.md`, `direction.md`, `landing.md`; no file in the plugin names `shape-product`, `shape-tech`, `orc-curator:research`, `interview-cadence`, `ask-vs-research`, `right-sizing` or `CONTEXT.md`. The README test asks for the two entries the user types, the guide files, the procedures, the three flows ("set up", "a burst and its landing", "a run"), "a change in words", and `/wayfinder`.
 - [ ] Run `npm test`: it fails.
 - [ ] Delete the files. Rewrite the README "Quickstart", "The skills, grouped…", "The three flows" and the verdict ladder for S79; keep "Fluid by design" and "Changing the Curator". Rewrite `CONTRACTS.md`: one row per doc with `GLOSSARY.md` and `maps/`, the procedures as writers, `curate` as the only writer of `Dn` and `Qn`; the references table (`recording-rules`, `glossary`, `product`, `tech`); the invariants without the shape-tech cadence line.
 - [ ] PORTING: each dropped part is `dropped` with "S79". Then `npm test`, and commit `refactor(orc-curator): remove shape-product, shape-tech and research; README and contracts (S79)`.
 
 ### Task 6: The dependency, the design and the version
 
-**Files:** Modify `plugins/orc-curator/plugin.json` and `.claude-plugin/plugin.json` (add `"dependencies": ["mattpocock-skills@claude-plugins-official"]`), `.claude-plugin/marketplace.json` (add `"allowCrossMarketplaceDependenciesOn": ["claude-plugins-official"]`), `docs/DESIGN.md` (§2 `orc-curator` row, §9a), `docs/superpowers/specs/2026-10-16-curator-design.md` (a header line that S79 replaces its skill table and setup), `docs/CONTEXT.md` (the Curator row), `docs/TENSIONS.md` and `docs/DECISIONS.md` (the S79 amendment of point 7), the twelve manifests, `test/orc-curator/plugin.test.js`.
+**Files:** Modify `plugins/orc-curator/plugin.json` and `.claude-plugin/plugin.json` (add `"dependencies": ["mattpocock-skills@claude-plugins-official"]`), `.claude-plugin/marketplace.json` (add `"allowCrossMarketplaceDependenciesOn": ["claude-plugins-official"]`), `docs/DESIGN.md` (§2 `orc-curator` row, §9a), `docs/superpowers/specs/2026-10-16-curator-design.md` (a header line that S79 replaces its skill table and setup), `docs/CONTEXT.md` (the Curator row), the twelve manifests, `test/orc-curator/plugin.test.js`.
 
 - [ ] First check the live Claude Code docs pages `plugins/dependencies` and `plugins/manifest-reference` for the exact field names. If they differ from this plan, stop and tell the user.
 - [ ] Test: both orc-curator manifests list the dependency; the marketplace has the allow list; `checkPlugin` still passes on every plugin.
 - [ ] Run `npm test`: it fails.
-- [ ] Edit the manifests and the marketplace. DESIGN §2 and §9a: setup records the present; curate takes three inputs; navigation is `/wayfinder`. The Curator row of `docs/CONTEXT.md`: the same. S79 row (7) and its `DECISIONS.md` entry: "manifest and the guides stay visible: S33 allows only `name` and `description`".
+- [ ] Edit the manifests and the marketplace. DESIGN §2 and §9a: setup records the present; curate takes three inputs; navigation is `/wayfinder`. The Curator row of `docs/CONTEXT.md`: the same. DESIGN §2 and §9a also say that guides are files.
 - [ ] All twelve manifests `0.17.0` → `0.18.0`; `npm test`; commit `docs: the Curator after S79 in the design; plugins 0.18.0 (S79)`.
 
 ## After the plan

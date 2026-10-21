@@ -419,6 +419,14 @@ wording change needs no entry.
      - `direction` calls mattpocock `research`; a choice between options becomes a `Qn` and a nudge.
        Chosen. One fact question needs no burst.
      - Every research need becomes a burst. Heavy for one fact.
+  9. Skills that the user never types (`manifest`, the guides).
+     - Guides become files: `guides` names a path inside the plugin, and the stage reads it. `manifest`
+       stays a skill. Chosen. A subagent reads a file on every harness, and orchestra already knows
+       each plugin's folder from `resolved.json`. The manifest is how it learns that folder, so it
+       cannot be a file.
+     - Hide them with `user-invocable: false`. It breaks S33: `orchestra check` allows only `name`
+       and `description` in the frontmatter, so that skills stay portable.
+     - Keep them as visible skills. Every Curator and Stack Skills guide shows in the `/` menu.
 - **Evidence:** `docs/research/R9-navigation-and-curation.md`: the full read of wayfinder 1.3.1, its
   local tracker, `domain-modeling`, `research` and the `to-spec`/`to-tickets`/`implement-spec` chain;
   the Claude Code docs on `dependencies` and `disable-model-invocation`; the minions philosophy and its
@@ -427,7 +435,7 @@ wording change needs no entry.
   whole product, so wayfinder does not become a master plan. Architecture style and module boundaries
   are decided in the kick-off burst; a one-way call is committed when the evidence exists, and nothing
   is designed ahead for rows that are not built. One backlog row is one tracer bullet and one run.
-  `QUESTIONS.md` is the user's list; curate closes entries after a run and at landing.
+  `QUESTIONS.md` is the user's list; curate closes entries after a run and at landing. The guides of every slot plugin (orc-curator and orc-java-stack) move to `guides/*.md`; the stage and gate skills of the workflow and the Stack Skills stay skills for now.
 - **Cost and risk:** The exploring discipline of `shape-product` (four directions, comparable
   products, rejected directions recorded) and of `shape-tech` (the capability dimensions and what each
   option closes off) is gone; bursts rely on wayfinder's generic `grilling`. A one-way decision for
@@ -437,7 +445,7 @@ wording change needs no entry.
   has been landed yet.
 - **Where it lives:** `docs/research/R9-navigation-and-curation.md`; later `plugins/orc-curator/`
   (`skills/curate`, `skills/setup`, `procedures/`, `references/`, `templates/`, `.claude-plugin/plugin.json`),
-  `.claude-plugin/marketplace.json`, `docs/DESIGN.md`, `docs/CONTEXT.md`, the Curator spec.
+  `.claude-plugin/marketplace.json`, `plugins/orchestra/lib/{check,protocol}.js`, `plugins/orchestra/skills/writing-plugins/SKILL.md`, `plugins/orc-java-stack/guides/`, `docs/DESIGN.md`, `docs/CONTEXT.md`, the Curator spec.
 
 ---
 
