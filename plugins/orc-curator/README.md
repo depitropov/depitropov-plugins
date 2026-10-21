@@ -105,7 +105,7 @@ settles most "who owns this" questions.
 |---|---|
 | **You ask for these** | `setup` · `backlog` · `research` · `curate` (by hand) · `shape-product` and `shape-tech` (by hand, for a focus) |
 | **Decide** | `shape-product` · `shape-tech` · `direction` · `backlog` |
-| **Keep current** | `curate` |
+| **Keep current** | `curate` (with the `landing` procedure for a finished burst) |
 | **Read, inside a run** | `spec-guide` · `plan-guide` · `code-guide` |
 | **Tools** | `research` (evidence, never a decision) · `manifest` (for orchestra) |
 

@@ -123,7 +123,7 @@ test('the references product and tech hold rules only', () => {
 test('the procedures are plain files: a heading, no frontmatter, no harness word, no commit of their own', () => {
   const dir = path.join(DIR, 'procedures');
   const files = fs.readdirSync(dir);
-  assert.deepEqual(files.sort(), ['backlog.md', 'direction.md']);
+  assert.deepEqual(files.sort(), ['backlog.md', 'direction.md', 'landing.md']);
   for (const f of files) {
     const text = fs.readFileSync(path.join(dir, f), 'utf8');
     assert.match(text, /^# /, f);

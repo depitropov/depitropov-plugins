@@ -1,52 +1,65 @@
 ---
 name: curate
-description: Use when a run has shipped and the project's direction docs (backlog, product, decisions, questions, glossary, direction) must agree with the code that landed — at the end of every orchestra run, or by hand on a commit range ("curate the docs", "update the curator docs from this branch"). The single writer of docs/curator/ in a run. Runs in the main session and may ask the user.
+description: Use when the project's direction docs (backlog, product, tech, decisions, questions, glossary, direction) must change — after an orchestra run or on a commit range (a diff), when a wayfinder burst is finished (a map in .scratch/<effort>/), or when the user says what changed (a change in words: "drop B7", "we use Postgres now", "add social login"). The one organizer of docs/curator/, and the only writer of decisions and questions. Runs in the main session and may ask the user.
 ---
 
 # Curate
 
-You keep the docs in `docs/curator/` true to the code that just shipped. You find each durable
-learning, give it one verdict, write it to the one doc that owns it, remove what the code made
-false, and commit once.
+You keep the docs in `docs/curator/` true. You are the one organizer: each change to the direction
+docs comes through you. You find each durable learning, give it one verdict, write it to the one doc
+that owns it, remove what became false, run the direction sweep once, and commit once.
 
-Inside a run, you are the **only writer** of the docs. The stages before you only read them. No run
-moves a backlog row to `## Now`.
+You are **the only writer of `Dn` and `Qn`**. Inside a run, the stages before you only read the
+docs. No run moves a backlog row to `## Now`.
+
+**You never explore.** Navigation is `/wayfinder`, and only the user starts it. An answer that you
+do not have becomes a `Qn` and a nudge in one form: "To <purpose>, run `/wayfinder <topic>`." A
+nudge is a suggestion, never a step that you take.
 
 You run in the main session, so you may ask the user. Ask one question at a time.
 
 `<plugin>` is the folder two levels above this skill's folder. Ids, destinations and change rules:
-`<plugin>/references/recording-rules.md`. Terms: `<plugin>/references/glossary.md`.
+`<plugin>/references/recording-rules.md`. Terms: `<plugin>/references/glossary.md`. The rules for
+`PRODUCT.md`: `<plugin>/references/product.md`. The rules for `TECH.md`:
+`<plugin>/references/tech.md`.
 
 ## Step 1: Inputs
 
-- **From orchestra** (an `inline` action at the end of a run): `base`, `brief` (the brief of the
-  run), `notes` (the notes folder of the run), and the result path that the prompt names. Work in
-  the worktree that the prompt names.
-- **By hand:** the user names a commit range (`<base>..HEAD`). There is no brief and no notes
-  folder. Ask the user which backlog row the work served, or `new`.
+You take one of three inputs:
 
-When an input that you need is missing from the prompt, say which one. Do not guess it.
+- **A diff.** From orchestra (an `inline` action at the end of a run): `base`, `brief` (the brief
+  of the run), `notes` (the notes folder of the run), and the result path that the prompt names.
+  Work in the worktree that the prompt names. By hand: the user names a commit range
+  (`<base>..HEAD`). There is no brief and no notes folder. Ask the user which backlog row the work
+  served, or `new`. Do Steps 2 to 6.
+- **A map.** The user says that a burst is finished and names the effort. Its map is in
+  `.scratch/<effort>/`. Do Step 2, then Step 7.
+- **A change in words.** The user says what changed: "drop B7", "we deploy to Fly now", "add social
+  login". Do Step 2, then Step 8.
+
+With no input, ask the user which one it is: a commit range, a finished burst, or a change to
+describe. When an input that you need is missing from the prompt, say which one. Do not guess it.
+
+Every input ends the same way: Steps 9 to 12.
 
 ## Step 2: Read every input first
 
 Read all of these before you write anything:
 
-- The diff: `git diff <base>..HEAD -- . ':!docs/runs/' ':!docs/curator/'`, and the commit log of
-  the range.
-- The brief and its `## Direction` section: `Serves` (once), `Deferred` and `Question` (zero or
-  more).
-- `<notes>/decisions.md` when it exists. It holds the product answers of the run: sections
-  `## <gate>` with lines `- <question> → <answer>`.
 - Every doc under `docs/curator/`: `BACKLOG.md`, `PRODUCT.md`, `DIRECTION.md`, `DECISIONS.md`,
-  `QUESTIONS.md`, `TECH.md`, and `GLOSSARY.md` at the repo root. Read `DECISIONS.md` twice over: for the next `Dn`
-  (highest existing plus one, never a count of rows) and for a decision that a candidate
-  contradicts.
+  `QUESTIONS.md`, `TECH.md`, and `GLOSSARY.md` at the repo root. Read `DECISIONS.md` twice over: for
+  the next `Dn` (highest existing plus one, never a count of rows) and for a decision that a
+  candidate contradicts.
+- For a diff: `git diff <base>..HEAD -- . ':!docs/runs/' ':!docs/curator/'`, and the commit log of
+  the range. The brief and its `## Direction` section: `Serves` (once), `Deferred` and `Question`
+  (zero or more). `<notes>/decisions.md` when it exists. It holds the product answers of the run:
+  sections `## <gate>` with lines `- <question> → <answer>`.
 
 When `docs/curator/` does not exist, stop: the result is `failed` with the reason "the Curator is
 not set up; run orc-curator:setup". When an input cannot be read, the result is `failed` with what
 could not be read.
 
-## Step 3: The served row
+## Step 3: The served row (a diff)
 
 | The brief says | You do |
 |---|---|
@@ -59,7 +72,7 @@ could not be read.
 A row that is already in `## Shipped` with this run's branch or range is done. Do not add it again.
 Never add a silent duplicate.
 
-## Step 4: One verdict for each candidate
+## Step 4: One verdict for each candidate (a diff)
 
 The candidates come from the diff, the brief (`Deferred`, `Question`, its out-of-scope items) and
 `<notes>/decisions.md`. Each candidate gets exactly one verdict:
@@ -69,7 +82,7 @@ The candidates come from the diff, the brief (`Deferred`, `Question`, its out-of
 | **ADD** | it is new and passes the checks below |
 | **UPDATE** | it refines a fact that exists. Edit that entry in place, except in `docs/curator/DECISIONS.md` |
 | **NOOP** | it is already there, correct and complete, or it fails a check. Give the reason. A NOOP is a verdict, not a silence |
-| **question** | it contradicts an existing entry, or the change needs judgement. Ask the user (Step 7). Never overwrite in silence |
+| **question** | it contradicts an existing entry, or the change needs judgement. Ask the user (Step 10). Never overwrite in silence |
 
 Before you give a verdict:
 
@@ -85,23 +98,23 @@ Never append blindly. Edit the entry or section that owns the fact, in place, ex
 it is append-only. A refinement or a reversal is a new `Dn` whose `Why` names the row it reverses.
 Never edit or delete a `Dn`.
 
-## Step 5: Route each ADD or UPDATE to one doc
+## Step 5: Route each ADD or UPDATE to one doc (a diff)
 
 | The learning is… | It goes to |
 |---|---|
 | the *why* behind a choice, also each answer in `<notes>/decisions.md` | `docs/curator/DECISIONS.md`, the next `Dn`. The `Why` opens with `hard:` or `soft:` |
-| what the product *is*, or who it is for | `docs/curator/PRODUCT.md`, only what is true now that the diff has landed. Never a feature inventory: if deleting one backlog row would make the sentence false, it is a feature and belongs in the backlog. Why it has its shape is worth a sentence; what it does is in the code |
+| what the product *is*, or who it is for | `docs/curator/PRODUCT.md`, by the product reference: only what is true now that the diff has landed, never a feature inventory |
 | a product rationale that the run settled | `docs/curator/PRODUCT.md` → "Why it's shaped this way", citing the `Dn`. Do not restate it |
 | `## Vision` prose that the diff made real | delete it from `docs/curator/BACKLOG.md`. At most one clause goes to the overview of `PRODUCT.md` |
 | an idea, a want for later, a `Deferred` line | `docs/curator/BACKLOG.md`: `## Next` when it is shaped and near-term, else `## Later`. The next `Bn`. Keep its refs |
 | a `Question` line | `docs/curator/QUESTIONS.md`: a new `## Qn — <question> · open` entry |
 | a question that the shipped code settled | `docs/curator/QUESTIONS.md`: change the heading to `· answered → Dn` and add one sentence on how the code settled it. Close only on evidence in the diff, never on intent, a plan or an inference. Never delete an entry |
 | a domain term that the diff added, renamed or retired | `GLOSSARY.md` at the repo root, per the glossary reference. Only terms specific to this domain. Edit the entry in place; a rename puts the old word under `_Avoid_`. Create the file lazily on the first term |
-| a change to what the project runs on | `docs/curator/TECH.md`, the capability row, refreshed from the code |
+| a change to what the project runs on | `docs/curator/TECH.md`, the capability row, refreshed from the code by the tech reference |
 
 A question is never a backlog row. Layers and where code goes are not direction docs: NOOP.
 
-## Step 6: Subtract
+## Step 6: Subtract (a diff)
 
 Every doc here grows unless you also remove. Nothing else in a run removes.
 
@@ -116,8 +129,6 @@ Every doc here grows unless you also remove. Nothing else in a run removes.
 mechanism that the code no longer has. Anything else is a question with the file, the sentence and
 what makes it look stale.
 
-### DIRECTION
-
 Four checks on `docs/curator/DIRECTION.md`:
 
 1. **Satisfied.** For each `unsatisfied` row that the diff now carries, set `satisfied by <path>`,
@@ -129,44 +140,86 @@ Four checks on `docs/curator/DIRECTION.md`:
 4. **Cap.** Past 50 rows, ask the user, with the probable cause (`## Next` carries `## Later` work,
    satisfied rows not retired, rows at the level of a design). Never cut rows.
 
-Then invoke `orc-curator:direction` with the line `Caller: curate`, and the diff evidence when there
-is any:
+Keep the diff evidence for the sweep (Step 9): shipped code that contradicts a live `Cn` (name the
+`Cn`), and a row recorded as `no constraint` that the diff undermines (name the `Bn` and what
+changed). Then go to Step 9.
 
-- shipped code that contradicts a live `Cn` (name the `Cn`);
-- a row recorded as `no constraint` that the diff undermines (name the `Bn` and what changed).
+## Step 7: A map
 
-Do not report what the sweep can count: a moved row, a missing `## Evaluated` row, an orphan. Never
-write a `Cn` yourself; the sweep writes it. It does not commit when you call it. Read its return
-block and keep its `Coverage:` line for the summary. When it returns `Result: blocked` or
-`needs-input`, tell the user the reason from its return block, ask the user the open question when
-there is one, and go on with the rest of curate. Never fail curate for it.
+Follow `<plugin>/procedures/landing.md` with the effort. Read its return block. Keep its
+`Markers:` and `Missing:` lines for the summary. Apply the retire rule (Step 8) to each line of its
+`Reversed:`. Then go to Step 9.
 
-## Step 7: Questions
+## Step 8: A change in words
+
+Sort the change. When it is not clear which kind it is, ask the user.
+
+- **known: a plan change.** Add, drop, move, groom or reconcile a backlog row. Follow
+  `<plugin>/procedures/backlog.md`. Keep its return block for the summary.
+- **known: a decision or dimension change.** The user gives the answer ("we deploy to Fly now", "no
+  more guest checkout"). Append the next `Dn`. Its `Why` opens with `hard:` or `soft:`, and it
+  names the `Dn` it reverses, when there is one. Edit `TECH.md` by the tech reference, or
+  `PRODUCT.md` by the product reference. Then apply the retire rule.
+- **unknown.** The user names a change but not its answer ("we may need offline mode"). Write one
+  `## Qn — <question> · open` entry, and no `Dn`. Give the nudge: "To <purpose>, run
+  `/wayfinder <topic>`."
+- **bug.** The code does not do what it should. That is not a change of direction, so write
+  nothing. Give the nudge: "To find the cause, run `/diagnosing-bugs <symptom>`."
+
+**The retire rule.** For a reversed `Dn`, or a capability dimension that changed,
+retire the `## Evaluated` row of each near-term `Bn` (in `## Now` or `## Next`) when one of
+these cites the old `Dn` or names the dimension: the row text of the `Bn`, a `Cn` with `from Bn`,
+or the `outcome` cell of its `## Evaluated` row. Delete only the `## Evaluated` row. Leave the `Cn`
+rows: the sweep decides if they still hold. With no `## Evaluated` row, the sweep treats the `Bn`
+as owed and derives fresh constraints.
+
+Then go to Step 9.
+
+## Step 9: The sweep
+
+Follow `<plugin>/procedures/direction.md` once, with the line `Caller: curate` and the diff
+evidence from Step 6 when there is any. Do not report what the sweep can count: a moved row, a
+missing `## Evaluated` row, an orphan. Never write a `Cn` yourself; the sweep writes it.
+
+Read its return block and keep its `Coverage:` line for the summary. For each
+`known: <dimension> → <answer>` line in `Escalated:`, write the row in `TECH.md` by the tech
+reference and a `Dn` for the why. Relay each nudge to the user as it is. When it returns
+`Result: blocked` or `needs-input`, tell the user the reason, ask the open question when there is
+one, and go on. Never fail curate for it.
+
+## Step 10: Questions
 
 Ask each judgement call, one at a time: a dropped served row, a contradiction, a removal that is not
 plain, the cap, a question from the sweep. Give the file, the sentence and the reason, the options,
 and the option you recommend. Apply each answer before the next question.
 
-## Step 8: Commit once
+## Step 11: Commit once
 
-Commit all sure edits and all applied answers under `docs/curator/` in one commit:
-`docs(curator): curate <branch or range>`. Use only read-only git commands before it. Never push.
-When there is nothing to commit, skip the commit; it is not an error. A rerun after the commit then
-goes straight to the result.
+Show the user each new `Dn` with its marker (`hard:` or `soft:`) and its source, before the commit.
+At a landing, these are the `Markers:` lines.
 
-## Step 9: Result and summary
+Commit all sure edits, all applied answers and the moved map under `docs/curator/` in one commit:
+`docs(curator): curate <branch, range, effort or change>`. Use only read-only git commands before
+it. Never push. When there is nothing to commit, skip the commit; it is not an error. A rerun after
+the commit then goes straight to the result.
+
+## Step 12: Result and summary
 
 When orchestra runs you, write `{ "status": "ok" }` to the result path after the commit. On an
 unreadable input or an error, write `{ "status": "failed", "reason": "<what>" }`.
 Before you write a `failed` result, discard your uncommitted edits under `docs/curator/` (restore
 them from the last commit), so that a rerun starts from the committed docs.
 
-Then tell the user the summary: the served row and where it went, the verdict counts
-(ADD, UPDATE, NOOP, question) with one line for each candidate, what you removed, the orphans, the
-questions asked and their answers, and the sweep's `Coverage:` line. By hand, name the branch and
+Then tell the user the summary: the input. For a diff, the served row and where it went, the verdict
+counts (ADD, UPDATE, NOOP, question) with one line for each candidate, what you removed and the
+orphans. For a map, the markers, the rows of the cut, the `Qn` ids opened and closed, and each
+missing research branch. For a change in words, its kind and what you wrote. Then the questions
+asked and their answers, each nudge, and the sweep's `Coverage:` line. By hand, name the branch and
 say that nothing was pushed.
 
 ## Permitted actions
 
-Do not change files outside `docs/curator/`, except the result file that the prompt names. Do not push. The only skill you invoke is
-`orc-curator:direction`.
+Do not change files outside `docs/curator/`, except the result file that the prompt names and the
+map that a landing moves from `.scratch/<effort>/` to `docs/curator/maps/<effort>/`. Do not push.
+The only skill that you invoke is `mattpocock-skills:research`, and it runs
+only through the `direction` procedure. Every other skill that you name is a nudge to the user.
