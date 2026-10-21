@@ -374,3 +374,67 @@ wording change needs no entry.
   `plugins/orchestra/lib/report.js` (the `Note:` line), the skills `orchestra:run`,
   `orchestra:writing-plugins`, `orchestra:init` and `orc-curator:setup`, `docs/DESIGN.md` §5.2 and §9a,
   `docs/superpowers/specs/2026-10-16-curator-design.md`.
+
+## S79: Navigation and curation, split between wayfinder and the Curator
+
+- **Date:** 2026-10-21
+- **Status:** decided
+- **Question:** The user wants to start a project, explore wide, close the one-way doors, then
+  iterate, and have the plan follow every deviation. Wayfinder explores and the Curator keeps docs
+  true, but both decide things, and the Curator's `shape-product` and `shape-tech` both explore and
+  write. Which tool owns which job, and how do their results meet?
+- **Options:**
+  1. Who explores.
+     - mattpocock `/wayfinder`, unchanged, in bursts. Chosen. Its map, ticket types, frontier and fog
+       drive unknowns to closure, which `QUESTIONS.md` never did.
+     - Port wayfinder's loop into the Curator as typed, blocking `Qn` entries. It keeps one store but
+       loses claims, the frontier, one ticket per session and the fog discipline.
+     - Keep exploring in `setup` with `shape-product` and `shape-tech` (S76, plan 3). Setup then
+       explores the future, and the first sample run (S77) showed it turning a task into decisions.
+  2. Depend on wayfinder or port it.
+     - Depend, declared in `plugin.json`. Chosen. It is clean and maintained, and the Curator must read
+       its map anyway.
+     - Port it. A second copy to keep in step with its source.
+  3. What setup does.
+     - Record the present once, ask nothing on a new project, end with a nudge. Chosen.
+     - Setup and a burst run together. Setup cannot start wayfinder: only the user can.
+  4. Who organizes a change.
+     - One organizer, `curate`, with three inputs (a diff, a map, a change in words) and private
+       procedures. Chosen. One public door, and one writer of `Dn` and `Qn`.
+     - `curate`, `backlog`, `update-product` and `update-tech` as separate skills. Each copies the
+       consequence chain, and the user must pick the right door.
+  5. How `hard:` and `soft:` are set at landing.
+     - From the ADR: `domain-modeling` writes one only for a hard, surprising trade-off. Chosen. It is
+       automatic and recorded at decision time.
+     - Ask the user at landing. It works, but the user asked for no step to remember.
+  6. The glossary.
+     - `GLOSSARY.md` at the repo root. Chosen. Its format is the format of `CONTEXT.md`, and
+       `domain-modeling` already writes it.
+     - Keep `docs/curator/CONTEXT.md`. Two glossaries drift.
+  7. The map after landing.
+     - Move it to `docs/curator/maps/<effort>/` and commit it. Chosen. Backlog refs then work on every
+       machine.
+     - Leave it in the ignored `.scratch/`. A ref to it breaks everywhere else.
+  8. Research for a constraint.
+     - `direction` calls mattpocock `research`; a choice between options becomes a `Qn` and a nudge.
+       Chosen. One fact question needs no burst.
+     - Every research need becomes a burst. Heavy for one fact.
+- **Evidence:** `docs/research/R9-navigation-and-curation.md`: the full read of wayfinder 1.3.1, its
+  local tracker, `domain-modeling`, `research` and the `to-spec`/`to-tickets`/`implement-spec` chain;
+  the Claude Code docs on `dependencies` and `disable-model-invocation`; the minions philosophy and its
+  evidence ("settle the one-way doors, leave the two-way doors to emerge"); and the S77 sample run.
+- **Decision:** As the S79 row in `docs/TENSIONS.md`. A burst's destination is a step, never the
+  whole product, so wayfinder does not become a master plan. Architecture style and module boundaries
+  are decided in the kick-off burst; a one-way call is committed when the evidence exists, and nothing
+  is designed ahead for rows that are not built. One backlog row is one tracer bullet and one run.
+  `QUESTIONS.md` is the user's list; curate closes entries after a run and at landing.
+- **Cost and risk:** The exploring discipline of `shape-product` (four directions, comparable
+  products, rejected directions recorded) and of `shape-tech` (the capability dimensions and what each
+  option closes off) is gone; bursts rely on wayfinder's generic `grilling`. A one-way decision for
+  which `domain-modeling` writes no ADR lands as `soft:`. `curate` becomes the largest skill; an input
+  moves into its own procedure when it grows too big. A burst abandoned before landing stays on one
+  machine. The orc-curator plugin now needs mattpocock-skills and our marketplace's allow list. No burst
+  has been landed yet.
+- **Where it lives:** `docs/research/R9-navigation-and-curation.md`; later `plugins/orc-curator/`
+  (`skills/curate`, `skills/setup`, `procedures/`, `references/`, `templates/`, `.claude-plugin/plugin.json`),
+  `.claude-plugin/marketplace.json`, `docs/DESIGN.md`, `docs/CONTEXT.md`, the Curator spec.

@@ -7,6 +7,9 @@ The glossary of this project. Use these names and no others.
 | **Orchestrator** | The `orchestra` plugin and its single entry, `orchestra:run`. It reads the per-project config, resolves each slot, runs the driver loop and the gate runner, and owns `orchestra check` and `orchestra:init`. |
 | **Workflow** | Takes one task to reviewed, committed code. Its `next.js` fixes the stage order and says when each phase runs. It can declare its own stack-free gates. |
 | **Curator** | The plugin in the optional `curator` slot (`orc-curator`, S76). Keeps the project's direction docs in `docs/curator/` current: backlog, product, direction, decisions, questions, glossary, tech. Its `setup` runs when its flag is missing; its `curate` runs at a run's `done`. Its skills also work by hand. |
+| **Navigation** | Making the unknown known: exploring, researching, prototyping and deciding. Done with mattpocock `/wayfinder`, never by the Curator (S79). Its opposite is curation: keeping the known true while the code moves. |
+| **Burst** | One short round of navigation with a narrow destination: a kick-off, a big feature, a redesign, or a turn whose answer is unknown. The user starts it; its map lives in `.scratch/<effort>/` until landing (S79). |
+| **Landing** | `curate` reading a finished burst's map and writing its results into the Curator's docs: decisions, backlog rows, scope cuts, open questions. The map then moves to `docs/curator/maps/<effort>/` (S79). |
 | **Stack Skills** | The plugin in the `stack-skills` slot (formerly SSK, Specific Stack Knowledge). The rules for one stack (for example Java): its build, its gates, its fix guides and its plan and code guides. |
 | **PSK** | Project Specific Knowledge. Rules for one project that can override the Stack Skills, including the build. Not defined yet. |
 | **Slot** | A named place in the config that one plugin fills, for example the `stack-skills` slot. |
