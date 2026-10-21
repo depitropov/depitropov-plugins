@@ -6,7 +6,6 @@
   },
   "gates": [
     { "name": "plan-conformance", "phase": "implementation-check", "kind": "agent", "skill": "plan-conformance", "always": true },
-    { "name": "logic-review", "phase": "implementation-check", "kind": "agent", "skill": "logic-review", "always": true },
-    { "name": "clean-code", "phase": "implementation-check", "kind": "agent", "skill": "clean-code", "always": true, "measure": true }
+    { "name": "logic-review", "phase": "implementation-check", "kind": "agent", "skill": "logic-review", "always": true }
   ]
 }

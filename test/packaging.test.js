@@ -12,7 +12,7 @@ const skills = plugins.flatMap(p => {
 });
 const REFERENCED = ['orchestra/run', 'orchestra/fixer', 'orchestra/triage', 'orc-standard-workflow/manifest', 'orc-standard-workflow/spec',
   'orc-standard-workflow/plan', 'orc-standard-workflow/plan-check', 'orc-standard-workflow/plan-conformance', 'orc-standard-workflow/code',
-  'orc-standard-workflow/logic-review', 'orc-standard-workflow/clean-code', 'orc-java-stack/manifest', 'orc-java-stack/fix-build'];
+  'orc-standard-workflow/logic-review', 'orc-global-gates/clean-code', 'orc-global-gates/manifest', 'orc-java-stack/manifest', 'orc-java-stack/fix-build'];
 
 const { checkPlugin } = require('../plugins/orchestra/lib/check');
 
@@ -34,7 +34,8 @@ test('shipped skills carry no ship.cars names', () => {
 
 test('every judging skill takes its triage from orchestra:triage, not from its own copy', () => {
   const judging = [
-    ...['plan-check', 'plan-conformance', 'logic-review', 'clean-code'].map(n => ['orc-standard-workflow', n]),
+    ...['plan-check', 'plan-conformance', 'logic-review'].map(n => ['orc-standard-workflow', n]),
+    ['orc-global-gates', 'clean-code'],
     ...skills.filter(s => s.plugin === 'orc-java-stack' && s.name.startsWith('review-')).map(s => [s.plugin, s.name]),
   ];
   for (const [plugin, name] of judging) {
@@ -67,10 +68,12 @@ test('the skill writing-plugins explains every word of the contract that check.j
 });
 
 test('the clean-code gate asks for the measure and warns when the stack has none', () => {
-  const d = JSON.parse(fs.readFileSync(path.join(PLUGINS, 'orc-standard-workflow', 'orchestra.json'), 'utf8'));
+  const wf = JSON.parse(fs.readFileSync(path.join(PLUGINS, 'orc-standard-workflow', 'orchestra.json'), 'utf8'));
+  assert.equal(wf.gates.find(g => g.name === 'clean-code'), undefined);
+  const d = JSON.parse(fs.readFileSync(path.join(PLUGINS, 'orc-global-gates', 'orchestra.json'), 'utf8'));
   const gate = d.gates.find(g => g.name === 'clean-code');
   assert.deepEqual(gate, { name: 'clean-code', phase: 'implementation-check', kind: 'agent', skill: 'clean-code', always: true, measure: true });
-  const text = fs.readFileSync(path.join(PLUGINS, 'orc-standard-workflow', 'skills', 'clean-code', 'SKILL.md'), 'utf8');
+  const text = fs.readFileSync(path.join(PLUGINS, 'orc-global-gates', 'skills', 'clean-code', 'SKILL.md'), 'utf8');
   assert.match(text, /No shape measurement: the Stack Skills plugin declares no measure/);
   assert.match(text, /broken measurement/);
 });

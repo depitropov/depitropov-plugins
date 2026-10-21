@@ -1,0 +1,7 @@
+{
+  "slot": "global-gates",
+  "config": {},
+  "gates": [
+    { "name": "clean-code", "phase": "implementation-check", "kind": "agent", "skill": "clean-code", "always": true, "measure": true }
+  ]
+}

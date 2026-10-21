@@ -63,8 +63,7 @@ description: Reviews the shape of the changed code and the clean-code rules — 
     `refactor(clean-code): <summary>`. orchestra commits `notes` itself: do not stage files under
     `docs/runs/` or `tmp/`. Do not review your own fixes again.
 
-Not yours: whether the behaviour is right (logic-review), whether the plan was followed
-(plan-conformance), log statements, formatting.
+Not yours: whether the behaviour is right and whether the plan was followed (the workflow's own reviews), log statements, formatting.
 
 ## Result
 
