@@ -22,6 +22,7 @@ All plugins live in this repo (S30).
 | `orc-standard-workflow` | Workflow | `next.js`, one skill per stage, its own gates, its `manifest` skill |
 | `orc-java-stack` | Stack Skills | `build`, its gates, fix guides, plan and code guides, its `manifest` skill |
 | `orc-ts-stack` | Stack Skills | build, its fix guide, measure and its rules skill, its manifest skill |
+| `orc-global-gates` | Global gates | The gates every workflow gets, such as `clean-code`, and its `manifest` skill (S80). The slot is optional |
 | `clean-code` | Standalone | A copy of mentorano's clean-code for use outside orchestra (S75). Not a slot plugin |
 | `orc-curator` | Curator | `curate`, `setup` (the product and tech interviews: `shape-product`, `shape-tech`), the `spec`, `plan` and `code` guides, the direction sweep, `backlog` and `research` (by hand, and from its own skills), its templates and references, its `manifest` skill |
 
@@ -231,7 +232,7 @@ skip (S27).
 | `conventions-check` | Does it follow our conventions? DTOs, entities, converters. | tool gates → agent gates |
 | `finish` | Is the final state clean and green? Comments, logging, formatting. | agent gates → tool gates → **build** |
 
-Inside each step: workflow gates before stack gates, then the order of declaration.
+Inside each step: workflow gates, then global gates, then stack gates (S80), then the order of declaration.
 
 Nothing runs after `finish`. A finish gate must not change behaviour. The final build is the proof.
 A red build in `finish` ends the run with `failed`.
@@ -332,6 +333,11 @@ The workflow's own gates, in phase 1:
 |---|---|---|---|
 | `plan-conformance` | `implementation-check` | agent | Every plan task done, every named test present, no undeclared change of direction, nothing outside the brief's scope; detail inside a task is not a deviation (S67). Reads the plan and the implementation log. No correctness verdict (S66) |
 | `logic-review` | `implementation-check` | agent | Correctness, and a test for every criterion and behavioural assumption that fails on a wrong version (S25, S66). Reads the brief and `decisions` only, never the plan |
+
+The `orc-global-gates` plugin declares `clean-code`, not the workflow (S80):
+
+| Gate | Phase | Kind | Job |
+|---|---|---|---|
 | `clean-code` | `implementation-check` | agent | The shape of the changed code (the stack's measure) and the clean-code rules 1–13; warns when the stack has no measure (S75) |
 
 A generic bug hunter is a candidate for later.
@@ -397,7 +403,7 @@ orchestra writes it (S55). Steps are in run order. An empty phase shows "ok (no 
 | `build` | yes | The full build and tests, with coverage. Its fix guide and round limit (6.3). |
 | `gates` | no | The stack's gates (6.1). |
 | `guides` | no | `{ "<role>": "<skill>" }`: short rules for the stages of one role, 5–15 per area (R3, S76). |
-| `measure` | no | The shape measurement and the stack's clean-code rules for a gate that asks for them (S75). |
+| `measure` | no | The shape measurement and the stack's clean-code rules for a gate that asks for them, in any slot (S75, S80). |
 | `manifest` skill | yes | Resolution (5.2). |
 
 The stack plugin declares what and where. It never declares an order or a loop. Every gate skill
@@ -467,8 +473,11 @@ plugins/
     lib/{check.js,resolved.js,gates.js,runner.js,protocol.js,report.js,git.js}
   orc-standard-workflow/
     orchestra.json
-    skills/{manifest,spec,plan,plan-check,code,logic-review,clean-code}/SKILL.md
+    skills/{manifest,spec,plan,plan-check,code,logic-review}/SKILL.md
     bin/next.js
+  orc-global-gates/
+    orchestra.json
+    skills/{manifest,clean-code}/SKILL.md
   orc-java-stack/
     orchestra.json
     skills/{manifest,plan-guide,code-guide,fix-build,<one per gate>,<one fix guide per tool gate>}/SKILL.md

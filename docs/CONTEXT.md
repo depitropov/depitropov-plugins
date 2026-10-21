@@ -11,6 +11,7 @@ The glossary of this project. Use these names and no others.
 | **Burst** | One short round of navigation with a narrow destination: a kick-off, a big feature, a redesign, or a turn whose answer is unknown. The user starts it; its map lives in `.scratch/<effort>/` until landing (S79). |
 | **Landing** | `curate` reading a finished burst's map and writing its results into the Curator's docs: decisions, backlog rows, scope cuts, open questions. The map then moves to `docs/curator/maps/<effort>/` (S79). |
 | **Stack Skills** | The plugin in the `stack-skills` slot (formerly SSK, Specific Stack Knowledge). The rules for one stack (for example Java): its build, its gates, its fix guides and its plan and code guides. |
+| **Global gates** | The plugin in the optional `global-gates` slot (`orc-global-gates`, S80). It declares the gates that every workflow gets, such as `clean-code`. Such a gate reads only what every workflow gives, never a workflow's own files. |
 | **PSK** | Project Specific Knowledge. Rules for one project that can override the Stack Skills, including the build. Not defined yet. |
 | **Slot** | A named place in the config that one plugin fills, for example the `stack-skills` slot. |
 | **Declaration** | The `orchestra.json` a slot plugin ships. Data only: its slot, config keys, gates, and for Stack Skills its build and guides. |
@@ -18,7 +19,7 @@ The glossary of this project. Use these names and no others.
 | **Dry run** | The rule of `orchestra check` that starts a workflow's real `next.js` with a task in a throwaway git repo and checks the first action it prints. |
 | **Driver loop** | The loop in `orchestra:run` that runs the workflow's `next.js` and acts on each printed action. |
 | **Phase** | One of three standard groups of gates, in this order: `implementation-check` (is it correct and sound), `conventions-check` (does it follow our conventions), `finish` (cosmetic changes, then the final build). |
-| **Gate** | One check that runs in a phase. It is a `tool` (a command) or an `agent` (a skill run by a subagent). The workflow or the Stack Skills declares it. The declarer owns its command, selection, fix guide and round limit. |
+| **Gate** | One check that runs in a phase. It is a `tool` (a command) or an `agent` (a skill run by a subagent). The workflow, the global-gates plugin or the Stack Skills declares it. The declarer owns its command, selection, fix guide and round limit. |
 | **Gate runner** | The orchestra code that runs one phase: selects the gates, orders them, runs them, loops the fixer, and returns `ok`, `decide` or `failed`. |
 | **Build** | The full build and test run with coverage. A required declaration of the Stack Skills, not a gate. The gate runner runs it first in `implementation-check` and last in `finish`. |
 | **Measure** | An optional declaration of the Stack Skills: a command that measures the shape of the changed code against the run's base commit, and a skill with the stack's clean-code rules. A gate that asks for it gets both as inputs. |

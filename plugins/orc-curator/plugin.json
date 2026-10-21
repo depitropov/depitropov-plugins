@@ -1,5 +1,5 @@
 {
   "name": "orc-curator",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "description": "The Curator: keeps a project's backlog, product, direction, decisions, questions and glossary current, by hand or at the end of every orchestra run."
 }
