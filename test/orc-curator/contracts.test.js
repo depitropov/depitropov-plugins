@@ -55,9 +55,10 @@ test('the references table agrees with the skill texts', () => {
   assert.deepEqual(agree(table, k => new RegExp(`references/${escape(k)}`)), []);
 });
 
-test('the README names every skill, the three flows and the verdict ladder', () => {
+test('the README names the entries, the files, the three flows and the nudge', () => {
   const readme = fs.readFileSync(path.join(DIR, 'README.md'), 'utf8');
-  for (const s of [...fs.readdirSync(path.join(DIR, 'skills')), ...PROCEDURES]) assert.ok(readme.includes(`\`${s}\``), s);
-  for (const h of ['**A:', '**B:', '**C:', 'What `direction` decides']) assert.ok(readme.includes(h), h);
+  for (const s of ['setup', 'curate']) assert.ok(readme.includes(`\`${s}\``), s);
+  for (const f of [...GUIDES.map(g => `guides/${g}.md`), ...PROCEDURES.map(p => `procedures/${p}.md`)]) assert.ok(readme.includes(f), f);
+  for (const h of ['**A: set up', '**B: a burst and its landing', '**C: a run', 'a change in words', '/wayfinder', 'What `direction` decides']) assert.ok(readme.includes(h), h);
   assert.match(readme, /CONTRACTS\.md/);
 });

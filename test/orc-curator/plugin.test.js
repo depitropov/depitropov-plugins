@@ -75,28 +75,15 @@ test('setup records the present, writes the flag last and nudges to a burst', ()
   assert.doesNotMatch(text, /\/minions:|\.minions|STATE\.md|config\.yml|\bmaintain\b|\bvibe\b|--auto/);
 });
 
-test('the interview and research references are shipped', () => {
-  const cadence = read('references/interview-cadence.md');
-  assert.match(cadence, /3–5/);
-  assert.match(cadence, /one at a time/i);
-  assert.doesNotMatch(cadence, /config\.yml|questions: |Decide/);
-  const ask = read('references/ask-vs-research.md');
-  assert.match(ask, /ask the user/i);
-  assert.match(ask, /research/i);
-  for (const f of ['references/interview-cadence.md', 'references/ask-vs-research.md']) {
-    assert.doesNotMatch(read(f), /\/minions:|\.minions|STATE\.md|\bmaintain\b|\bvibe\b/, f);
-  }
-});
-
-test('the right-sizing reference and the research template are shipped', () => {
-  const sizing = read('references/right-sizing.md');
-  assert.match(sizing, /set by the caller/);
-  assert.match(sizing, /## Research depth/);
-  assert.doesNotMatch(sizing, /other tier|too small/i);
-  const note = read('templates/RESEARCH.md');
-  for (const h of ['**For:**', '**Supersedes:**', '## Recommendation', '## Comparison', '## Refuted', '## Open questions']) assert.ok(note.includes(h), h);
-  for (const f of ['references/right-sizing.md', 'templates/RESEARCH.md']) {
-    assert.doesNotMatch(read(f), /\/minions:|\.minions|docs\/minions|STATE\.md|config\.yml|\bmaintain\b|\bvibe\b/, f);
+test('the plugin ships three skills, three guides and three procedures, and names no removed skill', () => {
+  assert.deepEqual(fs.readdirSync(path.join(DIR, 'skills')).sort(), ['curate', 'manifest', 'setup']);
+  assert.deepEqual(fs.readdirSync(path.join(DIR, 'guides')).sort(), ['code.md', 'plan.md', 'spec.md']);
+  assert.deepEqual(fs.readdirSync(path.join(DIR, 'procedures')).sort(), ['backlog.md', 'direction.md', 'landing.md']);
+  assert.deepEqual(fs.readdirSync(path.join(DIR, 'references')).sort(), ['glossary.md', 'product.md', 'recording-rules.md', 'tech.md']);
+  assert.ok(!fs.existsSync(path.join(DIR, 'templates/RESEARCH.md')));
+  const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
+  for (const f of walk(DIR)) {
+    assert.doesNotMatch(fs.readFileSync(f, 'utf8'), /shape-product|shape-tech|orc-curator:research|interview-cadence|ask-vs-research|right-sizing|CONTEXT\.md|orc-curator:(direction|backlog|spec-guide|plan-guide|code-guide)/, f);
   }
 });
 

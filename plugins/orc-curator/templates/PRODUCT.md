@@ -40,8 +40,7 @@
 ## Why it's shaped this way
 
 > **Product reasons that the code cannot show.** The code shows that every operation is a button.
-> Only this file can say that cooks did not want to talk to an LLM. Curate and
-> `orc-curator:shape-product` write these. Write them as they come up, and **cite the `Dn` row and
+> Only this file can say that cooks did not want to talk to an LLM. Curate writes these. Write them as they come up, and **cite the `Dn` row and
 > do not repeat it**: the decision log owns the history, and this file owns the readable picture of
 > today.
 

@@ -12,11 +12,11 @@
 >
 > **Who reads this:** the **planner**, on every plan, through the Curator's `plan` guide. It is the
 > only file that lets a plan account for work outside its own run, which is otherwise forbidden.
-> `orc-curator:direction` writes it. **Curate** keeps it: it marks rows satisfied, deletes orphans
+> The direction sweep of `orc-curator:curate` writes it. **Curate** keeps it: it marks rows satisfied, deletes orphans
 > and flags drift after every run.
 >
-> **Rows are not written by hand.** `orc-curator:direction` writes them. It reaches one verdict per
-> near-term backlog row first. `orc-curator:curate` keeps them, and `orc-curator:backlog` deletes the
+> **Rows are not written by hand.** The sweep writes them. It reaches one verdict per
+> near-term backlog row first. `orc-curator:curate` keeps them, and deletes the
 > rows whose backlog row lost its license. A hand edit of a status is harmless. A row that you invent
 > by hand skips the interview that makes a row a constraint and not a guess.
 >
@@ -46,7 +46,7 @@
 
 ## Size
 
-> **Soft cap: 50 rows.** Past that, `orc-curator:direction` and `orc-curator:curate` raise it with you
+> **Soft cap: 50 rows.** Past that, `orc-curator:curate` and its sweep raise it with you
 > and do not continue in silence. A file that keeps growing usually has one of three causes:
 > `## Next` holds items that belong in `## Later`, satisfied rows are not retired, or constraints are
 > written at the size of a design and not at the size of a pressure. It is a smoke alarm, not a rule.
@@ -67,8 +67,8 @@
 > and it is by far the most common outcome. A sweep that records only the rows that earned a `Cn` has
 > recorded nothing of use.
 >
-> **Written by `orc-curator:direction`:** one row per near-term backlog row, written when it reaches a
-> verdict. `orc-curator:curate` and `orc-curator:backlog` retire the rows whose `Bn` left
+> **Written by the sweep of `orc-curator:curate`:** one row per near-term backlog row, written when it reaches a
+> verdict. `orc-curator:curate` retires the rows whose `Bn` left
 > `## Now` and `## Next`.
 >
 > **`horizon at eval` is information, not a trigger.** It records the stakes at the time of the
