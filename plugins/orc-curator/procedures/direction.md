@@ -18,7 +18,8 @@ an agent that must not look at those later features decides it.
 
 ## Caller
 
-You have one caller: `curate`. It runs you when a run shipped. It gives you the constraints to mark
+You have one caller: `curate`. It runs you once after each of its inputs: a diff, a map or a change
+in words. It gives you the constraints to mark
 satisfied, the orphans to remove, the code, the reversed `Dn` or the changed dimension that may
 **contradict** a live `Cn`, and the evidence when it has any. The user may also ask `curate` for the sweep by hand.
 
@@ -144,8 +145,9 @@ demoted row that retires constraints) needs no research.
 
 Invoke the skill `mattpocock-skills:research` with three things: the topic, the path
 `docs/curator/research/<yyyy-mm-dd>-<topic>.md`, and the first line `For: B<n>`. It writes one note
-and **records nothing else**: it is evidence, not authority. Read the `## Recommendation` of the
-note. **You write each row that the evidence earns.** A run that takes a recommendation and records
+and **records nothing else**: it is evidence, not authority. The skill runs in the background: wait
+for the note before you go on. When the note does not start with the line `For: B<n>`, add it. Read
+the `## Recommendation` of the note; when the note has none, read its findings. **You write each row that the evidence earns.** A run that takes a recommendation and records
 nothing wasted it.
 
 When the note shows a choice between real options, or a one-way door, do not research again and do

@@ -27,8 +27,9 @@ Five commitments follow:
   permanent handles. But a call made on thin evidence, or true only *for now*, is fair to challenge. A
   reversal is a **new row** whose *why* names what it reverses, never an edit. "We already settled
   that" is not an argument. Each row says which kind it is when it is written: **`hard:`** for a
-  one-way door, **`soft:`** for thin evidence or true for now. A burst and the change-in-words path of
-  `curate` challenge the `soft:` rows, so that they are examined and not inherited.
+  one-way door, **`soft:`** for thin evidence or true for now. At a landing and on a change in words,
+  `curate` shows you the `soft:` rows that the map or the change touches and asks "still true?", so
+  that they are examined and not inherited.
 - **Nothing blocks.** `QUESTIONS.md` never stops a run. An open question is information, not a veto.
   Work starts with unknowns, and the Curator's job is to say which ones.
 - **A constraint is the least that survives a check against the code.** `DIRECTION.md` holds forward
@@ -90,7 +91,8 @@ All in `docs/curator/`. Six files, split by tense, and **no fact in two of them*
 | `QUESTIONS.md` | what is still open | unsettled |
 
 `GLOSSARY.md` is not a seventh tense: it is the dictionary that the others are written in. It is at
-the repo root, and `curate` creates it on the first domain term and edits it in place. `research/`
+the repo root, and `curate` creates it on the first domain term and edits it in place. During a
+burst, `domain-modeling` writes it and the ADRs in `docs/adr/`; `curate` commits them at the landing. `research/`
 holds one evidence note per topic. `maps/<effort>/` holds the map of each landed burst, a closed
 record. The flag `.setup` says that setup ran.
 
@@ -141,7 +143,8 @@ backlog and `DIRECTION.md` empty, and it never runs `direction`.
 The burst is navigation, and it is yours. The landing is curation: `curate` follows
 `procedures/landing.md`, writes each decision, scope cut and open question into the docs, moves the
 map to `docs/curator/maps/<effort>/`, runs the sweep and commits once. An ADR in `docs/adr/` that no
-`Dn` links lands as a `hard:` `Dn`. A ticket answer that no ADR covers lands as `soft:`.
+`Dn` links lands as a `hard:` `Dn`. A ticket answer that no ADR covers lands as `soft:`. For each
+line of the map's `## Out of scope`, you choose: a product non-goal, a `## Later` row, or nothing.
 
 **C: a run**
 

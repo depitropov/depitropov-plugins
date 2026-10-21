@@ -22,7 +22,7 @@ names the doc only to forbid a write, or to say who else writes it.
 | Doc | Adds | Updates | **Removes** | Reads | Names only |
 |---|---|---|---|---|---|
 | `PRODUCT.md` | `setup` (the template, and the present on a project with code), `curate`, `landing` (Deliberately not, Why it's shaped this way) | `curate` | `curate` (what the diff made false: tiered, a question when not plain) | `spec-guide`, `plan-guide`, `direction` | `backlog` |
-| `BACKLOG.md` | `setup` (the template), `backlog` (add), `curate` (deferred work, a row for `Serves: new`), `landing` (the cut, into Next) | `backlog` (move), `curate` (move to Shipped) | `backlog` (drop), `curate` (Vision prose that shipped) | `spec-guide`, `backlog`, `direction` | — |
+| `BACKLOG.md` | `setup` (the template), `backlog` (add), `curate` (deferred work, a row for `Serves: new`), `landing` (the cut, into Next; a Later row for an out-of-scope line, when the user chooses it) | `backlog` (move), `curate` (move to Shipped) | `backlog` (drop), `curate` (Vision prose that shipped) | `spec-guide`, `backlog`, `direction` | — |
 | `DIRECTION.md` `## Constraints` | `setup` (the template), **`direction` (the only author)** | `curate` (satisfied) | `curate` (retire, orphans), `backlog` (orphans), `direction` (orphans) | `plan-guide` | — |
 | `DIRECTION.md` `## Evaluated` | `direction` (one row per verdict) | `direction` (overwrite in place) | `direction` (rows whose `Bn` left Now and Next), `backlog` (on a drop, a demotion, or a change of meaning), `curate` (the retire rule: a reversed `Dn` or a changed dimension) | — | — |
 | `DECISIONS.md` | `setup` (the template), `backlog` (reversals), `curate` (**the only writer of `Dn`**, with the procedures it follows; the answer of a change in words), `landing` (`hard:` from an ADR, `soft:` from a ticket answer) | never: append-only | never | `spec-guide`, `code-guide` (the `Dn` a comment may cite), `direction` | — |
@@ -36,7 +36,9 @@ names the doc only to forbid a write, or to say who else writes it.
 `TECH.md` transcription and the `PRODUCT.md` answers), the `.scratch/` line in `.gitignore`, and the
 flag. `curate` reads every doc, and follows the three procedures inline: it is the one organizer, and
 the only way in for a diff, a map (a finished burst) or a change in words. `Dn` and `Qn` come from
-`curate` alone; a procedure that writes one does it inside `curate`.
+`curate` alone; a procedure that writes one does it inside `curate`. At a landing, `curate` also
+commits the burst's `GLOSSARY.md` changes and the ADRs that a new `Dn` links; it never edits an ADR.
+Before it writes, it stops on uncommitted changes to the docs, so a discard touches only its own edits.
 
 ## The shared policy
 

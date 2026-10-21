@@ -76,8 +76,11 @@ step inside a phase from files on disk. The skills never decide the order.
 | Key | Defined by | Meaning |
 |---|---|---|
 | `<slot>.plugin` | orchestra | The plugin that fills the slot. |
-| `<slot>.disable` | orchestra | Gates or guides the project turns off, by name. Empty or missing = all on (S40). |
+| `<slot>.disable` | orchestra | Gates the project turns off by name, or a guide by its path. Empty or missing = all on (S40). |
 | `<slot>.gates.<name>.max_rounds` | orchestra | Overrides the round limit of one gate. |
+
+S79 changed a guide's entry from its name to its path. An old config with `"disable": ["code-guide"]`
+fails `orchestra check`, and the fix names the new path (`guides/code.md`).
 
 Every other key comes from the declaration of the plugin in that slot. A stack plugin can declare
 a key for a project convention, for example the pattern that marks an entity, and the project sets

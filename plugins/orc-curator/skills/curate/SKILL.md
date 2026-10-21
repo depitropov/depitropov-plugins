@@ -59,6 +59,15 @@ When `docs/curator/` does not exist, stop: the result is `failed` with the reaso
 not set up; run orc-curator:setup". When an input cannot be read, the result is `failed` with what
 could not be read.
 
+**Uncommitted docs.** Before you write anything, look for uncommitted changes in `docs/curator/`
+and in the glossary (`GLOSSARY.md` at the repo root, or the files that `GLOSSARY-MAP.md` lists).
+When there are some, stop and ask the user which of two: commit them first, or treat them as a
+backlog reconcile first (a change in words that follows the reconcile path of
+`<plugin>/procedures/backlog.md`). Then go on with the input. So the docs agree with the last
+commit, and a discard (Steps 7, 8 and 12) touches only your own edits. Two exceptions: when the
+input is that reconcile, the changes are the input; and at a landing, the burst's changes to the
+glossary and its new ADRs are input too. You commit them in Step 11.
+
 ## Step 3: The served row (a diff)
 
 | The brief says | You do |
@@ -148,9 +157,10 @@ changed). Then go to Step 9.
 
 Follow `<plugin>/procedures/landing.md` with the effort. Read its return block.
 
-When it returns `blocked` or `needs-input`, discard its uncommitted edits under `docs/curator/`
-(restore them from the last commit), so that a rerun does not append the same `Dn` and `Qn` rows
-again. Tell the user the reason. Do not run the sweep and do not commit. The map stays in
+When it returns `blocked` or `needs-input`, discard your own edits: restore each file that it
+changed under `docs/curator/` from the last commit, and delete each file that it created there. So
+a rerun does not append the same `Dn` and `Qn` rows again. Keep the burst's changes to
+`GLOSSARY.md` and its ADRs: they are not yours. Tell the user the reason. Do not run the sweep and do not commit. The map stays in
 `.scratch/<effort>/`, so the user can land it again.
 
 When it returns `ok`, keep its `Markers:` and `Missing:` lines for the summary. Apply the retire
@@ -160,12 +170,21 @@ rule (Step 8) to each line of its `Reversed:`. Then go to Step 9.
 
 Sort the change. When it is not clear which kind it is, ask the user.
 
+Before you write, list the `soft:` `Dn` rows that the change touches (the same topic or the same
+capability dimension). Show each one to the user and ask: still true? A "no" is a reversal: a new
+`Dn` that names the one it reverses, never an edit.
+
 - **known: a plan change.** Add, drop, move, groom or reconcile a backlog row. Follow
-  `<plugin>/procedures/backlog.md`. Keep its return block for the summary.
+  `<plugin>/procedures/backlog.md`. Keep its return block for the summary. When it returns
+  `blocked` or `needs-input`, discard your own edits as in Step 7, tell the user the reason, do not
+  run the sweep and do not commit. In a reconcile, your edits and the user's are in the same files:
+  discard nothing, and name the files that you changed.
 - **known: a decision or dimension change.** The user gives the answer ("we deploy to Fly now", "no
   more guest checkout"). Append the next `Dn`. Its `Why` opens with `hard:` or `soft:`, and it
   names the `Dn` it reverses, when there is one. Edit `TECH.md` by the tech reference, or
-  `PRODUCT.md` by the product reference. Then apply the retire rule.
+  `PRODUCT.md` by the product reference. Close each `· open` `Qn` that the answer settles: change
+  its heading to `· answered → Dn` with the new `Dn`, and add one sentence. Never delete it. Then
+  apply the retire rule.
 - **unknown.** The user names a change but not its answer ("we may need offline mode"). Write one
   `## Qn — <question> · open` entry, and no `Dn`. Give the nudge: "To <purpose>, run
   `/wayfinder <topic>`."
@@ -205,7 +224,9 @@ and the option you recommend. Apply each answer before the next question.
 Show the user each new `Dn` with its marker (`hard:` or `soft:`) and its source, before the commit.
 At a landing, these are the `Markers:` lines.
 
-Commit all sure edits, all applied answers and the moved map under `docs/curator/` in one commit:
+Commit in one commit: all sure edits, all applied answers and the moved map under `docs/curator/`;
+the glossary (`GLOSSARY.md`, or the files that `GLOSSARY-MAP.md` lists); and at a landing, the ADRs
+in `docs/adr/` or `<context>/docs/adr/` that a new `Dn` links. The message is
 `docs(curator): curate <branch, range, effort or change>`. Use only read-only git commands before
 it. Never push. When there is nothing to commit, skip the commit; it is not an error. A rerun after
 the commit then goes straight to the result.
@@ -214,8 +235,9 @@ the commit then goes straight to the result.
 
 When orchestra runs you, write `{ "status": "ok" }` to the result path after the commit. On an
 unreadable input or an error, write `{ "status": "failed", "reason": "<what>" }`.
-Before you write a `failed` result, discard your uncommitted edits under `docs/curator/` (restore
-them from the last commit), so that a rerun starts from the committed docs.
+Before you write a `failed` result, discard your own edits under `docs/curator/` and in
+`GLOSSARY.md` as in Step 7, so that a rerun starts from the committed docs. At a landing, keep the
+burst's changes.
 
 Then tell the user the summary: the input. For a diff, the served row and where it went, the verdict
 counts (ADD, UPDATE, NOOP, question) with one line for each candidate, what you removed and the
@@ -226,7 +248,10 @@ say that nothing was pushed.
 
 ## Permitted actions
 
-Do not change files outside `docs/curator/`, except the result file that the prompt names and the
-map that a landing moves from `.scratch/<effort>/` to `docs/curator/maps/<effort>/`. Do not push.
+Do not change files outside `docs/curator/`, except the result file that the prompt names, the
+glossary (`GLOSSARY.md` at the repo root, or the files that `GLOSSARY-MAP.md` lists), and the map that
+a landing moves from `.scratch/<effort>/` to `docs/curator/maps/<effort>/`. At a landing, you also
+commit the ADRs in `docs/adr/` or `<context>/docs/adr/` that a new `Dn` links. Never edit an ADR.
+Do not push.
 The only skill that you invoke is `mattpocock-skills:research`, and it runs
 only through the `direction` procedure. Every other skill that you name is a nudge to the user.

@@ -983,7 +983,7 @@ Moved to `plugins/orc-curator/procedures/backlog.md` by S79 (a procedure, not a 
 | Rule: a question is not a feature | `orc-curator:curate` Step 5: a question is never a backlog row | ported (changed, S79) | yes |
 | Rule: PRODUCT holds only what is true today; vision goes to BACKLOG Vision; no feature inventory | `plugins/orc-curator/references/product.md` ("The test") | ported (changed, S79) | yes |
 | Resuming from real PRODUCT content, backlog rows and open questions | — | dropped (S79: the skill and its reference are removed) | no |
-| Read DECISIONS first; honour `hard:`, put `soft:` discarded directions back on the table; reversal is a new `Dn` | `orc-curator:curate` Steps 2 and 4: a reversal is a new `Dn` | ported (changed, S79: the `soft:` rows are challenged by a burst or a change in words, not by an interview) | yes |
+| Read DECISIONS first; honour `hard:`, put `soft:` discarded directions back on the table; reversal is a new `Dn` | `orc-curator:curate` Step 8 and `plugins/orc-curator/procedures/landing.md` Step 2: the `soft:` `Dn` rows that the change or the map touches are shown with "still true?"; a reversal is a new `Dn` | ported (changed, S79: `curate` challenges the `soft:` rows at a landing or a change in words, not in an interview) | yes |
 | Coverage checklist (9 items) and the one-line coverage status each turn | — | dropped (S79: the skill and its reference are removed) | no |
 | Choosing what to do next: restate first; gray-area buckets; pick 3–5 | — | dropped (S79: the skill and its reference are removed) | no |
 | Ask vs research: cite the shared policy, never a copy; where research findings go | — | dropped (S79: the skill and its reference are removed) | no |
@@ -1003,7 +1003,7 @@ Moved to `plugins/orc-curator/procedures/backlog.md` by S79 (a procedure, not a 
 | Purpose: settle the tech dimensions that outlive one feature; what in TECH, why in DECISIONS; altitude vs plan | — | dropped (S79: the skill and its reference are removed) | no |
 | Callers: shape-project, all dimensions, no code | — | dropped (S79: the skill and its reference are removed) | no |
 | Callers: specify, one ground-shaping call mid-interview | — | dropped (S79: the skill and its reference are removed) | no |
-| Callers: direction, exactly one named dimension | `plugins/orc-curator/procedures/direction.md` Step 4: a `known: <dimension> → <answer>` line, or a `Qn` and a nudge; `curate` writes `TECH.md` | ported (changed, S79: direction calls no skill) | yes |
+| Callers: direction, exactly one named dimension | `plugins/orc-curator/procedures/direction.md` Step 3: a `known: <dimension> → <answer>` line, or a `Qn` and a nudge; `curate` writes `TECH.md` | ported (changed, S79: direction calls no interview skill; it invokes only `mattpocock-skills:research`) | yes |
 | Callers: direct, by focus argument | — | dropped (S79: the skill and its reference are removed) | no |
 | Single-dimension invocation: walk only that one, never raise the caller's ceremony | — | dropped (S79: the skill and its reference are removed) | no |
 | Step 1: roots, config, `mode`, `auto`, `questions`, `--auto` | — | dropped (S79: the skill and its reference are removed) | no |
@@ -1304,7 +1304,7 @@ The parts that read the direction docs become `orc-curator/guides/plan.md`, push
 | Invariant: movement inside Now/Next is no trigger | `plugins/orc-curator/procedures/direction.md` | ported (S76, Curator plan 2) | yes |
 | Invariant: curator's Direction verdict carries diff evidence only | `orc-curator:curate` | ported (S76, Curator plan 2) | yes |
 | Invariant: curate invokes direction unconditionally after a ship | `orc-curator:curate` | ported (S76, Curator plan 2) | yes |
-| Invariant: backlog ends in a sweep, except Later-only changes; reads no TECH, no code | `plugins/orc-curator/procedures/backlog.md` Step 6 and hard gate; also skipped under `Caller: setup` (plan 4 ruling) | ported (changed, plan 4) | yes |
+| Invariant: backlog ends in a sweep, except Later-only changes; reads no TECH, no code | `plugins/orc-curator/procedures/backlog.md` Step 6 and hard gate; the skip under `Caller: setup` (plan 4 ruling) is dropped (S79: setup never runs `backlog`) | ported (changed, plan 4; S79) | yes |
 | Invariant: shape-project calls four skills in a fixed order | `orc-curator:setup` Step 5 and hard gate | ported | yes |
 | Invariant: one judgement owner per file | `plugins/orc-curator/CONTRACTS.md` invariants, README | ported | yes |
 | Invariant: mode gating is not uniform | — | dropped (S76: no modes) | no |

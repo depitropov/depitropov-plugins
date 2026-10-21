@@ -6,8 +6,9 @@
 >
 > **Who reads this:** you; the **curator**, on every curate run, to take the next `Dn` and to catch a
 > new learning that contradicts a decision that is already here (that is a flag for you, never a
-> silent overwrite); and **a burst of `/wayfinder` and a change in words**, which read the
-> **`soft:` rows only** again, so that a call made on thin evidence is challenged and does not harden.
+> silent overwrite); and **`curate` at a landing or a change in words**, which shows you the
+> **`soft:` rows** that the map or the change touches and asks "still true?", so that a call made on
+> thin evidence is challenged and does not harden.
 > A rule that you need *enforced* still belongs on a native surface (`CLAUDE.md`, `.claude/rules/`, a
 > skill). This file records the why, not the rule.
 >

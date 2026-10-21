@@ -18,7 +18,8 @@ Each row is one dimension. Write a row only when it is settled. Delete a row tha
 
 ## The spine
 
-The few choices that all else rests on. It also holds one line: architecture style, citing a `hard:` `Dn`.
+The few choices that all else rests on. The **minimum spine** is the choices without which the first
+file cannot be written: the language, the runtime and the test runner. It also holds one line: architecture style, citing a `hard:` `Dn`.
 Module boundaries are contexts in `GLOSSARY-MAP.md`, never paths.
 
 ## One place
@@ -38,7 +39,7 @@ Never write one dimension to both `TECH.md` and `QUESTIONS.md`. `TECH.md` has no
 | Evidence | What you may write |
 |---|---|
 | no code | the minimum spine only. All else is a `Qn`. Pick no persistence, auth or deploy target before one acceptance criterion needs it |
-| existing code | what the code already settles. Remember: a transcription has no `Dn`, because nothing was decided |
+| existing code | what the code already settles. Remember: a transcription has no `Dn`, because nothing was decided. A transcribed choice invents no row |
 | a call the user just made | the full record: the what in `TECH.md`, the why in `DECISIONS.md` |
 
 ## Never

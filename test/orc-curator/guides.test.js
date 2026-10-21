@@ -26,6 +26,7 @@ test('every guide reads the docs only and never talks to the user', () => {
     assert.match(text, /docs\/curator\//, g);
     assert.match(text, /Do not ask the user/, g);
     assert.match(text, /Do not (change|write|edit) (any|a) file under `docs\/curator\/`/, g);
+    assert.match(text.split('## Permitted actions')[1], /Do not change[^.]*GLOSSARY\.md/, `${g}: the glossary is protected too`);
     assert.doesNotMatch(text, /orc-curator:research|research first/, `${g}: research stays out of spec and plan (S76)`);
   }
 });

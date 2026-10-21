@@ -23,7 +23,8 @@ When `docs/curator/` does not exist, tell the user that the Curator is not set u
 and return `Result: blocked`. When `.scratch/<effort>/map.md` does not exist, say so and return
 `Result: blocked`.
 
-A ticket that is not `Status: resolved` means that the burst is not finished. Name each one and ask
+A ticket that is not `Status: resolved`, and that `## Out of scope` does not link, means that the
+burst is not finished. Name each one and ask
 the user: land now, or wait. When the user says land now, each open ticket becomes a `Qn` (Step 5).
 
 ## Step 2: Read
@@ -34,10 +35,13 @@ Read all of these before you write:
   `## Not yet specified`, `## Out of scope`.
 - Each ticket in `.scratch/<effort>/issues/NN-<slug>.md`: its `Type:` line (`research`,
   `prototype`, `grilling` or `task`), its `Status:` line, its `Blocked by:` line and its `## Answer`.
-- Each ADR in `docs/adr/` (`NNNN-slug.md`). The `domain-modeling` skill writes an ADR only for a
+- Each ADR in `docs/adr/` (`NNNN-slug.md`), and in `<context>/docs/adr/` of each context that
+  `GLOSSARY-MAP.md` lists, when it exists. The `domain-modeling` skill writes an ADR only for a
   trade-off that is hard to reverse and surprising.
-- `docs/curator/DECISIONS.md`: the next `Dn`, the ADRs that a `Dn` links already, and each `Dn` that
-  an answer reverses.
+- `docs/curator/DECISIONS.md`: the next `Dn`, the ADRs that a `Dn` links already, each `Dn` that
+  an answer reverses, and the `soft:` `Dn` rows that the map touches (the same topic or the same
+  capability dimension). Show each of these `soft:` rows to the user before Step 3, and ask:
+  still true? A "no" is a reversal, and a reversal stays a new `Dn` (Step 3).
 - `docs/curator/QUESTIONS.md`: the `· open` entries.
 - `docs/curator/BACKLOG.md`: the next `Bn`, `## Vision`, `## Now` and `## Next`.
 - `docs/curator/PRODUCT.md` and `docs/curator/TECH.md`.
@@ -46,8 +50,8 @@ Read all of these before you write:
 
 **The ADR signal sets the marker.** You never guess `hard:` or `soft:`.
 
-1. **An ADR in `docs/adr/` that no `Dn` links yet** lands as its own `hard:` `Dn`. Its refs link
-   the ADR. The ADR stays in `docs/adr/`. Do not edit it.
+1. **An ADR in `docs/adr/` (or a `<context>/docs/adr/`) that no `Dn` links yet** lands as its own
+   `hard:` `Dn`. Its refs link the ADR. The ADR stays where it is. Do not edit it.
 2. **A ticket answer that records a choice, and that no such ADR covers,** lands as a `soft:` `Dn`.
    An answer that an ADR covers gets no second `Dn`: cite the ADR's `Dn`.
 3. A `task` answer that records only what was done (a URL, a count, where a key is) is not a choice.
@@ -66,10 +70,13 @@ reversed `Dn` and each changed dimension back to `curate` (`Reversed:`), so that
 
 ## Step 4: Out of scope
 
-Each line of `## Out of scope` is a non-goal. Write one line for it in `## Deliberately not` of
-`PRODUCT.md` with its `Dn`, by `<plugin>/references/product.md`. The `Dn` is `soft:` unless an ADR
-covers it. When the line is out of scope only for this burst, and not for the product, ask the user
-before you write it.
+A line of `## Out of scope` says that the burst ruled it out of this effort. It is not always a
+product non-goal. For each line, ask the user which it is:
+
+- **A product non-goal.** Write one line in `## Deliberately not` of `PRODUCT.md` with its `Dn`, by
+  `<plugin>/references/product.md`. The `Dn` is `soft:` unless an ADR covers it.
+- **Out of this effort only.** A row in `## Later` of `BACKLOG.md` (the next `Bn`, with the `map:`
+  ref), or nothing. The user chooses.
 
 ## Step 5: Fog and questions
 
@@ -87,8 +94,6 @@ holds a pointer to it. For each `research/*` branch that a ticket points to:
 1. Look for the branch locally, then on the remote.
 2. Copy the note into `docs/curator/research/<yyyy-mm-dd>-<topic>.md` with `git show
    <branch>:<path>`. Do not merge the branch and do not delete it.
-3. When a row of the cut (Step 7) rests on the note, make `For: B<n>` its first line. The
-   `direction` procedure finds a note by that line.
 
 When the branch is missing, copy nothing. Name the branch in the summary as missing, and keep the
 ticket's pointer in the refs of its `Dn`.
@@ -111,7 +116,8 @@ row is one run. The rules:
 
 Each row gets the next `Bn`. Its refs are: `map: docs/curator/maps/<effort>/`, the `Dn` ids that it
 rests on, its research notes, and `after B<n>` for each row that must ship first. Do not put a file
-path or code in the row text.
+path or code in the row text. When a row rests on a research note (Step 6), make `For: B<n>` the
+first line of the note. The `direction` procedure finds a note by that line.
 
 Show the cut to the user as a numbered list: the row, its `after` lines, and what it delivers. Ask
 if the size is right, if each `after` line is real, and if a row must be merged or split. Change the
@@ -147,7 +153,7 @@ Wrote: <files>
 Markers: <one line per new Dn: "D<n> hard: <ADR path>" or "D<n> soft: <ticket>">
 Reversed: <the Dn ids reversed and the dimensions changed, or "none">
 Missing: <research branches not found, or "none">
-Summary: <the rows of the cut, the Qn ids opened and closed, the Deliberately not lines>
+Summary: <the rows of the cut, the Qn ids opened and closed, the Deliberately not lines, the Later rows from out of scope>
 Deviations/Warnings: <or "none">
 ```
 

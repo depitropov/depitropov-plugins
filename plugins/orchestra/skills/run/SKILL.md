@@ -57,7 +57,7 @@ the run is open. Tell the user both once, when the run starts. Every path in the
   1. **Set up on the default branch now.** Check that the checkout is on the branch that `base`
      names (without `origin/`), that it is clean, and that it is not behind `base`. If not, say what
      is wrong and stop. Then invoke the skill `skill` in this session, in the checkout, with no
-     inputs. It interviews the user and commits on that branch. Tell the user to push, then to start
+     inputs. It records the present, may ask about it, and commits on that branch. Tell the user to push, then to start
      the run again.
   2. **Set up on its own branch.** Run `node <orchestra>/bin/drive.js --setup`. It prints an
      `inline` action on a new branch `curator/setup`. Act on it as below.

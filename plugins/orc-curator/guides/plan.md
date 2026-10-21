@@ -14,4 +14,4 @@ Rules for the plan stage and the plan-check stage when the project has `docs/cur
 
 ## Permitted actions
 
-Read the files under `docs/curator/`. Do not change any file under `docs/curator/`; the Curator updates them at the end of the run. Do not ask the user.
+Read the files under `docs/curator/`. Do not change any file under `docs/curator/`, and do not change `GLOSSARY.md`; the Curator updates them at the end of the run. Do not ask the user.

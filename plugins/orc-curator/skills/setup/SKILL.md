@@ -53,7 +53,9 @@ A project **has code** when it has source files outside `docs/`. Ignore configur
      first. Ask one at a time, only what the code cannot show:
      what it is, who it is for, why it exists, what it deliberately is not.
      Write each answer to its section of `PRODUCT.md` as true today. When the user defers a
-     question, leave that section empty. Do not invent a row, and do not write a `Qn`.
+     question, leave that section empty. Do not invent a row, and do not write a `Qn`. Write a
+     non-goal that the user names in `## Deliberately not` without a `Dn`: `curate` or a burst
+     records the why later. A want for the future is not the present: keep it for the nudge.
 
 ## Step 5: Commit and the flag
 

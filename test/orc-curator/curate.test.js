@@ -138,3 +138,47 @@ test('a landing that ends blocked or needs-input leaves nothing behind: discard,
   assert.match(step7, /do not run the sweep/i);
   assert.match(step7, /do not commit/i);
 });
+
+test('curate may write and commit the glossary, and commits the ADRs that a new Dn links at a landing (S79 final review)', () => {
+  const permitted = text.split('## Permitted actions')[1];
+  assert.match(permitted, /GLOSSARY\.md/);
+  assert.match(permitted, /GLOSSARY-MAP\.md/);
+  assert.match(permitted, /docs\/adr\//);
+  const step11 = text.split('## Step 11')[1].split('## Step 12')[0];
+  assert.match(step11, /GLOSSARY\.md/);
+  assert.match(step11, /docs\/adr\/[^]{0,200}new `Dn` links/);
+  assert.match(step11, /<context>\/docs\/adr\//);
+});
+
+test('curate stops on uncommitted docs before it writes, and a discard touches only its own edits (S79 final review)', () => {
+  const step2 = text.split('## Step 2')[1].split('## Step 3')[0];
+  assert.match(step2, /uncommitted changes[^]{0,300}(stop|ask the user)/i);
+  assert.match(step2, /commit them/i);
+  assert.match(step2, /reconcile/);
+  for (const s of [text.split('## Step 7')[1].split('## Step 8')[0], text.split('## Step 12')[1].split('## Permitted')[0]]) {
+    assert.match(s, /discard[^]{0,200}your own edits|discard[^]{0,200}own edits/i);
+    assert.match(s, /GLOSSARY\.md/);
+  }
+});
+
+test('a map or a change in words shows the soft: Dn rows it touches and asks "still true?" (S79 final review)', () => {
+  const step8 = text.split('## Step 8')[1].split('## Step 9')[0];
+  assert.match(step8, /`soft:` `Dn`[^]{0,300}still true\?/);
+  const step2 = landing.split('## Step 2')[1].split('## Step 3')[0];
+  assert.match(step2, /`soft:` `Dn`[^]{0,300}still true\?/);
+  assert.match(landing, /reversal is a new `Dn`|reversal stays a new `Dn`/i);
+});
+
+test('landing asks the user for each out-of-scope line: a non-goal, a Later row, or nothing (S79 final review)', () => {
+  const step4 = landing.split('## Step 4')[1].split('## Step 5')[0];
+  assert.match(step4, /for each line[^]{0,200}ask the user/i);
+  assert.match(step4, /non-goal[^]{0,200}Deliberately not[^]{0,80}`Dn`/);
+  assert.match(step4, /`## Later`[^]{0,120}or nothing/);
+  assert.doesNotMatch(step4, /^Each line of `## Out of scope` is a non-goal/m);
+});
+
+test('a known decision in words closes the open Qn that it settles (S79 final review)', () => {
+  const known = text.split('**known: a decision or dimension change.**')[1].split('- **unknown.**')[0];
+  assert.match(known, /`· open` `Qn`[^]{0,200}`· answered → Dn`/);
+  assert.match(known, /never delete/i);
+});

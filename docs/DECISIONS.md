@@ -435,7 +435,7 @@ wording change needs no entry.
   whole product, so wayfinder does not become a master plan. Architecture style and module boundaries
   are decided in the kick-off burst; a one-way call is committed when the evidence exists, and nothing
   is designed ahead for rows that are not built. One backlog row is one tracer bullet and one run.
-  `QUESTIONS.md` is the user's list; curate closes entries after a run and at landing. The guides of every slot plugin (orc-curator and orc-java-stack) move to `guides/*.md`; the stage and gate skills of the workflow and the Stack Skills stay skills for now.
+  `QUESTIONS.md` is the user's list; curate closes entries after a run, at landing and on a known change in words. At a landing and on a change in words, curate shows the `soft:` rows that the map or the change touches and asks "still true?" (a "no" is a new `Dn`); wayfinder never reads `DECISIONS.md`, so this is where the `soft:` rows are challenged. curate commits the burst's `GLOSSARY.md` changes and the ADRs that a new `Dn` links. It stops on uncommitted docs before it writes, so that a discard never takes the user's own edits. A wayfinder `## Out of scope` line means out of this effort, so the user chooses: a non-goal, a `## Later` row, or nothing. The guides of every slot plugin (orc-curator and orc-java-stack) move to `guides/*.md`; the stage and gate skills of the workflow and the Stack Skills stay skills for now.
 - **Cost and risk:** The exploring discipline of `shape-product` (four directions, comparable
   products, rejected directions recorded) and of `shape-tech` (the capability dimensions and what each
   option closes off) is gone; bursts rely on wayfinder's generic `grilling`. A one-way decision for
