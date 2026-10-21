@@ -19,7 +19,7 @@ visible, and makes each drop a decision.
 | java-stack | `~/Projects/claude-code-plugins/plugins/java-stack` | Stack knowledge (orc-java-stack) |
 | minions | `~/Projects-other/claude-minions` | Project rails (the Curator, later phase) |
 | sc-agent-plugins | `~/Projects/sc-agent-plugins` | Multi-harness delivery (packaging rules) |
-| ai-marketplace-mentorano | `~/Projects-other/ai-marketplace-mentorano/plugins/clean-code` (MIT) | Clean code (the workflow gate, orc-ts-stack, the standalone `clean-code`) |
+| ai-marketplace-mentorano | `~/Projects-other/ai-marketplace-mentorano/plugins/clean-code` (MIT) | Clean code (the global gate in `orc-global-gates` (S80), orc-ts-stack, the standalone `clean-code`) |
 
 ## Steps for every port
 
@@ -1525,7 +1525,7 @@ Source: `~/Projects-other/ai-marketplace-mentorano/plugins/clean-code`, version 
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Purpose: rules plus measurement, before and after | `plugins/clean-code/README.md`; the clean-code gate (Task 4) | ported | yes |
+| Purpose: rules plus measurement, before and after | `plugins/clean-code/README.md`; the global gate in `orc-global-gates` (S80) | ported | yes |
 | Install lines | `plugins/clean-code/README.md`, pointed at this marketplace | ported (changed) | yes |
 | Skills table, scripts usage, thresholds and their sources | `plugins/clean-code/README.md` | ported (copy) | yes |
 | `boundaries.py` measures | `plugins/clean-code/README.md` only | dropped from orchestra (S75: Python and FastAPI only) | no |

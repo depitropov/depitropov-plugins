@@ -134,7 +134,7 @@ key has a `type` (`string`, `number` or `boolean`) and a `default` of that type 
 
 1. Finds the plugins from the `<plugin>:manifest` skills in its skill list. It asks the user when
    it finds none (S70).
-2. Asks which plugin fills each slot. The `curator` slot is optional (S76).
+2. Asks which plugin fills each slot. The `curator` and `global-gates` slots are optional (S76, S80).
 3. Writes `.orchestra/config.json` with only `plugin` per section, and adds the three `.gitignore`
    lines.
 4. Runs `resolve.js`, which resolves the plugins and runs `orchestra check --project`. Shows the
