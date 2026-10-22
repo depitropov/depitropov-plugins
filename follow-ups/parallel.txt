@@ -1,0 +1,79 @@
+Parallel gates and reviewers
+============================
+
+Question
+--------
+Is it safe to run some gates or reviewers in parallel? Can we assume that all conventions
+gates are safe for this, or do we add a `concurrent` flag to the gates that can run in parallel?
+
+Short answer
+------------
+No. It is not safe to assume it. A `concurrent` flag is the right shape, but no gate today
+can set it honestly. The real speed-up needs a split: parallel read-only review, then serial
+fixes.
+
+Why parallel gates break today
+------------------------------
+An agent gate does not only review. It edits the code, runs the tests and commits
+(plugins/orc-java-stack/skills/review-logging/SKILL.md:31 and :57). All gates of a run work
+in the same worktree. If two gates run at the same time:
+
+- They edit the same files. The `comments`, `logging` and `layout` gates all run in the
+  `finish` phase and all select `**/*.java`. `layout` changes empty lines across the whole
+  file, so its edits overlap with the other two.
+- Their test runs see the half-done edits of the other gate. A red test can come from the
+  wrong gate, and the gate then tries to fix code it did not touch.
+- Their commits race. Git takes a lock on `.git/index.lock`. Only one commit can hold it,
+  so concurrent commits fail or mix their changes.
+- The same is true in `implementation-check`: `plan-conformance` and `logic-review` both
+  have `always: true` and both fix code.
+
+There is also a decision on record. S21 (docs/TENSIONS.md:40) says the reviewers run one at a
+time, and each one fixes and commits before the next starts. docs/DESIGN.md:464 lists
+parallel gates as out of scope. A change reopens S21 and needs a docs/DECISIONS.md entry.
+
+What a `concurrent` flag would mean
+-----------------------------------
+The flag can only mean "this gate does not write to the worktree". No gate meets that today:
+
+- Every agent gate defaults to `fix: self` (plugins/orchestra/lib/gates.js:57).
+- The `spotless` tool gate rewrites files.
+- The build runs alone by design.
+
+So the flag alone gives zero speed-up now. It also lets a plugin author mark a gate as
+concurrent by mistake, and orchestra cannot check that claim.
+
+Options that work
+-----------------
+1. Parallel review, serial fix (recommended). Each gate runs read-only in parallel and writes
+   its findings to its notes. Then one fixer pass at a time applies the findings and commits.
+   This is safe by construction, so no flag is necessary. Cost: it changes the gate contract
+   and the triage flow (the sorting of findings into Decide, Patch, Evaluate and Noise). Also,
+   a fix can make another gate's finding stale.
+2. One worktree per gate, then cherry-pick in order. The S74 worktree code helps here. But
+   `layout`, `comments` and `logging` edit the same lines, so conflicts are likely. A conflict
+   needs a serial rerun, and that can cost more time than it saves.
+3. Parallel only for gates with disjoint files. Orchestra can check this from the `files`
+   globs. But almost all our gates overlap on `**/*.java`, so we get almost nothing.
+
+Other changes, for all options
+------------------------------
+- The protocol. Today runner.js returns one `dispatch` action at a time to the `run` skill.
+  Parallel gates need a "dispatch many" action.
+- The Decide stop. When one gate stops for a human, its sibling gates must stop or wait.
+- Codex runs at most 4 to 6 agents at once (docs/research/R4-subagent-nesting.md).
+- There is no data on how long the gates take. The research rule in CLAUDE.md asks for a
+  research note before a decision like this.
+
+Follow-ups
+----------
+- No gate is safe in parallel today (all edit, test and commit in one worktree).
+  -> Do not assume it, and do not add the flag alone.
+- S21 (reviewers run one at a time) is a recorded decision.
+  -> Reopen it with a DECISIONS.md entry and update its TENSIONS.md row.
+- The speed-up is not measured.
+  -> Time the gates of one past run; write docs/research/R9-parallel-gates.md.
+- The safe design is parallel read-only review, then serial fixes.
+  -> Confirm this direction before a plan is written.
+- A new gate field changes the plugin contract.
+  -> Update plugins/orchestra/lib/check.js and the writing-plugins skill in the same change.
