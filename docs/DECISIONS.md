@@ -463,3 +463,20 @@ wording change needs no entry.
 - **Decision:** As the S80 row in `docs/TENSIONS.md`. The slot is optional, its declaration holds `slot`, `config` and `gates`, and the provider order is workflow, global-gates, stack-skills. A gate name is unique across a project's slots.
 - **Cost and risk:** An existing project loses `clean-code` until it adds the new section. The Superpowers review must cover what `logic-review` covered. O7 (General Knowledge) stays open.
 - **Where it lives:** `plugins/orchestra/lib/{check,gates}.js`, `plugins/orchestra/skills/{writing-plugins,init}/SKILL.md`, the tests in `test/orchestra/`, and the plugin `plugins/orc-global-gates/` (Task 2).
+
+---
+
+## S81: A workflow built on Superpowers, with SDD in the main session
+
+- **Date:** 2026-10-22
+- **Status:** decided
+- **Question:** Can a workflow use Superpowers' planning and coding skills directly, as a dependency, without translating them, and where does `subagent-driven-development` (SDD) run, given that it dispatches its own subagents?
+- **Options:**
+  1. `executing-plans` in a dispatched code stage. No orchestra change and portable, but no review per task.
+  2. SDD in a dispatched code stage. No orchestra change, but its subagents are two levels deep: it works on Claude Code and not on Codex (R4).
+  3. SDD in the main session, through an `inline` action that the workflow's `next.js` prints. Chosen: one level deep, as SDD intends, with a review per task. Costs a small protocol change and the driver's context.
+  4. An inline coder-dispatcher for `orc-standard-workflow` too. Rejected: its `next.js` already decides the chunks in code (S5) and resumes per chunk from result files (S32).
+- **Evidence:** `docs/research/R10-superpowers-workflow.md`; the conversation of 2026-10-22.
+- **Decision:** As the S81 row in `docs/TENSIONS.md`, with the design in `docs/superpowers/specs/2026-10-22-superpowers-workflow-design.md`. The dependency is bare; brainstorming stays outside the run; `plan` is dispatched and `code` is inline; the workflow has no gates of its own.
+- **Cost and risk:** The wrapper prose may not stop the Execution Handoff or `finishing-a-development-branch`; the first run shows it. An unpinned Superpowers release can break the wrappers. SDD's controller work stays in the driver's context. SDD rules instead of stopping, so fewer runs stop on `decide`. The SessionStart hook reaches every session of every user of the workflow.
+- **Where it lives:** `plugins/orchestra/lib/{protocol,check}.js`, `plugins/orchestra/bin/drive.js`, `plugins/orchestra/skills/{run,writing-plugins}/SKILL.md`, `docs/DESIGN.md`, the plugin `plugins/orc-superpowers-workflow/`, and the tests in `test/orchestra/` and `test/orc-superpowers-workflow/` (to be built).
