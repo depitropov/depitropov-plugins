@@ -21,9 +21,9 @@ All plugins live in this repo (S30).
 | `orchestra` | Orchestrator | `orchestra:init`, `orchestra:run` (resolution and driver), the gate runner, the fixer, the select step, `orchestra check`, the authoring skill `writing-plugins` |
 | `orc-standard-workflow` | Workflow | `next.js`, one skill per stage, its own gates, its `manifest` skill |
 | `orc-java-stack` | Stack Skills | `build`, its gates, fix guides, its code guide as a file, its `manifest` skill |
-| `orc-ts-stack` | Stack Skills | build, its fix guide, measure and its rules skill, its manifest skill |
+| `orc-ts-stack` | Stack Skills | build, its fix guide, its manifest skill |
 | `orc-global-gates` | Global gates | The gates every workflow gets, such as `clean-code`, and its `manifest` skill (S80). The slot is optional |
-| `clean-code` | Standalone | A copy of mentorano's clean-code for use outside orchestra (S75). Not a slot plugin |
+| `clean-code` | Standalone, and a dependency of `orc-global-gates` | Based on mentorano's clean-code (S75). The only copy of `measure.py` and the rules skills for Python, TypeScript and Java; the clean-code gate uses them (S85). Not a slot plugin |
 | `orc-curator` | Curator | `curate` (takes a diff, a map or a change in words), `setup` (records the present), the `spec`, `plan` and `code` guides as files in `guides/`, the procedures `direction`, `backlog` and `landing`, its templates and references, its `manifest` skill. It depends on `mattpocock-skills` (S79) |
 
 `orc-java-stack` here is the personal, generic rewrite. The ship.cars version lives in a second repo. The `orc-` prefix marks every plugin made to work with orchestra and keeps it apart from plugins with the same base name, such as the ship.cars `java-stack` (S56).
@@ -121,7 +121,7 @@ it and acts on it. The plugin never runs its own gates or orders them.
 }
 ```
 
-A Stack Skills declaration may also have `measure`: `{ "run": "<command>", "rules": "<skill>" }`. `{plugin}` and `{base}` (the run's base commit) expand in its `run` (S75). `guides` maps a role (`spec`, `plan` or `code`) to a file path inside the plugin (S76, S79).
+A Stack Skills declaration has no `measure` since S85: the clean-code gate measures with the `clean-code` plugin. `guides` maps a role (`spec`, `plan` or `code`) to a file path inside the plugin (S76, S79).
 
 A workflow's `orchestra.json` has `slot: workflow`, its `config` keys, its `roles` (the roles of
 its stages: `spec`, `plan`, `code`) and its own `gates` in the same format. It has no `build` and
@@ -218,7 +218,6 @@ and the round limit (S47).
 | selection | `files`, `grep`, `when`, `always` | When it runs |
 | `max_rounds` | a number | Fixer rounds for a tool gate. Default 2 |
 | `guide` | a skill name | The fix guide for `fix: fixer` |
-| `measure` | true or absent | An agent gate gets the stack's measure command and rules skill as inputs (S75) |
 
 An agent gate always fixes its own Patch findings, in one round, and never re-reviews its own fixes
 (S14). A tool gate passes or fails by its exit code.
@@ -341,7 +340,7 @@ The `orc-global-gates` plugin declares `clean-code`, not the workflow (S80):
 
 | Gate | Phase | Kind | Job |
 |---|---|---|---|
-| `clean-code` | `implementation-check` | agent | The shape of the changed code (the stack's measure) and the clean-code rules 1–13; warns when the stack has no measure (S75) |
+| `clean-code` | `implementation-check` | agent | The shape of the changed code (`measure.py` of the `clean-code` plugin), the clean-code rules 1–13 and the language rules of `clean-code`; warns when `clean-code` is not installed (S75, S85) |
 
 A generic bug hunter is a candidate for later.
 
@@ -406,7 +405,6 @@ orchestra writes it (S55). Steps are in run order. An empty phase shows "ok (no 
 | `build` | yes | The full build and tests, with coverage. Its fix guide and round limit (6.3). |
 | `gates` | no | The stack's gates (6.1). |
 | `guides` | no | `{ "<role>": "<path>" }`, a file in the plugin, for example `guides/code.md`: short rules for the stages of one role, 5–15 per area (R3, S76, S79). |
-| `measure` | no | The shape measurement and the stack's clean-code rules for a gate that asks for them, in any slot (S75, S80). |
 | `manifest` skill | yes | Resolution (5.2). |
 
 The stack plugin declares what and where. It never declares an order or a loop. Every gate skill
@@ -451,9 +449,8 @@ only and need no change in the workflow.
 ### 10.1 `orc-ts-stack`
 
 Empty at the start (S75): `build` is `npm ci && npm test` with the fix guide `fix-build`; no gates,
-no guides. Its `measure` runs mentorano's `measure.py` (copied to `scripts/`) against `{base}`, and
-its `rules` skill `clean-code-typescript` holds the TypeScript and React rules. The measure needs
-Python 3.11 or later and the project's own `typescript@5`.
+no guides. The measure and the TypeScript rules moved to the `clean-code` plugin (S85). The measure
+needs Python 3.11 or later and the project's own `typescript@5`.
 
 ## 11. Packaging
 
@@ -479,7 +476,7 @@ plugins/
     skills/{manifest,spec,plan,plan-check,code,logic-review}/SKILL.md
     bin/next.js
   orc-global-gates/
-    orchestra.json
+    orchestra.json            (plugin.json: dependencies clean-code)
     skills/{manifest,clean-code}/SKILL.md
   orc-java-stack/
     orchestra.json
@@ -487,9 +484,10 @@ plugins/
     skills/{manifest,fix-build,<one per gate>,<one fix guide per tool gate>}/SKILL.md
   orc-ts-stack/
     orchestra.json
-    scripts/{measure.py,languages.py,shape.py,compare.py,revisions.py,measure-ts.mjs}
-    skills/{manifest,fix-build,clean-code-typescript}/SKILL.md
-  clean-code/            standalone copy of mentorano's clean-code
+    skills/{manifest,fix-build}/SKILL.md
+  clean-code/            the measure and the clean-code rules; standalone, and used by orc-global-gates (S85)
+    skills/clean-code/{SKILL.md,measure.py,measure-ts.mjs,measure-java.java,…}
+    skills/{manifest,clean-code-python,clean-code-typescript,clean-code-java,…}/SKILL.md
 scripts/gen-manifests.js
 .claude-plugin/marketplace.json
 .agents/plugins/marketplace.json

@@ -9,7 +9,7 @@ A plugin fills one slot: `workflow`, `stack-skills`, `curator` or `global-gates`
 and runs it. The plugin never runs or orders its own gates. This page is the reference. orchestra
 check is the guarantee: run it when you finish (last section).
 
-A `global-gates` plugin holds the gates that every workflow gets. Such a gate reads only the inputs every workflow gives (`spec`, `base`, `notes`, `decisions`, and the measure when it asks for it), never a workflow's own files such as its plan. A gate that reads them belongs in the workflow.
+A `global-gates` plugin holds the gates that every workflow gets. Such a gate reads only the inputs every workflow gives (`spec`, `base`, `notes`, `decisions`, and its plugin's `config` values), never a workflow's own files such as its plan. A gate that reads them belongs in the workflow. A gate may use another plugin through that plugin's skills when its `plugin.json` lists it under `dependencies`: it invokes the other plugin's `manifest` skill to find its folder. orchestra does not resolve it. `orc-global-gates` uses `clean-code` this way.
 
 `<orchestra>` is the folder two levels above this skill's folder.
 
@@ -27,10 +27,9 @@ A `global-gates` plugin holds the gates that every workflow gets. Such a gate re
 | Key | Slot | Meaning |
 |---|---|---|
 | `slot` | all | `workflow`, `stack-skills`, `curator` or `global-gates`. |
-| `config` | all | Keys a project may set in its config section. Each is `{ "type": …, "default": … }`, with type `string`, `number` or `boolean`, and a default of that type. |
+| `config` | all | Keys a project may set in its config section. Each is `{ "type": …, "default": … }`, with type `string`, `number` or `boolean`, and a default of that type. Each `agent` gate of the plugin gets every value as the input `config.<key>`. |
 | `gates` | `workflow`, `global-gates`, `stack-skills` | The checks after the code. See "A gate". |
 | `build` | `stack-skills`, required | `run`: the full build and the tests. `guide`: its fix guide skill. `max_rounds`: fixer rounds, default 2. |
-| `measure` | `stack-skills` | The shape measurement for a gate that asks for it. `run`: a command that measures the changed code against `{base}`, the run's base commit, and prints its verdict. `rules`: optional, a skill with the stack's clean-code rules. A stack with no `measure` gives the gate no measurement. |
 | `guides` | `stack-skills`, `curator` | `{ "<role>": "<path>" }`: a guide, a path to a guide file inside the plugin (for example `guides/code.md`: no frontmatter, short write-time rules), for the stages of one role. The roles are `spec`, `plan` and `code`. orchestra tells the stage to read the guides of its role. A project turns one off with `disable`. |
 | `curate` | `curator`, required | The skill that brings the project's direction docs up to date at the end of a run. orchestra runs it in the main session, not in a subagent, when the workflow is done. |
 | `setup` | `curator`, required | `skill`: the skill that sets the Curator up in a project; it may interview the user. `done`: a file path relative to the project root. The skill writes this file as its last step. orchestra checks the file on the default branch when a run starts. When it is missing, no task branch is made, and the user chooses to set up first or to go on without it. |
@@ -38,7 +37,6 @@ A `global-gates` plugin holds the gates that every workflow gets. Such a gate re
 
 In a command, `{plugin}` is the plugin's folder. In a gate's `run` or `grep`, `{config.<key>}` is
 a config value; the key must be declared under `config`. The `build` command takes only `{plugin}`.
-The `measure` command takes only `{plugin}` and `{base}`.
 
 ## A gate
 
@@ -56,7 +54,6 @@ The `measure` command takes only `{plugin}` and `{base}`.
 | `grep` | A regular expression on the content of the changed files. |
 | `when` | A rule in words, judged on the diff. |
 | `always` | `true`: the gate runs on every run. |
-| `measure` | `true`: an `agent` gate gets the stack's `measure` command and its `rules` skill as the inputs `measure` and `rules`. |
 
 A gate needs at least one of `files`, `grep`, `when` or `always`. Inside a phase, orchestra orders by kind, then workflow gates, then global gates, then stack gates;
 you do not order them. A gate name is unique across the slots of a project; orchestra check fails on a name two slots declare.

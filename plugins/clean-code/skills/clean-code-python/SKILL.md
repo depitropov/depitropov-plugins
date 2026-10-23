@@ -5,9 +5,11 @@ description: Use when editing .py files or when Python, FastAPI, SQLAlchemy, Pyd
 
 # Clean Code — Python
 
-Companion to the `clean-code` skill. That skill owns the process (measure
-before, write, measure after, verify, three review passes, report) and
-`architecture.md` with the four architecture phases. This one says what the
+Companion to the `clean-code` skill, and read by the clean-code gate of
+orchestra. Whichever loaded this skill owns the process; the `clean-code`
+skill's is measure before, write, measure after, verify, three review
+passes, report, with `architecture.md` and its four architecture phases.
+This one says what the
 rules look like in Python and which smell lives in which layer of a FastAPI
 service. Rules that ruff or mypy enforce are not repeated here; a rule that
 borders one names the tool and stops.

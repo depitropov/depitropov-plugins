@@ -1,7 +1,7 @@
 {
   "slot": "global-gates",
-  "config": {},
+  "config": { "legacy": { "type": "boolean", "default": false } },
   "gates": [
-    { "name": "clean-code", "phase": "implementation-check", "kind": "agent", "skill": "clean-code", "always": true, "measure": true }
+    { "name": "clean-code", "phase": "implementation-check", "kind": "agent", "skill": "clean-code", "always": true }
   ]
 }

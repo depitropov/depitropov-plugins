@@ -2,7 +2,7 @@
 
 A copy of mentorano's clean-code 0.6.0 (`mentorano/ai-marketplace-mentorano`, MIT, see `LICENSE`).
 
-Rules and measurement for clean code in Python and TypeScript, packaged as
+Rules and measurement for clean code in Python, TypeScript and Java, packaged as
 five Claude Code skills and two scripts: one for the shape of functions and
 files, one for the import boundaries between modules.
 
@@ -18,6 +18,14 @@ module boundary the wrong way, before it edits and after, and the
 after-numbers may not be worse. That is the floor under the Boy Scout Rule,
 which asks for cleaner, not merely no worse.
 
+## In orchestra
+
+The orchestra gate `clean-code` in `orc-global-gates` depends on this plugin
+(S85). It finds this plugin's folder through the `manifest` skill, runs
+`measure.py` from here, and loads `clean-code-python`, `clean-code-typescript`
+or `clean-code-java` by the extension of the changed files. This is the only
+copy of the scripts and the rules.
+
 ## Install
 
 ```bash
@@ -32,6 +40,7 @@ which asks for cleaner, not merely no worse.
 | `clean-code` | any source edit or review, and a code-structure or Clean Architecture dependency audit | the process, the audit mode, the language-agnostic rules, three review passes, `architecture.md`, `rationalizations.md`, `measure.py`, `boundaries.py` |
 | `architecture-fundamentals` | system architecture decisions or reviews, service/data boundaries, style selection and operational trade-offs | prioritized characteristics, coupling and data ownership, contextual style comparison, risks, ADRs and fitness functions; references based on Richards and Ford's second edition |
 | `clean-code-python` | `.py` files, FastAPI, SQLAlchemy, Pydantic, pytest | Python shape of the rules, FastAPI layer defaults, per-layer smells |
+| `clean-code-java` | `.java`, Spring Boot, JPA, Maven, JUnit | Java shape of the rules, Spring layer defaults, per-layer smells; not part of the mentorano copy |
 | `clean-code-typescript` | `.ts` / `.tsx`, React, hooks, Vite, vitest | TypeScript shape of the rules, React layer defaults, per-layer smells |
 | `clean-code-logging` | fix, audit or standardize application logs | Python JSON/GCP, readable browser console output, short fixed messages, named trailing values, stability ordering, privacy and runtime checks |
 
@@ -100,12 +109,20 @@ python3 "${CLAUDE_PLUGIN_ROOT}/skills/clean-code/measure.py" backend/app --all
 # the changed files against the merge-base with main, one verdict per function and file
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/clean-code/measure.py" backend/app frontend/src --changed --base main --compare
 
+# the same on legacy code: growth of what was already over is no finding
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/clean-code/measure.py" backend/app frontend/src --changed --base main --compare --legacy
+
 # the same, from the committed files only (another session's uncommitted work stays out)
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/clean-code/measure.py" backend/app frontend/src --changed --base main --at HEAD --compare
 ```
 
 From a checkout of this marketplace, the same script is at
 `plugins/clean-code/skills/clean-code/measure.py`.
+
+`--legacy`, with `--compare`, removes the `grew` verdict: a function or
+file already over a threshold may grow without a finding. A function's
+`grew` row shows as `still-over`, a file's drops out. The blocking
+verdicts stay.
 
 `--at <ref>` reads the files from a git ref instead of the working tree;
 `--compare [<ref>]` reads them a second time at `<ref>`, the merge-base
@@ -122,11 +139,18 @@ project's own `typescript` package, found in the nearest `node_modules`
 above each file; if it is missing the script prints the `npm ci` command
 and exits 2. TypeScript 7 is the native compiler and has no JavaScript API
 to parse with, so a 7.x package is a broken run too, with a message that
-names the version and asks for `typescript@5`. It never skips a language
-silently.
+names the version and asks for `typescript@5`. Java goes through
+`measure-java.java`, which the JDK on `PATH` runs from source: it parses
+with the JDK's own `javac` tree API, the parser `crap4java` uses, and needs
+a JDK 17 or newer; without `java` the script exits 2. A method or
+constructor with a body is a function (a constructor is `<Class>.<init>`),
+and so is a lambda that initializes a field; a lambda inside a method
+belongs to that method; annotations do not count toward the length. It
+never skips a language silently.
 
 | Measure | Default | Flag | Source |
 |---|---|---|---|
+| lines per test function | 50 | `--max-test-lines` | This plugin's choice: a test builds its data and states its expectations in line. A test is a function in a file named like a test (`test_*.py`, `*.test.ts`, `*Test.java`, …) or under `__tests__/` or `src/test/` |
 | lines per function | 20 | `--max-lines` | Clean Code ch. 3, "Small!": functions "should hardly ever be 20 lines long"; the Sparkle functions he holds up were two to four |
 | cyclomatic complexity | 10 | `--max-cc` | McCabe 1976 and NIST SP 500-235 §2.5; Clean Code sets no number. Also the floor under the CRAP ≤ 10 gate every `swarm-forge` pack runs |
 | parameters | 3 | `--max-params` | Clean Code ch. 3, "Function Arguments": more than three "requires very special justification" |
@@ -197,7 +221,8 @@ edges that point the wrong way. One package per run, with an `__init__.py`
 in the root and in every directory under it: without the top one the files
 land under a lower root, no import names it, and the script says so on
 stderr next to a SUMMARY of zeros. Python only in this version; a
-TypeScript file is a broken run that names `dependency-cruiser`.
+TypeScript file is a broken run that names `dependency-cruiser`, a Java file
+one that names ArchUnit.
 
 | Measure | Rule | Definition | Source |
 |---|---|---|---|

@@ -229,7 +229,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--line);
 <div class="shell">
 <nav class="rail" aria-label="Guide sections">
   <div class="brand">Orchestra</div>
-  <div class="ver">Field guide · plugins 0.19.0 · decisions to S80</div>
+  <div class="ver">Field guide · plugins 0.21.0 · decisions to S85</div>
   <ol>
     <li><a class="lvl" href="#l1"><span class="n">1</span> What it does</a>
       <ul><li><a href="#delivers">What it delivers</a></li><li><a href="#what">The result</a></li><li><a href="#why">Why use it</a></li><li><a href="#philosophy">Many gates, one workflow</a></li><li><a href="#explore">Explore a run</a></li></ul></li>
@@ -530,7 +530,7 @@ Evaluate
 
     <text x="524" y="342" text-anchor="middle" class="sm m">different gates, brought by the stack and tuned by the project</text>
   </svg></div>
-  <figcaption>Blue gates come from orchestra, green from the workflow, white from the global gates, amber from the stack. The left part never changes. The right part is whatever the plugins in your slots declare. The TypeScript gates here are an example of what the slot allows: the real <code>orc-ts-stack</code> brings no gates yet, only the build, a measure and clean-code rules.</figcaption>
+  <figcaption>Blue gates come from orchestra, green from the workflow, white from the global gates, amber from the stack. The left part never changes. The right part is whatever the plugins in your slots declare. The TypeScript gates here are an example of what the slot allows: the real <code>orc-ts-stack</code> brings no gates yet, only the build and its fix guide.</figcaption>
   </figure>
 
   <h4>Each level adds its own gates</h4>
@@ -897,9 +897,9 @@ orchestra run                                            # continue a stopped ru
   <div class="stack">
     <div class="layer orc"><div class="who">Orchestrator<small>orchestra</small></div><div>The engine: the entry, the loop, the checks, the report. You do not change it.</div></div>
     <div class="layer wf"><div class="who">Workflow<small>orc-standard-workflow</small></div><div>The steps of a run and their order, plus its own two gates: plan-conformance and logic-review. Works with any stack.</div></div>
-    <div class="layer"><div class="who">Global gates<small>orc-global-gates</small></div><div>Optional. The gates that every workflow gets: <code>clean-code</code> today. A global gate reads only what every workflow gives: the brief, the base commit, the notes folder, your answers and the stack's measure.</div></div>
-    <div class="layer st"><div class="who">Stack Skills<small>orc-java-stack</small></div><div>Java with Maven: the build, a code guide, fix guides, and six gates: ops, testing, comments, logging, layout and Spotless. It declares no <code>measure</code>.</div></div>
-    <div class="layer st"><div class="who">Stack Skills<small>orc-ts-stack</small></div><div>TypeScript: the build (<code>npm ci &amp;&amp; npm test</code>), a <code>measure</code> command and the clean-code-typescript rules. No gates yet. It needs Python 3.11 or newer and the project's <code>typescript</code> 5.</div></div>
+    <div class="layer"><div class="who">Global gates<small>orc-global-gates</small></div><div>Optional. The gates that every workflow gets: <code>clean-code</code> today. A global gate reads only what every workflow gives: the brief, the base commit, the notes folder, your answers and its own config. <code>clean-code</code> takes the measure and the language rules from the <code>clean-code</code> plugin, which it depends on (S85).</div></div>
+    <div class="layer st"><div class="who">Stack Skills<small>orc-java-stack</small></div><div>Java with Maven: the build, a code guide, fix guides, and six gates: ops, testing, comments, logging, layout and Spotless. Later: crap4java and mutate4java as tool gates.</div></div>
+    <div class="layer st"><div class="who">Stack Skills<small>orc-ts-stack</small></div><div>TypeScript: the build (<code>npm ci &amp;&amp; npm test</code>) and its fix guide. No gates yet.</div></div>
     <div class="layer pr"><div class="who">Project<small>.orchestra/config.json</small></div><div>Your choices: which plugins, which checks are off, how many fix rounds, your naming patterns.</div></div>
     <div class="layer pr later"><div class="who">Project rules<small>later</small></div><div>Rules for one project that override the stack, including its build.</div></div>
     <div class="layer pr"><div class="who">Curator<small>orc-curator</small></div><div>Optional. Keeps your backlog, direction and decisions in <code>docs/curator/</code>, and the glossary <code>GLOSSARY.md</code>, current. Its guide files tell each agent how to read them. It has three skills. <code>setup</code> records the present once. <code>curate</code> organizes every change: a run's diff, a burst's map, or a change in words. <code>manifest</code> tells orchestra where the plugin is. Exploring is <code>/wayfinder</code>, never the Curator.</div></div>
@@ -915,11 +915,14 @@ orchestra run                                            # continue a stopped ru
     "disable": ["guides/code.md"],            // turn off a gate by its name, a guide by its path
     "gates": { "spotless": { "max_rounds": 2 } }  // more fix rounds for one check
   },
-  "global-gates": { "plugin": "orc-global-gates" },  // optional: leave it out to run no clean-code
+  "global-gates": {                           // optional: leave it out to run no clean-code
+    "plugin": "orc-global-gates",
+    "legacy": true                            // legacy code: growth of what was already over is no finding (default false)
+  },
   "curator": { "plugin": "orc-curator" }      // optional: leave it out to run with no Curator
 }</code></pre>
   <p>The <code>global-gates</code> and <code>curator</code> sections are optional. Every section has the same <code>disable</code> key. It names a gate by its name, or a guide by its path inside the plugin. Before 0.19.0, a guide was a skill and had a name: an old <code>"disable": ["code-guide"]</code> now fails <code>orchestra check</code>. Write <code>"guides/code.md"</code> instead.</p>
-  <p>A stack can also offer its own keys, for example a pattern that marks your entity classes. You set them in the same section. Every key gets its default from the plugin, so you set only what you change. At the start of every run, <code>orchestra check</code> tests the whole config against the plugins: a typo in a key, an unknown gate in <code>disable</code> or a wrong type stops the run before any agent starts, with one line per problem and its fix.</p>
+  <p>A stack can also offer its own keys, for example a pattern that marks your entity classes. You set them in the same section. Every key gets its default from the plugin, so you set only what you change. orchestra gives each value to the plugin's agent gates as the input <code>config.&lt;key&gt;</code>. The global gates offer one key, <code>legacy</code>, described under <a href="#reviewers">The review gates</a>. At the start of every run, <code>orchestra check</code> tests the whole config against the plugins: a typo in a key, an unknown gate in <code>disable</code> or a wrong type stops the run before any agent starts, with one line per problem and its fix.</p>
 </section>
 
 <!-- ============================== LEVEL 3 ============================== -->
@@ -1011,7 +1014,6 @@ orchestra run                                            # continue a stopped ru
       <tr><td>fix</td><td>self, fixer, none</td><td>A formatter fixes itself; the fixer agent fixes a tool's findings; or report only. A reviewer always fixes its own findings, once.</td></tr>
       <tr><td>selection</td><td>files, grep, when, always</td><td>When it runs: a file pattern, a text pattern in the changed files, a rule in words, or always.</td></tr>
       <tr><td>max_rounds</td><td>a number, default 2</td><td>How many fix rounds a tool gets.</td></tr>
-      <tr><td>measure</td><td>true</td><td>An agent gate gets the stack's measure command and clean-code rules as inputs (S75).</td></tr>
     </tbody>
   </table></div>
 
@@ -1094,7 +1096,10 @@ orchestra run                                            # continue a stopped ru
   </figure>
   <p><strong>plan-conformance</strong> checks that every task of the plan is done, every named test exists, a task done another way is declared as a deviation, and nothing falls outside the brief's scope. The plan sets the direction, not every line: an extra check or a helper inside a task is not a deviation (S67). It gives no verdict on correctness.</p>
   <p><strong>logic-review</strong> first writes down what each acceptance criterion requires and one likely wrong version of the code (the wrong rounding mode, <code>&lt;</code> for <code>&lt;=</code>, a missing null check). Only then does it read the code. Each test must fail on that wrong version. A test that would pass on wrong code is a finding. Then it hunts for bugs. Last, it reads <code>code.md</code>: a recorded choice that changes behaviour, such as a check that throws, needs its own test too.</p>
-  <p><strong>clean-code</strong> runs last of the three. It comes from <code>orc-global-gates</code>, so every workflow gets it, and a project without that plugin has no clean-code gate (S80). It reads the diff and the code, and the brief only for the scope. It never reads the plan. It also gets the stack's <code>measure</code> result and clean-code <code>rules</code> when the stack declares them. It checks thirteen rules: the language-agnostic clean-code rules, comments included, and three Clean Architecture rules. It fixes its Patch findings. The Java stack declares no measure, so the gate has no measurement there and adds an Evaluate warning to the report (S75).</p>
+  <p><strong>clean-code</strong> runs last of the three. It comes from <code>orc-global-gates</code>, so every workflow gets it, and a project without that plugin has no clean-code gate (S80). It reads the diff and the code, and the brief only for the scope. It never reads the plan. It checks thirteen rules: the language-agnostic clean-code rules, comments included, and three Clean Architecture rules. It fixes its Patch findings.</p>
+  <p>The measure and the language rules come from the <code>clean-code</code> plugin, the only copy of both (S85). <code>orc-global-gates</code> lists <code>clean-code</code> under <code>dependencies</code>, so Claude Code installs it with the gate. The gate finds its folder through the skill <code>clean-code:manifest</code> and runs <code>measure.py</code> against the base commit. The script reads Python, TypeScript and Java; for Java the JDK parses the code with its own compiler API (S83). The gate then loads the rules for each language of the changed files: <code>clean-code-python</code>, <code>clean-code-typescript</code> or <code>clean-code-java</code>. A stack declares nothing for clean code. Without <code>clean-code</code>, the gate has no measurement, adds an Evaluate warning to the report and reviews with its own thirteen rules. On a harness with no <code>dependencies</code>, you install <code>clean-code</code> by hand (<code>docs/harness-exceptions.md</code>).</p>
+  <p>The gate judges only what the change made worse. A function or file the task created that is over a threshold is a finding (<code>new-over</code>), and so is one that crossed a threshold it was under (<code>crossed</code>). Old code that the change did not make worse is not a finding. A function may have 20 lines, a test 50 (S84). The Boy Scout Rule applies to each function the task edited, in its body or its signature: the gate leaves it better in at least one measure when the step stays inside the task. A function in the same file that the task did not edit is not the gate's to clean (S82).</p>
+  <p><strong>Legacy code.</strong> Without the setting, a function that was over a threshold and grew is a finding (<code>grew</code>), for example a function with 10 parameters that gets an 11th. On legacy code these findings are noise. Set <code>"legacy": true</code> in the <code>global-gates</code> section of the project config, and <code>grew</code> is no finding. <code>new-over</code>, <code>crossed</code> and new suppressions still are. The same switch exists by hand: <code>measure.py --compare --legacy</code> in the clean-code plugin (S82).</p>
   <p>Why the split: the plan is the author's view of the code. A reviewer who reads it tends to check "did the code follow the plan" and to take over the plan's blind spots. Research shows that author framing makes AI reviewers miss bugs (<a href="#research">R5</a>).</p>
 
   <h3 id="triage">Triage: what happens to a finding</h3>
@@ -1294,6 +1299,7 @@ orchestra run                                            # continue a stopped ru
       <tr><td>S78</td><td>At <code>done</code>, orchestra copies the run folder to <code>tmp/runs/&lt;branch&gt;/</code> in your checkout before it removes the worktree. It stays git-ignored, and the logs stay for local debugging.</td><td>User decision, October 20: the sample run lost its logs.</td></tr>
       <tr><td>S79</td><td>Navigation and curation are two jobs. Navigation is <code>/wayfinder</code>, unchanged, in bursts that only you start; its map stays in <code>.scratch/</code>. <code>setup</code> records the present once and nudges to <code>/wayfinder</code>. <code>curate</code> is the one organizer and the only writer of decisions and questions, with three inputs: a diff, a map (a landing) and a change in words. At a landing, an ADR gives a <code>hard:</code> decision and a plain answer a <code>soft:</code> one. <code>direction</code>, <code>backlog</code> and <code>landing</code> are procedures, not skills. <code>shape-product</code>, <code>shape-tech</code> and <code>research</code> are removed. The glossary is <code>GLOSSARY.md</code> at the repo root. Guides are files, declared by path; <code>manifest</code> stays a skill. This changes S76.</td><td>User decision and R9: setup explored the future, and the open questions had no reader that drove them to closure.</td></tr>
       <tr><td>S80</td><td>Gates that every workflow gets live in a new optional slot, <code>global-gates</code>, filled by <code>orc-global-gates</code>. <code>clean-code</code> moves there from <code>orc-standard-workflow</code>. Provider order: workflow, global-gates, stack-skills. A gate name is unique across a project's slots. This changes S45 and S75.</td><td>User decision, October 21: a second workflow would need its own copy of <code>clean-code</code>.</td></tr>
+      <tr><td>S85</td><td>One copy of the measure and the language rules, in the <code>clean-code</code> plugin. The global clean-code gate depends on it and finds it through its <code>manifest</code> skill; stacks declare nothing for clean code, and orchestra drops its <code>measure</code> keys.</td><td>User decision.</td></tr>
     </tbody>
   </table></div>
   <p>Each real run on a sample project fed back into the design. The first runs led to clearer errors, a skip for repeated builds, the Evaluate list in the report, the assumptions list, the business-fact stop, and the rebuilt logic review.</p>
@@ -1441,7 +1447,7 @@ orchestra run                                            # continue a stopped ru
       "fix": "fixer", "guide": "fix-spotless" }
   ]
 }</code></pre>
-  <p>A stack may also declare <code>measure</code>: a <code>run</code> command that measures the changed code against <code>{base}</code>, the run's base commit, and an optional <code>rules</code> skill with the stack's clean-code rules. The command takes only <code>{plugin}</code> and <code>{base}</code>. A gate with <code>"measure": true</code> gets both as inputs. <code>orc-ts-stack</code> declares one; <code>orc-java-stack</code> does not.</p>
+  <p>Every <code>agent</code> gate gets each <code>config</code> value of its plugin as the input <code>config.&lt;key&gt;</code> (S82). Until S85 a stack could declare <code>measure</code>; now <code>orchestra check</code> rejects it, because the clean-code gate measures with the <code>clean-code</code> plugin.</p>
   <p>The build skips the format check only when the root <code>pom.xml</code> names the Spotless plugin, the same test the Spotless gate uses: the gate formats the code before the final build (S69).</p>
   <p>Guides are given by <strong>role</strong>. The roles are fixed by orchestra: <code>spec</code>, <code>plan</code> and <code>code</code>. A slot plugin declares <code>"guides": { "&lt;role&gt;": "&lt;path&gt;" }</code>, where the path names a file inside the plugin, such as <code>guides/code.md</code>. A guide is a file, not a skill (S79). For each dispatch, orchestra lists the absolute path of each guide for its role in the prompt, the Curator's first and then the Stack Skills'. The stage reads and follows each file. <code>manifest</code> stays a skill, because it is how orchestra finds a plugin's folder from its name alone.</p>
   <p>A workflow declares <code>"slot": "workflow"</code>, its <code>roles</code> (for example <code>["spec", "plan", "code"]</code>), its config keys and its own gates, and ships <code>bin/next.js</code>. <code>next.js</code> tags each dispatch with one of its roles. A dispatch with a role the workflow did not declare fails the run.</p>
@@ -1454,12 +1460,12 @@ orchestra run                                            # continue a stopped ru
   "guides": { "spec": "guides/spec.md", "plan": "guides/plan.md", "code": "guides/code.md" }
 }</code></pre>
   <p>The optional <code>curator</code> slot declares <code>curate</code> (a skill) and <code>setup</code>, which is <code>{ "skill": "…", "done": "docs/curator/.setup" }</code>, with <code>guides</code> as an option. <code>setup</code> never runs inside a run: a start with no <code>done</code> file on the default branch offers it, by hand or inline on its own branch. <code>curate</code> is skipped when the file is missing in the run. <code>curate</code> runs inline at <code>done</code>, in the run's worktree, and it is the only writer of the direction docs in a run. <code>orc-curator</code> has three skills: <code>setup</code>, <code>curate</code> and <code>manifest</code>. <code>direction</code>, <code>backlog</code> and <code>landing</code> are procedures in <code>procedures/</code>, which only <code>curate</code> follows, inline.</p>
-  <p>The optional <code>global-gates</code> slot declares <code>slot</code>, <code>config</code> and <code>gates</code>, and nothing else. A global gate reads only what every workflow gives: <code>spec</code>, <code>base</code>, <code>notes</code>, <code>decisions</code> and the measure. The real declaration of <code>orc-global-gates</code>:</p>
+  <p>The optional <code>global-gates</code> slot declares <code>slot</code>, <code>config</code> and <code>gates</code>, and nothing else. A global gate reads only what every workflow gives: <code>spec</code>, <code>base</code>, <code>notes</code>, <code>decisions</code> and its <code>config</code> values. It may use another plugin through that plugin's skills, when its <code>plugin.json</code> lists it under <code>dependencies</code>; orchestra does not resolve it. The real declaration of <code>orc-global-gates</code>:</p>
 <pre><code>{
   "slot": "global-gates",
   "config": {},
   "gates": [
-    { "name": "clean-code", "phase": "implementation-check", "kind": "agent", "skill": "clean-code", "always": true, "measure": true }
+    { "name": "clean-code", "phase": "implementation-check", "kind": "agent", "skill": "clean-code", "always": true }
   ]
 }</code></pre>
   <p><strong>Breaking changes in 0.19.0.</strong> A guide in <code>disable</code> is now named by its path: <code>"code-guide"</code> fails <code>orchestra check</code>, and <code>"guides/code.md"</code> works. <code>clean-code</code> is no longer a gate of <code>orc-standard-workflow</code>: add the <code>global-gates</code> section to keep it.</p>
@@ -1504,8 +1510,11 @@ orchestra run                                            # continue a stopped ru
       <tr><td>The run: start, resume, all workflow steps, the build, the fixer, the review gates, triage, the report</td><td><span class="pill built">built</span></td></tr>
       <tr><td>Java stack: build, code guide, build fix guide, Spotless fix guide</td><td><span class="pill built">built</span></td></tr>
       <tr><td>Java reviewers (ops, testing, comments, logging, layout, Spotless)</td><td><span class="pill built">built</span></td></tr>
-      <tr><td>The clean-code gate, the stack <code>measure</code> and the TypeScript stack <code>orc-ts-stack</code> (build, measure, rules)</td><td><span class="pill built">built</span></td></tr>
+      <tr><td>The clean-code gate and the TypeScript stack <code>orc-ts-stack</code> (build)</td><td><span class="pill built">built</span></td></tr>
       <tr><td>Gates of the TypeScript stack</td><td><span class="pill later">not built yet</span></td></tr>
+      <tr><td>Legacy mode of the clean-code gate: the project key <code>legacy</code>, <code>measure.py --legacy</code>, config values as agent gate inputs (S82)</td><td><span class="pill built">built</span></td></tr>
+      <tr><td>The Java measure (<code>measure-java.java</code>, the JDK's own parser) and the clean-code-java rules (S83)</td><td><span class="pill built">built</span></td></tr>
+      <tr><td>One copy of the measure and the rules in <code>clean-code</code>, used by the global gate through <code>dependencies</code> (S85)</td><td><span class="pill built">built</span></td></tr>
       <tr><td>Thresholds of the measure that a project can set</td><td><span class="pill later">not built yet</span></td></tr>
       <tr><td>Gates selected by a rule in words</td><td><span class="pill later">later</span></td></tr>
       <tr><td><code>orchestra check</code>, the <code>orchestra init</code> setup, the <code>writing-plugins</code> reference</td><td><span class="pill built">built</span></td></tr>
@@ -1546,7 +1555,7 @@ orchestra run                                            # continue a stopped ru
     <dt>Phase</dt><dd>implementation-check, conventions-check, finish: the three groups of gates.</dd>
     <dt>Gate</dt><dd>One check after the code: a tool (a command) or an agent (a reviewer).</dd>
     <dt>Build</dt><dd>The full build and tests. It runs first and last. Not a gate.</dd>
-    <dt>Measure</dt><dd>An optional declaration of the Stack Skills: a command that measures the shape of the changed code against the run's base commit, and a skill with the stack's clean-code rules. A gate that asks for it gets both as inputs.</dd>
+    <dt>Measure</dt><dd>The shape of the changed code against the run's base commit: <code>measure.py</code> of the <code>clean-code</code> plugin, for Python, TypeScript and Java. The clean-code gate runs it itself (S85).</dd>
     <dt>Fixer</dt><dd>The agent that fixes a failed tool, using the tool's fix guide.</dd>
     <dt>Guide</dt><dd>A file with short rules for one role, inside a slot plugin and declared by its path. Orchestra lists its absolute path in the prompt of each dispatch for that role.</dd>
     <dt>Triage</dt><dd>Sorting a finding into Decide, Patch, Evaluate or Noise.</dd>
@@ -1559,7 +1568,7 @@ orchestra run                                            # continue a stopped ru
 </section>
 
 <footer>
-  This guide matches plugin version 0.19.0 and decisions up to S80. The sources of truth are <code>docs/DESIGN.md</code>, <code>docs/TENSIONS.md</code>, <code>docs/DECISIONS.md</code>, <code>docs/CONTEXT.md</code> and the code in <code>plugins/</code>.
+  This guide matches plugin version 0.21.0 and decisions up to S85. The sources of truth are <code>docs/DESIGN.md</code>, <code>docs/TENSIONS.md</code>, <code>docs/DECISIONS.md</code>, <code>docs/CONTEXT.md</code> and the code in <code>plugins/</code>.
 </footer>
 </main>
 </div>

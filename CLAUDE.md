@@ -27,3 +27,8 @@ and the skill `plugins/orchestra/skills/writing-plugins/SKILL.md` in the same ch
 At the end of every change to `plugins/` or to the docs above, tell the user which sections of the
 guide the change makes out of date, and offer to update them. When you update it, also update the
 version and the last `S` number in its rail and its footer.
+
+**Shortcuts.** Sometimes we take a shortcut for now: a feature of one harness, a copy instead of a
+shared file, a manual step. Each shortcut must be explicit and permitted by the user; never take
+one silently. A shortcut that would not run on another harness gets a row in
+`docs/harness-exceptions.md`, in the same change, with who permitted it.

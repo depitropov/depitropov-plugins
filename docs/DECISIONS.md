@@ -480,3 +480,109 @@ wording change needs no entry.
 - **Decision:** As the S81 row in `docs/TENSIONS.md`, with the design in `docs/superpowers/specs/2026-10-22-superpowers-workflow-design.md`. The dependency is bare; brainstorming stays outside the run; `plan` is dispatched and `code` is inline; the workflow has no gates of its own.
 - **Cost and risk:** The wrapper prose may not stop the Execution Handoff or `finishing-a-development-branch`; the first run shows it. An unpinned Superpowers release can break the wrappers. SDD's controller work stays in the driver's context. SDD rules instead of stopping, so fewer runs stop on `decide`. The SessionStart hook reaches every session of every user of the workflow.
 - **Where it lives:** `plugins/orchestra/lib/{protocol,check}.js`, `plugins/orchestra/bin/drive.js`, `plugins/orchestra/skills/{run,writing-plugins}/SKILL.md`, `docs/DESIGN.md`, the plugin `plugins/orc-superpowers-workflow/`, and the tests in `test/orchestra/` and `test/orc-superpowers-workflow/` (to be built).
+
+## S82: clean-code on legacy code reports only what the change made worse
+
+- **Date:** 2026-10-22
+- **Status:** decided
+- **Question:** On legacy code, clean-code makes noise. A function with 10 parameters that gets an
+  11th gives a `grew` row and a required sentence in the report. The Boy Scout Rule pushes the agent
+  to clean any touched function, and the review passes can flag code the diff did not change. How do
+  we keep only the findings the change introduced?
+- **Options:**
+  1. Leave it. `grew` does not block, but it costs a sentence per legacy function and fills the report.
+  2. A threshold on growth (for example, report only growth of more than one). It adds a number that
+     nobody can justify, and it still reports.
+  3. A `--legacy` flag that turns `grew` into `still-over`. The blocking verdicts stay. The project
+     or the user turns it on.
+- **Evidence:** `compare.py` before this change: `grew` is the only verdict a careful change to
+  legacy code can earn, and it is not a blocking one.
+- **Decision:** Option 3. Also: the Boy Scout Rule applies to each function you edited (its body or
+  its signature), and asks for at least one measure better when the step stays inside the task.
+  Review findings apply to the lines the diff changed, except in audit mode. The orchestra gate
+  `clean-code` is set per project: `orc-global-gates` declares the key `legacy` (default `false`),
+  and orchestra gives each config value of a slot to its agent gates as the input `config.<key>`.
+  The gate filters `grew` itself, so it works with any stack's `measure` command, and the
+  `measure` command keeps taking only `{plugin}` and `{base}`.
+- **Cost and risk:** With `--legacy`, a legacy function can grow without limit and nobody sees it.
+  The Boy Scout Rule on edited functions is the only counterweight. Watch for functions that grow
+  run after run.
+- **Where it lives:** `plugins/clean-code/skills/clean-code/compare.py`, `measure.py`, `SKILL.md`,
+  `plugins/clean-code/README.md`, `test/clean-code/test_revisions.py`; for the gate,
+  `plugins/orc-global-gates/orchestra.json` and `skills/clean-code/SKILL.md`,
+  `plugins/orchestra/lib/gates.js` and `lib/runner.js`, the `writing-plugins` skill, and the copies
+  of `compare.py` and `measure.py` in `plugins/orc-ts-stack/scripts/`.
+
+## S83: Java gets a measure and rules
+
+- **Date:** 2026-10-22
+- **Status:** decided
+- **Question:** `measure.py` measures Python and TypeScript only, so a Java run of the clean-code gate
+  has no measurement and shows a warning (S75). How does Java get one, and where do the Java rules go?
+- **Options:**
+  1. A hand-written Java tokenizer in Python. No JVM needed, but every new syntax (records, sealed
+     types, pattern `switch`, text blocks) is a new bug.
+  2. A third-party parser: JavaParser as a jar, or tree-sitter. A download on every machine and a
+     version to keep current.
+  3. The JDK's own `javac` tree API (`com.sun.source`), in one Java file that the JDK runs from source.
+     Every Java project has a JDK; the parser always knows the syntax of that JDK. Costs about half a
+     second of JVM start per run.
+- **Evidence:** `~/Projects-other/crap4java/src/crap4java/JavaMethodParser.java`, Uncle Bob's CRAP
+  tool, parses with the same API and counts complexity the same way. `measure-ts.mjs` uses the
+  project's own compiler for the same reason. On JDK 21 a run over one file takes 0.6 s.
+- **Decision:** Option 3, `measure-java.java`. The definitions follow `measure.py`: a function is a
+  method or a constructor with a body, or a lambda that initializes a field; a lambda inside a method
+  belongs to that method; an anonymous class's methods are measured alone; annotations do not count
+  toward the length; complexity counts each `if`, loop, `catch`, `case` (not `default`), `?:`, `&&`
+  and `||`; depth adds one per `if`, loop, `try`, `switch` and `synchronized`, and an else-if stays
+  on its `if`'s level. Suppressions: `@SuppressWarnings`, `@SuppressFBWarnings`, `NOPMD`, `NOSONAR`,
+  `CHECKSTYLE:OFF`, `// noinspection`, by text. `orc-java-stack` declares `measure` with a copy of
+  the scripts and the rules skill `clean-code-java` (ten Java rules, the layers of a Spring service,
+  two searches). The java-stack rows that S68 left for "clean-code later" are ported into it. The
+  source's 30-line limit for methods is not kept: the measure's 20 applies to every language.
+- **Cost and risk:** The scripts now exist three times (`clean-code`, `orc-ts-stack/scripts`,
+  `orc-java-stack/scripts`); a test per stack keeps them identical. A project on newer Java syntax
+  than the JDK on `PATH` stops with a parse error. Lombok's generated code is not measured.
+  `boundaries.py` stays Python only.
+- **Where it lives:** `plugins/clean-code/skills/clean-code/{measure-java.java,languages.py,measure.py,imports.py}`,
+  `plugins/clean-code/skills/clean-code-java/SKILL.md`, `plugins/orc-java-stack/{orchestra.json,scripts/,skills/clean-code-java/}`,
+  `test/clean-code/test_measure.py`, `test/clean-code/fixtures/Sample.java`,
+  `test/orc-java-stack/measure.test.js`, `docs/PORTING.md`.
+
+## S85: One copy of the measure and the rules, in clean-code
+
+- **Date:** 2026-10-23
+- **Status:** decided
+- **Question:** After S83 the measure scripts existed three times (`clean-code`, `orc-ts-stack`,
+  `orc-java-stack`), and two TypeScript rule texts drifted apart. `measure.py` now reads Python,
+  TypeScript and Java, so S75's reason for a measure per stack is gone. Where do the scripts and the
+  language rules live, and how does the gate reach them?
+- **Options:**
+  1. Keep the copies, with a test that keeps them identical. No change, but every edit is copied by
+     hand.
+  2. One copy in `clean-code`; each stack lists it under `dependencies`; orchestra resolves its
+     folder and gives a new placeholder such as `{plugin:clean-code}`. Needs a new orchestra feature.
+  3. One copy in `clean-code`; only `orc-global-gates` lists it under `dependencies`. The gate is an
+     agent gate, so its subagent finds the folder itself through `clean-code:manifest`, like the
+     Curator uses `mattpocock-skills` by skill name. The gate picks the language rules by file
+     extension. orchestra loses the `measure` keys and gains nothing.
+- **Evidence:** orchestra needs a folder only for a command it runs itself (`build`, a tool gate);
+  the clean-code gate runs the measure in its own step 2. `orc-curator` already depends on
+  `mattpocock-skills` this way (S79, R10). The `PORTING.md` rows show the gate's TypeScript text is a
+  full port of the companion text, so the merge keeps the gate's numbered rules.
+- **Decision:** Option 3. `clean-code` holds the only copy of the scripts and one numbered rules skill
+  per language, plus a `manifest` skill. The gate runs
+  `python3 "<folder>/skills/clean-code/measure.py" . --changed --base <base> --compare`, with
+  `--legacy` when `config.legacy` is true, and loads `clean-code:clean-code-<language>`. The stacks
+  keep only their build, guides and their own gates. Crap4java and mutate4java will be tool gates of
+  `orc-java-stack`, because only Java uses them.
+- **Cost and risk:** `dependencies` is a Claude Code feature (`docs/harness-exceptions.md` H2): on
+  another harness the user installs `clean-code` by hand. Without it, the gate has no measurement and
+  no language rules, and says so in an Evaluate finding. A stack can no longer add its own clean-code
+  rules; an optional key can come back when one needs it. Replaces part of S75 and the copies of S83.
+- **Where it lives:** `plugins/clean-code/skills/{manifest,clean-code-python,clean-code-typescript,clean-code-java}/`,
+  `plugins/orc-global-gates/{plugin.json,.claude-plugin/plugin.json,orchestra.json,skills/clean-code/SKILL.md}`,
+  `plugins/orchestra/lib/{check,gates,runner}.js`, `plugins/orchestra/skills/writing-plugins/SKILL.md`,
+  `plugins/orc-ts-stack/`, `plugins/orc-java-stack/`, `test/packaging.test.js`, `test/orchestra/`,
+  `docs/harness-exceptions.md`.
+

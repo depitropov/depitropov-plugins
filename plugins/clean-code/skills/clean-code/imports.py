@@ -236,7 +236,8 @@ def parse_sources(files: list[Path], layout: Layout) -> list[Source]:
     if foreign:
         raise MeasureError(
             f"{foreign[0]}: boundaries.py measures Python only in this version.\n"
-            "For a TypeScript tree run dependency-cruiser (npx depcruise --validate src) instead."
+            "For a TypeScript tree run dependency-cruiser (npx depcruise --validate src) instead;\n"
+            "for a Java tree, ArchUnit layer rules in a test."
         )
     known: dict[Path, Package] = {}
     return [parse_source(path, _package_for(path, layout, known)) for path in files]

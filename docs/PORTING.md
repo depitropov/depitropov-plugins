@@ -19,7 +19,7 @@ visible, and makes each drop a decision.
 | java-stack | `~/Projects/claude-code-plugins/plugins/java-stack` | Stack knowledge (orc-java-stack) |
 | minions | `~/Projects-other/claude-minions` | Project rails (the Curator, later phase) |
 | sc-agent-plugins | `~/Projects/sc-agent-plugins` | Multi-harness delivery (packaging rules) |
-| ai-marketplace-mentorano | `~/Projects-other/ai-marketplace-mentorano/plugins/clean-code` (MIT) | Clean code (the global gate in `orc-global-gates` (S80), orc-ts-stack, the standalone `clean-code`) |
+| ai-marketplace-mentorano | `~/Projects-other/ai-marketplace-mentorano/plugins/clean-code` (MIT) | Clean code (the standalone `clean-code`, which the global gate in `orc-global-gates` uses (S80, S85)) |
 
 ## Steps for every port
 
@@ -54,6 +54,8 @@ A port is any plan, skill or design text that takes content from a source file.
 The inventory is filled from a full read of each source file on 2026-10-08.
 
 General notes:
+- CJ is `clean-code/skills/clean-code-java` (S83, moved there by S85); the number is the Java
+  rule number.
 - Plan 4 is `docs/superpowers/plans/2026-10-09-java-stack-port.md`, decided by S68. Rows that say
   RL, RO, RT, RC, RY or CG point at its skills (`review-logging`, `review-ops`, `review-testing`,
   `review-comments`, `review-layout`, `guides/code.md`); the number is the rule number.
@@ -401,7 +403,7 @@ Short names: CG = `orc-java-stack/guides/code.md`, FB = `fix-build`, OJ = `orc-j
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
 | Skill index | OJ | dropped (S53, S68) | no |
-| Readability first | — | dropped (S68: clean-code comes later at workflow level) | yes |
+| Readability first | the global `clean-code` gate, rules 1, 2 and 8 (S80); `clean-code-java` (CJ) | ported (S83) | yes |
 | Match the codebase | each gate "The project's code wins"; CG intro | ported | yes |
 | Business logic has tests | logic-review | ported | yes |
 | SOLID | — | dropped (S68, R6: no gain from generic principles) | no |
@@ -425,18 +427,18 @@ Short names: CG = `orc-java-stack/guides/code.md`, FB = `fix-build`, OJ = `orc-j
 | DRY, encapsulate what varies | — | dropped (S68) | no |
 | Side effects apart from pure logic | — | dropped (S68) | no |
 | Immutability, `final` | — | dropped (S68) | no |
-| Small classes and methods | — | dropped (S68: clean-code later) | no |
+| Small classes and methods | gate rule 3 and the Java measure (S83) | ported | yes |
 | Performance (7 points) | — | dropped (S68) | no |
 
 #### skills/java-style/SKILL.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Descriptive names, nouns and verbs | — | dropped (S68: clean-code later) | no |
-| Case conventions, `DefaultX` names | — | dropped (S68: clean-code later) | no |
+| Descriptive names, nouns and verbs | CJ 1 | ported (S83) | yes |
+| Case conventions, `DefaultX` names | CJ 1 (case: Checkstyle), CJ 2 (`Default<Interface>`; `Impl` only when the project uses it) | ported (S83) | yes |
 | Commons Lang `isBlank` / `isEmpty` | RO 8 | ported | yes |
 | Member order | — | dropped (S68) | no |
-| Methods under 30 lines, parameter objects | — | dropped (S68: clean-code later) | no |
+| Methods under 30 lines, parameter objects | gate rule 3 (20 lines, the measure's default), CJ 3 (a `record`) | partial (S83: 20 lines, not 30) | yes |
 
 #### skills/java-review/SKILL.md
 
@@ -1565,20 +1567,20 @@ Source: `~/Projects-other/ai-marketplace-mentorano/plugins/clean-code`, version 
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Whole files: shape per function and file, `--changed`, `--at`, `--compare` verdicts | `plugins/orc-ts-stack/scripts/` (byte-identical to `plugins/clean-code`), run by the `measure` of `orc-ts-stack` (S75) | ported (copy) | yes |
-| Python measurement inside `languages.py` | `plugins/orc-ts-stack/scripts/languages.py`; measures a changed `.py` file in a TS project too | ported (copy) | yes |
+| Whole files: shape per function and file, `--changed`, `--at`, `--compare` verdicts | `plugins/clean-code/skills/clean-code/`, the only copy; the global clean-code gate runs it (S85) | ported | yes |
+| Python measurement inside `languages.py` | `plugins/clean-code/skills/clean-code/languages.py`; the gate measures every changed `.py`, `.ts` and `.java` file (S85) | ported | yes |
 | Thresholds by flag (`--max-lines` and the others) | not exposed: the measure command uses the defaults | dropped (S75: a config key when a project needs it) | yes |
 
 #### skills/clean-code-typescript/SKILL.md
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Companion note, project file outranks | `orc-ts-stack:clean-code-typescript` intro; gate step 5 | ported | yes |
+| Companion note, project file outranks | `clean-code:clean-code-typescript` intro, the one TS rules skill for the standalone and the gate (S85); gate step 5 | ported | yes |
 | Rules, TypeScript shape (strict, unions, Props, hooks, query keys, dependency arrays, one job, explicit states, eslint-disable reason, early return, tests) | TS rules 1–11 | ported | yes |
 | Layer defaults, direction, feature grouping, smell table | "Layers of a React app"; Phase 1 and 3 references become gate rules 11 and 13 | ported | yes |
 | `console.log`, `as any`, `@ts-ignore` not listed | the "Not listed" paragraph | ported | yes |
 | Layer defaults: run the project's dependency checker | "Layers of a React app": the checker's result wins over this list; neither the gate nor the build runs it | partial (running it dropped, S75: the gate reviews, it does not run or add tooling) | yes |
-| Measuring: the command | the stack's `measure` (S75) | ported (other mechanism) | yes |
+| Measuring: the command | "Measuring" in the skill; in a run, gate step 2 (S85) | ported | yes |
 | Measuring: the `typescript` package, TS 7, what counts as a function, test files | "Reading the measurement" | ported | yes |
 | Measuring: the install command `npm install --no-save typescript@5` | "Reading the measurement" names `typescript@5`; the script's own error message prints the command | ported (other mechanism) | yes |
 | Two greps | "Two searches", tied to TS rules 4 and 5 | ported | yes |
@@ -1592,7 +1594,7 @@ Source: `~/Projects-other/ai-marketplace-mentorano/plugins/clean-code`, version 
 | Overview: two deliverables, numbers not feelings | gate step 2, rule 3 | ported | yes |
 | Project file outranks, also on the edit tool | gate step 5 (`AGENTS.md` or `CLAUDE.md`); the edit tool comes from the dispatch prompt | ported | yes |
 | When to use: before any edit, any review | the gate runs on every run (`always`) | ported (other mechanism) | yes |
-| Load the language skill | the stack's `rules` skill (S75) | ported (other mechanism) | yes |
+| Load the language skill | gate step 4 loads `clean-code:clean-code-<language>` by file extension (S85) | ported | yes |
 | Process 1: measure before, keep the whole table | `--compare` against `base` in one run | ported (other mechanism) | yes |
 | Process 1: `CLAUDE_PLUGIN_ROOT` check | `{plugin}` expanded by orchestra | n/a (orchestra gives the path) | no |
 | Process 1 and 3: `boundaries.py` | — | dropped (S75: Python and FastAPI only) | no |

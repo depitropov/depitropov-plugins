@@ -17,6 +17,11 @@ File verdicts use the file-lines cap the same way (new-over, crossed, grew,
 fixed), plus suppressions-up: more suppressions than before, each new one
 allowed only with its reason on the line.
 
+With legacy=True (measure.py --legacy) growth that stays over a threshold the
+code was already over is no finding: a function grew is reported as
+still-over, and a file grew is dropped. Legacy code changed with care then
+reports only what crossed or what is new.
+
 A function is matched by file, name and its position among the functions of
 that name in the file. A renamed function is therefore one removed row and
 one new row.
@@ -24,7 +29,7 @@ one new row.
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 
 from languages import FunctionMeasure
 from shape import FileMeasure, Thresholds, exceeded
@@ -127,13 +132,21 @@ def _rank(verdict: str) -> int:
     return ORDER.index(verdict)
 
 
-def compare(before, after, t: Thresholds) -> Comparison:
+def _forgive_growth(functions: list[FunctionChange], files: list[FileChange]):
+    """--legacy: a measure already over that went up is still-over, and a longer file over the cap is no row."""
+    functions = [replace(c, verdict="still-over") if c.verdict == "grew" else c for c in functions]
+    return functions, [c for c in files if c.verdict != "grew"]
+
+
+def compare(before, after, t: Thresholds, legacy: bool = False) -> Comparison:
     """Judge every function and file of `after` against `before`; both are measure.py Reports."""
     old = _keyed(before.functions)
-    judged = (function_change(old.get(key), fm, t) for key, fm in _keyed(after.functions).items())
-    functions = sorted((c for c in judged if c), key=lambda c: (_rank(c.verdict), c.after.file, c.after.line))
+    judged = [c for key, fm in _keyed(after.functions).items() if (c := function_change(old.get(key), fm, t))]
     old_files = {fs.file: fs for fs in before.files}
     files = [change for fs in after.files for change in file_changes(old_files.get(fs.file), fs, t)]
+    if legacy:
+        judged, files = _forgive_growth(judged, files)
+    functions = sorted(judged, key=lambda c: (_rank(c.verdict), c.after.file, c.after.line))
     return Comparison(functions, sorted(files, key=lambda c: (_rank(c.verdict), c.after.file)))
 
 

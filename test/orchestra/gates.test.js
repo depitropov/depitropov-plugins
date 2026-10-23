@@ -22,7 +22,7 @@ const resolved = {
 
 test('collect orders the providers workflow, global-gates, stack-skills, and honours disable', () => {
   const withGlobal = { slots: { ...resolved.slots, 'global-gates': { plugin: 'gg', dir: '/p/gg', declaration: { gates: [
-    { name: 'clean-code', phase: 'implementation-check', kind: 'agent', skill: 'clean-code', always: true, measure: true },
+    { name: 'clean-code', phase: 'implementation-check', kind: 'agent', skill: 'clean-code', always: true },
   ] } } } };
   const gates = collect(withGlobal, {}, 'implementation-check');
   assert.deepEqual(gates.map(g => g.name), ['logic-review', 'clean-code', 'crap', 'arch']);
@@ -60,6 +60,8 @@ test('collect applies the project config: disable, max_rounds, config values', (
   assert.deepEqual(gates.map(g => g.name), ['logic-review', 'crap']);
   assert.equal(gates[1].max_rounds, 10);
   assert.equal(collect(resolved, config, 'conventions-check')[0].grep, 'CarEntity');
+  assert.deepEqual(collect(resolved, config, 'conventions-check')[0].config, { 'entity-pattern': 'CarEntity' });
+  assert.deepEqual(collect(resolved, {}, 'conventions-check')[0].config, { 'entity-pattern': '@Entity' });
 });
 
 test('select applies files and grep, and records why a gate is skipped', () => {

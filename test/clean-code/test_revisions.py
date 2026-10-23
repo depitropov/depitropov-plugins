@@ -113,7 +113,7 @@ class AtRefTest(unittest.TestCase):
         git(self.repo, "checkout", "-q", "-b", "work")
         proc = run(MEASURE, "pkg", "--changed", "--base", "main", "--compare", cwd=self.repo)
         self.assertEqual(proc.returncode, 0, proc.stderr)
-        self.assertIn("no Python or TypeScript files to measure", proc.stdout)
+        self.assertIn("no Python, TypeScript or Java files to measure", proc.stdout)
 
     def test_an_unknown_ref_is_a_broken_run_that_names_the_flag(self):
         proc = run(MEASURE, "pkg", "--at", "nowhere", cwd=self.repo)
@@ -218,6 +218,14 @@ class CompareTest(unittest.TestCase):
         full = run(MEASURE, "pkg", "--changed", "--base", "main", "--compare", "--all", cwd=self.repo).stdout
         self.assertIn("untouched_long", full)
         self.assertIn("new_clean", full)
+
+    def test_legacy_turns_growth_into_still_over_and_keeps_the_blocking_verdicts(self):
+        data = run_json(MEASURE, "pkg", "--changed", "--base", "main", "--compare", "--legacy", cwd=self.repo)
+        functions = {row["name"]: row["verdict"] for row in data["compare"]["functions"]}
+        self.assertEqual((functions["grows"], functions["will_cross"], functions["new_long"]), ("still-over", "crossed", "new-over"))
+        files = {(r["file"], r["verdict"]) for r in data["compare"]["files"]}
+        self.assertEqual(files, {("pkg/small.py", "crossed"), ("pkg/a.py", "suppressions-up")})
+        self.assertEqual((data["compare"]["verdict"]["grew"], data["compare"]["verdict"]["file_grew"]), (0, 0))
 
     def test_an_explicit_ref_is_used_as_the_before(self):
         data = run_json(MEASURE, "pkg", "--compare", "HEAD", cwd=self.repo)

@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
-"""Measure function and file shape for Python and TypeScript sources.
+"""Measure function and file shape for Python, TypeScript and Java sources.
 
 Usage:
     measure.py <path>... [--changed] [--base origin/main] [--json] [--all]
-               [--at <ref>] [--compare [<ref>]]
-               [--max-lines 20] [--max-cc 10] [--max-params 3]
+               [--at <ref>] [--compare [<ref>]] [--legacy]
+               [--max-lines 20] [--max-test-lines 50] [--max-cc 10] [--max-params 3]
                [--max-file-lines 500] [--max-depth 2]
 
 Per function: lines, cyclomatic complexity, parameters, nesting depth.
 Per file: lines and suppressed findings (# noqa, # type: ignore,
-eslint-disable, @ts-ignore, @ts-expect-error, as any). Python suppressions
-are counted in comments only; TypeScript ones by text match.
+eslint-disable, @ts-ignore, @ts-expect-error, as any; @SuppressWarnings,
+@SuppressFBWarnings, NOPMD, NOSONAR, CHECKSTYLE:OFF, // noinspection). Python
+suppressions are counted in comments only; TypeScript and Java ones by text
+match.
 
 Python files go through the stdlib ast. TypeScript files go through
 measure-ts.mjs next to this script, using the typescript package found in
-the nearest node_modules above each file. File collection and the language
+the nearest node_modules above each file. Java files go through
+measure-java.java next to this script, run from source by the JDK on PATH,
+which parses them with its own javac tree API. File collection and the language
 analysis live in languages.py next to this script, shared with boundaries.py.
 
 --at <ref> measures the files as committed at ref instead of the working
@@ -22,7 +26,9 @@ tree, so uncommitted edits and untracked files stay out; with --changed the
 files are the ones committed between the merge-base with --base and ref.
 --compare measures the same files a second time at <ref> (default: the
 merge-base with --base) and gives every function and file a verdict, so the
-before needs no copy on disk; compare.py lists the verdicts. Both print
+before needs no copy on disk; compare.py lists the verdicts. --legacy, with
+--compare, drops the grew verdict: a function or file already over a
+threshold may grow further without a finding. Both print
 every path from the repository root, so the two sides pair up wherever the
 command runs from.
 
@@ -51,11 +57,12 @@ from languages import (
     collect_files,
     find_typescript_package,
     language_of,
+    measure_java_files,
     measure_python_file,
     measure_ts_files,
     read_text,
 )
-from shape import FileMeasure, Thresholds, exceeded
+from shape import FileMeasure, Thresholds, exceeded, max_lines
 import compare as comparing
 from revisions import Revision, add_revision_flags, before_ref, relative_to_repo, repository_of, snapshot, verify_ref
 
@@ -66,6 +73,14 @@ SUPPRESSION_PATTERNS = {
         re.compile(r"@ts-ignore"),
         re.compile(r"@ts-expect-error"),
         re.compile(r"\bas any\b"),
+    ],
+    "java": [
+        re.compile(r"@SuppressWarnings\b"),
+        re.compile(r"@SuppressFBWarnings\b"),
+        re.compile(r"\bNOPMD\b"),
+        re.compile(r"\bNOSONAR\b"),
+        re.compile(r"CHECKSTYLE:OFF"),
+        re.compile(r"//\s*noinspection\b"),
     ],
 }
 
@@ -86,13 +101,13 @@ def _py_suppressions(path: Path, text: str) -> int:
 def _suppressions(path: Path, text: str, language: str) -> int:
     if language == "py":
         return _py_suppressions(path, text)
-    return sum(len(pattern.findall(text)) for pattern in SUPPRESSION_PATTERNS["ts"])
+    return sum(len(pattern.findall(text)) for pattern in SUPPRESSION_PATTERNS[language])
 
 
 def measure_file_shape(path: Path) -> FileMeasure:
     language = language_of(path)
     if language is None:
-        raise MeasureError(f"{path}: not a Python or TypeScript file")
+        raise MeasureError(f"{path}: not a Python, TypeScript or Java file")
     text = read_text(path)
     lines = text.count("\n") + (0 if text.endswith("\n") or not text else 1)
     return FileMeasure(
@@ -114,7 +129,7 @@ class Report:
 
 
 def _severity(fm: FunctionMeasure, t: Thresholds) -> float:
-    return max(fm.lines / t.lines, fm.cc / t.cc, fm.params / t.params, fm.depth / t.depth)
+    return max(fm.lines / max_lines(fm, t), fm.cc / t.cc, fm.params / t.params, fm.depth / t.depth)
 
 
 def _summarize(
@@ -122,7 +137,7 @@ def _summarize(
 ) -> dict[str, int]:
     return {
         "functions": len(functions),
-        "over_lines": sum(fm.lines > t.lines for fm in functions),
+        "over_lines": sum(fm.lines > max_lines(fm, t) for fm in functions),
         "over_cc": sum(fm.cc > t.cc for fm in functions),
         "over_params": sum(fm.params > t.params for fm in functions),
         "over_depth": sum(fm.depth > t.depth for fm in functions),
@@ -136,13 +151,18 @@ def build_report(files: list[Path], thresholds: Thresholds) -> Report:
     functions: list[FunctionMeasure] = []
     shapes: list[FileMeasure] = []
     ts_files: list[Path] = []
+    java_files: list[Path] = []
     for path in files:
         shapes.append(measure_file_shape(path))
-        if language_of(path) == "py":
+        language = language_of(path)
+        if language == "py":
             functions.extend(measure_python_file(path))
+        elif language == "java":
+            java_files.append(path)
         else:
             ts_files.append(path)
     functions.extend(measure_ts_files(ts_files))
+    functions.extend(measure_java_files(java_files))
     functions.sort(key=lambda fm: (-_severity(fm, thresholds), fm.file, fm.line))
     shapes.sort(key=lambda fs: (-fs.lines, fs.file))
     summary = _summarize(functions, shapes, thresholds)
@@ -160,7 +180,7 @@ class Counted:
 
 
 def _functions_header(counted: Counted, t: Thresholds, show_all: bool) -> str:
-    thresholds_text = f"lines>{t.lines} cc>{t.cc} params>{t.params} depth>{t.depth}"
+    thresholds_text = f"lines>{t.lines} test lines>{t.test_lines} cc>{t.cc} params>{t.params} depth>{t.depth}"
     if show_all:
         return f"FUNCTIONS ({counted.over} of {counted.total} over threshold: {thresholds_text})"
     return f"FUNCTIONS over threshold ({thresholds_text}): {counted.over} of {counted.total}"
@@ -208,7 +228,7 @@ def _summary_text(summary: dict[str, int]) -> str:
 def render_text(report: Report, show_all: bool) -> str:
     lines: list[str] = []
     if not report.files:
-        lines.append("no Python or TypeScript files to measure")
+        lines.append("no Python, TypeScript or Java files to measure")
     lines.extend(_render_functions(report, show_all))
     lines.extend(_render_files(report, show_all))
     lines.append("SUMMARY " + _summary_text(report.summary))
@@ -235,11 +255,12 @@ class Compared:
     before: Report
     after: Report
     ref: str
+    legacy: bool = False
 
 
 def render_compare_text(compared: Compared, show_all: bool) -> str:
-    comparison = comparing.compare(compared.before, compared.after, compared.after.thresholds)
-    lines = [] if compared.after.files else ["no Python or TypeScript files to measure"]
+    comparison = comparing.compare(compared.before, compared.after, compared.after.thresholds, compared.legacy)
+    lines = [] if compared.after.files else ["no Python, TypeScript or Java files to measure"]
     lines += comparing.render_text(comparison, compared.ref, show_all)
     lines.append("SUMMARY " + _summary_text(compared.after.summary))
     lines.append(f"BEFORE {compared.ref} " + _summary_text(compared.before.summary))
@@ -248,7 +269,7 @@ def render_compare_text(compared: Compared, show_all: bool) -> str:
 
 
 def render_compare_json(compared: Compared) -> str:
-    comparison = comparing.compare(compared.before, compared.after, compared.after.thresholds)
+    comparison = comparing.compare(compared.before, compared.after, compared.after.thresholds, compared.legacy)
     payload = _payload(compared.after)
     payload["before"] = {"ref": compared.ref, "summary": compared.before.summary}
     payload["compare"] = comparing.to_json(comparison, compared.ref)
@@ -271,9 +292,11 @@ def _parse(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--base", default="origin/main", help="git ref for --changed (default: origin/main)")
     parser.add_argument("--json", action="store_true", help="emit JSON instead of the text table")
     parser.add_argument("--all", action="store_true", help="show every function and file, not only offenders")
+    parser.add_argument("--legacy", action="store_true", help="with --compare: growth already over a threshold is no finding")
     add_revision_flags(parser, "the same files")
     defaults = Thresholds()
     parser.add_argument("--max-lines", type=positive_int, default=defaults.lines)
+    parser.add_argument("--max-test-lines", type=positive_int, default=defaults.test_lines)
     parser.add_argument("--max-cc", type=positive_int, default=defaults.cc)
     parser.add_argument("--max-params", type=positive_int, default=defaults.params)
     parser.add_argument("--max-file-lines", type=positive_int, default=defaults.file_lines)
@@ -326,7 +349,8 @@ def _run_revisions(args: argparse.Namespace, thresholds: Thresholds) -> str:
     if args.compare is None:
         return render_json(after) if args.json else render_text(after, show_all=args.all)
     commit, label = before_ref(repo, args)
-    compared = Compared(before=measure_at(Revision(repo, commit), relatives, thresholds), after=after, ref=label)
+    before = measure_at(Revision(repo, commit), relatives, thresholds)
+    compared = Compared(before=before, after=after, ref=label, legacy=args.legacy)
     return render_compare_json(compared) if args.json else render_compare_text(compared, show_all=args.all)
 
 
@@ -341,6 +365,7 @@ def main(argv: list[str] | None = None) -> int:
     args = _parse(argv)
     thresholds = Thresholds(
         lines=args.max_lines,
+        test_lines=args.max_test_lines,
         cc=args.max_cc,
         params=args.max_params,
         file_lines=args.max_file_lines,

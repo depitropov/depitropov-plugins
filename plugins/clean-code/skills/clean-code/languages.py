@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-SKIP_DIRS = {"node_modules", ".venv", "venv", "dist", "build", "__pycache__", ".git", "coverage", ".next"}
+SKIP_DIRS = {"node_modules", ".venv", "venv", "dist", "build", "__pycache__", ".git", "coverage", ".next", "target"}
 
 
 class MeasureError(Exception):
@@ -38,6 +38,8 @@ def language_of(path: Path) -> str | None:
         return "py"
     if suffix in (".ts", ".tsx"):
         return "ts"
+    if suffix == ".java":
+        return "java"
     return None
 
 
@@ -293,4 +295,24 @@ def measure_ts_files(files: list[Path]) -> list[FunctionMeasure]:
         for row in json.loads(proc.stdout):
             row["file"] = _display(Path(row["file"]))
             out.append(FunctionMeasure(**row))
+    return out
+
+
+# --- Java ---------------------------------------------------------------------
+
+def measure_java_files(files: list[Path]) -> list[FunctionMeasure]:
+    """Parse with the JDK's own javac tree API through measure-java.java, run from source."""
+    if not files:
+        return []
+    java = shutil.which("java")
+    if java is None:
+        raise MeasureError("java is not on PATH. Install a JDK 17 or newer, or put its bin/ on PATH (sdk use java, or JAVA_HOME/bin).")
+    command = [java, str(SCRIPT_DIR / "measure-java.java"), *[str(f) for f in files]]
+    proc = subprocess.run(command, capture_output=True, text=True)
+    if proc.returncode != 0:
+        raise MeasureError(f"measure-java.java failed (it needs a JDK 17 or newer):\n{proc.stderr.strip()}")
+    out: list[FunctionMeasure] = []
+    for row in json.loads(proc.stdout):
+        row["file"] = _display(Path(row["file"]))
+        out.append(FunctionMeasure(**row))
     return out

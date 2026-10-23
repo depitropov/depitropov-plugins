@@ -15,10 +15,9 @@ const REQUIRED_SLOTS = ['workflow', 'stack-skills'];
 const KINDS = ['tool', 'agent'];
 const FIXES = ['self', 'fixer', 'none'];
 const CONFIG_TYPES = ['string', 'number', 'boolean'];
-const DECLARATION_KEYS = { workflow: ['slot', 'config', 'roles', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'measure', 'guides', 'gates'], curator: ['slot', 'config', 'curate', 'setup', 'guides'], 'global-gates': ['slot', 'config', 'gates'] };
-const GATE_KEYS = ['name', 'phase', 'kind', 'skill', 'run', 'fix', 'guide', 'max_rounds', 'files', 'grep', 'when', 'always', 'measure'];
+const DECLARATION_KEYS = { workflow: ['slot', 'config', 'roles', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'guides', 'gates'], curator: ['slot', 'config', 'curate', 'setup', 'guides'], 'global-gates': ['slot', 'config', 'gates'] };
+const GATE_KEYS = ['name', 'phase', 'kind', 'skill', 'run', 'fix', 'guide', 'max_rounds', 'files', 'grep', 'when', 'always'];
 const BUILD_KEYS = ['run', 'guide', 'max_rounds'];
-const MEASURE_KEYS = ['run', 'rules'];
 const SETUP_KEYS = ['skill', 'done'];
 const SECTION_KEYS = ['plugin', 'disable', 'gates'];
 const CONFIG = '.orchestra/config.json';
@@ -98,18 +97,6 @@ function checkDeclaration(d, dir, where) {
       for (const m of b.run.matchAll(PLACEHOLDER)) fail(`build "run" uses {config.${m[1]}}, but the build command expands only {plugin}`, 'write the value into the command');
       if (b.max_rounds !== undefined && !wholeNumber(b.max_rounds)) fail('build "max_rounds" is not a whole number of 1 or more', 'set it to 1 or more');
     }
-    if (d.measure !== undefined) {
-      const m = d.measure;
-      if (!isObject(m) || typeof m.run !== 'string') {
-        fail('"measure" has no "run" command', 'write "measure": { "run": "<command that measures the changed code against {base}>", "rules": "<rules skill>" }, or remove it');
-      } else {
-        for (const key of Object.keys(m)) {
-          if (!MEASURE_KEYS.includes(key)) fail(`unknown measure key "${key}"`, `remove it; the allowed keys are ${MEASURE_KEYS.join(', ')}`);
-        }
-        for (const p of m.run.matchAll(PLACEHOLDER)) fail(`measure "run" uses {config.${p[1]}}, but the measure command expands only {plugin} and {base}`, 'write the value into the command');
-        if (m.rules !== undefined) skill(m.rules, 'measure "rules"');
-      }
-    }
   }
   if (d.slot === 'curator') {
     skill(d.curate, '"curate"');
@@ -166,8 +153,6 @@ function checkDeclaration(d, dir, where) {
     }
     if (g.when !== undefined && typeof g.when !== 'string') fail(`${at} "when" is not text`, 'write the rule in words');
     if (g.always !== undefined && typeof g.always !== 'boolean') fail(`${at} "always" is not true or false`, 'set it to true, or remove it');
-    if (g.measure !== undefined && typeof g.measure !== 'boolean') fail(`${at} "measure" is not true or false`, 'set it to true, or remove it');
-    else if (g.measure && g.kind !== 'agent') fail(`${at} asks for "measure" but is not an agent gate`, 'remove "measure"; only an agent gate gets the measure command');
     if (!g.always && g.files === undefined && g.grep === undefined && g.when === undefined) {
       fail(`${at} has no selection rule, so it never runs`, 'add "files", "grep", "when" or "always": true');
     }
@@ -397,6 +382,6 @@ function checkPlugin(dir) {
 }
 
 module.exports = {
-  SLOTS, REQUIRED_SLOTS, SETUP_KEYS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, MEASURE_KEYS, ROLES, SECTION_KEYS, PHASES, ACTIONS,
+  SLOTS, REQUIRED_SLOTS, SETUP_KEYS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, ROLES, SECTION_KEYS, PHASES, ACTIONS,
   parseJson, skillExists, checkDeclaration, checkProject, checkPlugin,
 };

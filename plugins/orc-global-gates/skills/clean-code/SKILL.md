@@ -1,6 +1,6 @@
 ---
 name: clean-code
-description: Reviews the shape of the changed code and the clean-code rules — the stack's measurement against the base, names, one job, flags, side effects, duplication, errors, comments, dead code, tests and boundaries — then fixes what it can. An orchestra gate; dispatched by orchestra.
+description: Reviews the shape of the changed code and the clean-code rules — the measurement against the base from the clean-code plugin, names, one job, flags, side effects, duplication, errors, comments, dead code, tests and boundaries — then fixes what it can. An orchestra gate; dispatched by orchestra.
 ---
 
 # Clean-code review
@@ -11,22 +11,25 @@ description: Reviews the shape of the changed code and the clean-code rules — 
 - `base`: the commit before any work.
 - `notes`: the run's notes folder. Your findings file goes here.
 - `decisions` (optional): the human's answers.
-- `measure` (optional): the Stack Skills command that measures the changed code against `base`.
-- `rules` (optional): a skill with the stack's own clean-code rules.
+- `config.legacy`: `true` when the project marks its code as legacy. The project sets it in the
+  `global-gates` section of its `.orchestra/config.json`; the default is `false`.
 
 ## Procedure
 
 1. Get the change: `git diff <base> HEAD -- . ':(exclude)docs/runs' ':(exclude)tmp'`. Read each
    changed source and test file in full. If the change has no source code and no tests, write the
    result with `"status": "skipped"` and stop.
-2. **Measure.**
-   - With `measure`: run it once, from the run root. Keep the whole output. Exit code 0 means it
-     measured, also when it says it found no files to measure. Any other exit code is a
-     broken measurement: record one Evaluate finding with the line that says what went wrong. That
-     is the first error line of the output. For a Python traceback it is the last line. Then go on
-     with the rules.
-   - Without `measure`: record one Evaluate finding with this text:
-     `No shape measurement: the Stack Skills plugin declares no measure. The review used the rules only.`
+2. **Measure.** The measurement and the language rules come from the `clean-code` plugin, which
+   this plugin depends on. Invoke the skill `clean-code:manifest`. It answers `PLUGIN_DIR=<folder>`.
+   - When it answers: run this once, from the run root, with `--legacy` added when `config.legacy`
+     is `true`:
+     `python3 "<folder>/skills/clean-code/measure.py" . --changed --base <base> --compare`
+     Keep the whole output. Exit code 0 means it measured, also when it says it found no files to
+     measure. Any other exit code is a broken measurement: record one Evaluate finding with the line
+     that says what went wrong. That is the first error line of the output. For a Python traceback
+     it is the last line. Then go on with the rules.
+   - When the skill does not exist: record one Evaluate finding with this text:
+     `No shape measurement: the clean-code plugin is not installed. The review used the gate's rules only.`
      Go on with the rules, and judge rule 3 by reading.
 3. Each measured row with one of these verdicts is a finding against rule 3:
 
@@ -37,18 +40,24 @@ description: Reviews the shape of the changed code and the clean-code rules — 
    | `grew` | Over before and after, and a measure that is over went up. For a file: over 500 lines, and longer. |
    | `suppressions-up` | A file has more suppressions than before. Each new one without its reason on its line is a finding. |
 
+   With `--legacy` the measurement gives no `grew` row: code that was already over a threshold may
+   grow. `new-over`, `crossed` and `suppressions-up` stay findings.
+
    `fixed`, `still-over` and `new` are not findings. A row matches by file and name, so a renamed
    function shows as `new-over`: read the diff before you call it new, and judge it against the old
    function. One exception: a flat `switch` or `match` whose arms answer one question can be over
    complexity 10. List it under Checked with that reason; it is not a finding. Never split it into
    helpers that take a flag the caller already knows.
-4. Check the lines this change adds or edits against each rule below. When `rules` is given, invoke
-   that skill and check its rules too. Code the change does not touch is not in scope: the whole
+4. Check the lines this change adds or edits against each rule below. Then, for each language of
+   the changed files, invoke its rules skill from the `clean-code` plugin and check those rules too:
+   `clean-code:clean-code-python` for `.py`, `clean-code:clean-code-typescript` for `.ts` and
+   `.tsx`, `clean-code:clean-code-java` for `.java`. The process in those skills is not yours; take
+   only their rules, layers and searches. Code the change does not touch is not in scope: the whole
    repository does not need to be clean, but the task's code must not get worse.
 5. The project wins. The project's `AGENTS.md` or `CLAUDE.md` overrides every rule and threshold
    here. Existing long or complex code is not a project rule: it does not excuse a new finding.
 6. The title of each finding starts with its rule, as in `▸ Rule 3: <title>` or
-   `▸ TS rule 4: <title>`, and its "In the code" line gives `file:line`. A finding against rule 3
+   `▸ TS rule 4: <title>`, or with the bold title of a language rule that has no number, and its "In the code" line gives `file:line`. A finding against rule 3
    gives the before and after numbers of its row.
 7. Invoke the skill `orchestra:triage` and follow it: give every finding its axes and one bucket.
 8. Write `<notes>/clean-code.md` in the triage notes format. Under Checked, give the `SUMMARY`,
@@ -58,8 +67,8 @@ description: Reviews the shape of the changed code and the clean-code rules — 
 10. Otherwise fix every Patch finding and every answered Decide. A fix changes the shape, never the
     behaviour: extract, rename, flatten, delete dead code. Never change a threshold or add a
     suppression to make a row pass. Run only the tests of the files you changed. Never pipe a test
-    command: the pipe hides the exit code. With `measure`, run it once more and give its `VERDICT`
-    line under Patched; undo a fix that makes a row worse. Commit once:
+    command: the pipe hides the exit code. When step 2 measured, run the same command once more
+    and give its `VERDICT` line under Patched; undo a fix that makes a row worse. Commit once:
     `refactor(clean-code): <summary>`. orchestra commits `notes` itself: do not stage files under
     `docs/runs/` or `tmp/`. Do not review your own fixes again.
 
@@ -75,7 +84,7 @@ Write to the path given in the prompt:
   "status": "ok",
   "decide": [],
   "counts": { "decide": 0, "patch": 2, "evaluate": 1, "noise": 0 },
-  "evaluate": ["No shape measurement: the Stack Skills plugin declares no measure. The review used the rules only."],
+  "evaluate": ["No shape measurement: the clean-code plugin is not installed. The review used the gate's rules only."],
   "files": ["<notes>/clean-code.md"]
 }
 ```
@@ -85,7 +94,7 @@ line, with `file:line` when it has one.
 
 ## Permitted actions
 
-Edit code and tests. Run tests and the `measure` command. Commit. Do not push. Do not change
+Edit code and tests. Run tests and `measure.py`. Commit. Do not push. Do not change
 branches. Do not ask the user; a question goes into `decide`.
 
 ## Rules
@@ -95,7 +104,9 @@ branches. Do not ask the user; a question goes into `decide`.
 2. **One job per function.** A function is a paragraph. When it has sections with heading comments,
    each section is a function.
 3. **Small.** A function has at most 20 lines (blank lines and doc comments count), complexity at
-   most 10, at most 3 parameters, and nesting at most 2. A file has at most 500 lines. Each
+   most 10, at most 3 parameters, and nesting at most 2. A test has at most 50 lines: a function in
+   a file named `test_*.py`, `*_test.py`, `conftest.py`, `*.test.ts(x)`, `*.spec.ts(x)`,
+   `*Test.java`, `*Tests.java` or `*IT.java`, or under `__tests__/` or `src/test/`. A file has at most 500 lines. Each
    suppression of a check carries its reason on its line. The measured rows are the evidence. What
    crossing a threshold usually means:
    - lines: the sections (declarations, setup, loop, output) are several jobs; extract each one;
@@ -106,8 +117,10 @@ branches. Do not ask the user; a question goes into `decide`.
    - nesting: nested blocks hide the normal flow; return early with a guard clause, or extract each
      block into a one-line call;
    - file lines: more than one job in one file; split by job, not by line count.
-   Bring a touched function that was already over a threshold under it when the change is small.
-   When it stays over, the finding says why, and what the split would be.
+   The Boy Scout Rule: leave each function you edited (its body or its signature) better in at
+   least one measure, or with one fewer smell, when the step stays inside the task. A function you
+   did not edit is not yours to clean. When an edited function stays over a threshold, the finding
+   says why, and what the split would be. With `config.legacy`, that is not a finding.
 4. **No flag arguments.** A boolean parameter that picks a path means two functions.
 5. **No hidden side effects.** A function named like a query does not write.
 6. **No duplication inside one responsibility.** Extract at the second copy, not the third, when

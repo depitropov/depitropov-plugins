@@ -15,12 +15,11 @@ test('a valid declaration passes', () => {
   assert.deepEqual(errors(stack({
     config: { 'entity-pattern': { type: 'string', default: '@Entity' } },
     guides: { code: 'guides/code.md' },
-    measure: { run: 'python3 "{plugin}/m.py" --base {base}', rules: 'rules-ts' },
     gates: [
       { name: 'ops', phase: 'implementation-check', kind: 'agent', skill: 'review-ops', files: ['**/*.java', '**/*.sql'] },
       { name: 'entities', phase: 'conventions-check', kind: 'agent', skill: 'review-entities', grep: '{config.entity-pattern}' },
       { name: 'fmt', phase: 'finish', kind: 'tool', run: 'fmt {plugin}', fix: 'fixer', guide: 'fix-fmt', max_rounds: 1, always: true },
-      { name: 'shape', phase: 'implementation-check', kind: 'agent', skill: 'review-shape', always: true, measure: true },
+      { name: 'shape', phase: 'implementation-check', kind: 'agent', skill: 'review-shape', always: true },
     ],
   })), []);
   assert.deepEqual(errors({ slot: 'workflow', config: { n: { type: 'number', default: 2 } }, gates: [] }), []);
@@ -61,12 +60,6 @@ test('each broken declaration rule gives one line with the rule and its fix', ()
     [{ slot: 'workflow', roles: ['spec', 'review'] }, /"roles" is \["spec","review"\]/],
     [{ slot: 'workflow', roles: ['plan', 'plan'] }, /"roles" is \["plan","plan"\]/],
     [{ slot: 'workflow', guides: { plan: 'x' } }, /unknown key "guides" for slot workflow/],
-    [stack({ measure: { rules: 'x' } }), /"measure" has no "run" command/],
-    [stack({ measure: { run: 'm', every: 1 } }), /unknown measure key "every"/],
-    [stack({ measure: { run: 'm {config.n}' } }), /measure "run" uses \{config\.n\}/],
-    [{ slot: 'workflow', measure: { run: 'm' } }, /unknown key "measure" for slot workflow/],
-    [stack({ gates: [tool({ measure: true })] }), /gate "a" asks for "measure" but is not an agent gate/],
-    [stack({ gates: [{ name: 'a', phase: 'finish', kind: 'agent', skill: 's', always: true, measure: 'yes' }] }), /gate "a" "measure" is not true or false/],
     [stack({ gates: [{ name: 'a', phase: 'later', kind: 'agent', skill: 's', always: true }] }), /gate "a" has phase "later"/],
     [stack({ gates: [tool({ run: undefined })] }), /gate "a" is a tool gate with no "run"/],
     [stack({ gates: [tool({ fix: 'fixer' })] }), /gate "a" uses the fixer but names no guide/],
@@ -89,11 +82,6 @@ test('a skill the declaration names must exist in skills/', () => {
   const d = stack({ gates: [{ name: 'a', phase: 'finish', kind: 'agent', skill: 'review-a', always: true }] });
   const out = checkDeclaration(d, tmp('empty-'), 'st/orchestra.json');
   assert.deepEqual(out.map(l => l.match(/names skill "([\w-]+)"/)[1]), ['fix-build', 'review-a']);
-});
-
-test('the measure rules skill must exist in skills/', () => {
-  const out = checkDeclaration(stack({ measure: { run: 'm', rules: 'rules-ts' } }), tmp('empty-'), 'st/orchestra.json');
-  assert.ok(out.some(l => /measure "rules" names skill "rules-ts"/.test(l)), out.join(' | '));
 });
 
 const curator = (extra = {}) => ({ slot: 'curator', curate: 'curate', setup: { skill: 'setup', done: 'docs/curator/.setup' }, ...extra });
@@ -120,8 +108,13 @@ test('a guide for a role the workflow has no stage for fails, unless the config 
   assert.deepEqual(checkProject(project(off, { workflow: noCode, 'stack-skills': st })), []);
 });
 
+test('a stack that declares measure fails: the clean-code gate measures by itself (S85)', () => {
+  assert.match(errors(stack({ measure: { run: 'm' } })).join('\n'), /unknown key "measure" for slot stack-skills/);
+  assert.match(errors(stack({ gates: [{ name: 'a', phase: 'finish', kind: 'agent', skill: 's', always: true, measure: true }] })).join('\n'), /measure/);
+});
+
 test('a global-gates declaration takes only slot, config and gates', () => {
-  const gate = { name: 'shape', phase: 'implementation-check', kind: 'agent', skill: 'review-shape', always: true, measure: true };
+  const gate = { name: 'shape', phase: 'implementation-check', kind: 'agent', skill: 'review-shape', always: true };
   assert.deepEqual(errors({ slot: 'global-gates', config: {}, gates: [gate] }), []);
   for (const key of ['guides', 'build', 'measure']) {
     assert.match(errors({ slot: 'global-gates', gates: [], [key]: {} }).join('\n'), new RegExp(`unknown key "${key}" for slot global-gates`));

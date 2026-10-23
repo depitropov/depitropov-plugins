@@ -96,7 +96,77 @@ class PythonMeasurementTest(unittest.TestCase):
         self.assertEqual(measure.language_of(Path("a.py")), "py")
         self.assertEqual(measure.language_of(Path("a.ts")), "ts")
         self.assertEqual(measure.language_of(Path("a.tsx")), "ts")
+        self.assertEqual(measure.language_of(Path("A.java")), "java")
         self.assertIsNone(measure.language_of(Path("a.md")))
+
+
+JAVA_READY = shutil.which("java") is not None
+JAVA_SKIP = "java is not on PATH"
+if not JAVA_READY:
+    print(f"test_measure: Java tests skipped \u2014 {JAVA_SKIP}", file=sys.stderr)
+
+
+@unittest.skipUnless(JAVA_READY, JAVA_SKIP)
+class JavaMeasurementTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.functions = by_name(measure.measure_java_files([FIXTURES / "Sample.java"]))
+
+    def test_finds_methods_constructors_and_field_lambdas_but_no_abstract_method(self):
+        self.assertEqual(
+            set(self.functions),
+            {
+                "Sample.BY_LENGTH",
+                "Sample.<init>",
+                "Sample.clean",
+                "Sample.toString",
+                "Sample.complexBranches",
+                "Sample.tooManyParams",
+                "Sample.callbacks",
+                "Sample.<anonymous>.run",
+                "Sample.legacy",
+                "Sample.Shape.label",
+            },
+        )
+
+    def test_clean_method_is_baseline(self):
+        f = self.functions["Sample.clean"]
+        self.assertEqual((f.line, f.lines, f.cc, f.params, f.depth), (20, 3, 1, 2, 0))
+
+    def test_complexity_counts_every_branch_kind_once_and_not_default(self):
+        self.assertEqual(self.functions["Sample.complexBranches"].cc, 13)
+
+    def test_a_lambda_belongs_to_its_method_and_an_anonymous_class_is_measured_alone(self):
+        self.assertEqual(self.functions["Sample.callbacks"].cc, 2)
+        self.assertEqual(self.functions["Sample.<anonymous>.run"].cc, 2)
+
+    def test_a_field_lambda_is_measured_under_the_field_name(self):
+        f = self.functions["Sample.BY_LENGTH"]
+        self.assertEqual((f.line, f.lines, f.cc, f.params), (7, 6, 3, 2))
+
+    def test_parameters(self):
+        self.assertEqual(self.functions["Sample.tooManyParams"].params, 5)
+        self.assertEqual(self.functions["Sample.<init>"].params, 1)
+
+    def test_depth_counts_control_blocks_not_else_if(self):
+        self.assertEqual(self.functions["Sample.complexBranches"].depth, 3)
+        self.assertEqual(self.functions["Sample.callbacks"].depth, 1)
+
+    def test_lines_start_after_the_annotations(self):
+        f = self.functions["Sample.toString"]
+        self.assertEqual((f.line, f.lines), (26, 3))
+
+    def test_file_shape_counts_java_suppressions(self):
+        shape = measure.measure_file_shape(FIXTURES / "Sample.java")
+        self.assertEqual((shape.language, shape.suppressions), ("java", 2))
+
+    def test_unparsable_java_is_a_broken_run(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            broken = Path(tmp) / "Broken.java"
+            broken.write_text("class Broken { void f( {\n")
+            with self.assertRaises(measure.MeasureError) as ctx:
+                measure.measure_java_files([broken])
+        self.assertIn("Broken.java", str(ctx.exception))
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -297,6 +367,25 @@ class CollectionTest(unittest.TestCase):
         self.assertIn("--base", str(ctx.exception))
 
 
+class TestLimitTest(unittest.TestCase):
+    """A test function may be 50 lines; every other function 20."""
+
+    def test_test_files_are_known_by_name_or_by_the_maven_test_tree(self):
+        tests = ["tests/test_api.py", "api_test.py", "conftest.py", "src/a.test.ts", "src/A.spec.tsx",
+                 "src/__tests__/a.ts", "src/test/java/a/Helper.java", "OrderTest.java", "OrderTests.java", "OrderIT.java"]
+        sources = ["src/testing.py", "src/latest.ts", "src/main/java/a/Contest.java", "test/fixtures/sample.py"]
+        self.assertEqual([f for f in tests if not sys.modules["shape"].is_test_file(f)], [])
+        self.assertEqual([f for f in sources if sys.modules["shape"].is_test_file(f)], [])
+
+    def test_a_test_is_over_only_past_the_test_limit(self):
+        t = measure.Thresholds()
+        row = lambda file, lines: measure.FunctionMeasure(file, "f", 1, lines, 1, 0, 0)
+        self.assertEqual(measure.exceeded(row("src/test/java/ATest.java", 50), t), [])
+        self.assertEqual(measure.exceeded(row("src/test/java/ATest.java", 51), t), ["lines"])
+        self.assertEqual(measure.exceeded(row("src/main/java/A.java", 21), t), ["lines"])
+        self.assertEqual(measure.exceeded(row("test_a.py", 30), measure.Thresholds(test_lines=25)), ["lines"])
+
+
 class ReportTest(unittest.TestCase):
     def setUp(self):
         self.report = measure.build_report([FIXTURES / "sample.py"], measure.Thresholds())
@@ -342,7 +431,7 @@ class ReportTest(unittest.TestCase):
 
     def test_json_round_trips_with_thresholds(self):
         data = json.loads(measure.render_json(self.report))
-        self.assertEqual(data["thresholds"], {"lines": 20, "cc": 10, "params": 3, "file_lines": 500, "depth": 2})
+        self.assertEqual(data["thresholds"], {"lines": 20, "test_lines": 50, "cc": 10, "params": 3, "file_lines": 500, "depth": 2})
         self.assertEqual(len(data["functions"]), 8)
         self.assertEqual(data["files"][0]["suppressions"], 2)
         self.assertEqual(data["summary"]["over_cc"], 1)
@@ -399,7 +488,7 @@ class CliTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             proc = self.run_cli(tmp)
         self.assertEqual(proc.returncode, 0)
-        self.assertIn("no Python or TypeScript files", proc.stdout)
+        self.assertIn("no Python, TypeScript or Java files", proc.stdout)
 
     def test_zero_threshold_is_a_usage_error(self):
         proc = self.run_cli(str(FIXTURES / "sample.py"), "--max-cc", "0")

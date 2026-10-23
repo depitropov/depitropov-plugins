@@ -32,7 +32,9 @@ runtime isolation, independent deployment, or system fitness.
   "Uncle Bob", "SOLID", or "Clean Architecture".
 
 Load the language skill for the file being edited: `clean-code-python` for
-`.py`, `clean-code-typescript` for `.ts` and `.tsx`. Read `architecture.md`
+`.py`, `clean-code-typescript` for `.ts` and `.tsx`, `clean-code-java` for
+`.java`. `measure.py` measures all three; Java needs a JDK 17 or newer on
+`PATH`. Read `architecture.md`
 — it holds the four architecture review phases — when the change touches a
 module boundary, adds an import between layers, or adds a module. The
 language skills cite its phases by number. Read `rationalizations.md` when
@@ -83,7 +85,7 @@ needs the whole package because a cycle is not a property of one file, and
 one package per run. A SUMMARY with every count at 0 next to a note on
 stderr measured nothing: the package is missing an `__init__.py`.
 Python only in this version; a TypeScript tree is a broken run that names
-`dependency-cruiser`. Keep its SUMMARY as a second before-line.
+`dependency-cruiser`, a Java tree one that names ArchUnit. Keep its SUMMARY as a second before-line.
 
 **2. Write.** Follow the rules below and the language skill.
 
@@ -105,6 +107,12 @@ read as its ref. The last line is the verdict:
 ```text
 VERDICT new_over=0 crossed=0 grew=1 fixed=0 file_new_over=0 file_crossed=0 file_grew=1 suppressions_up=0
 ```
+
+On legacy code, add `--legacy`. A function or file that was already over
+a threshold may then grow without a finding: `grew` becomes `still-over`
+for a function, and a file that grew drops out. `new-over`, `crossed` and
+`suppressions-up` still block. Use it when the project's `CLAUDE.md` asks
+for it, or when the user says the code is legacy.
 
 When another session or agent may have uncommitted work in the same tree,
 add `--at HEAD`: the after side is then the committed files, and
@@ -136,15 +144,16 @@ The verdicts map to the rules below:
 | `new-over` | a function or file the task created is over a threshold | blocks: split it |
 | `crossed` | a touched function crossed a threshold it was under, or a file crossed 500 lines | blocks: split it |
 | `suppressions-up` | a file has more suppressions than before | each new one has its reason on the line, or it goes |
-| `grew` | over before and after, and a measure that is over went up; for a file, over 500 lines and longer | one sentence in the report saying why, and what the split would be |
+| `grew` | over before and after, and a measure that is over went up; for a file, over 500 lines and longer | one sentence in the report saying why, and what the split would be; with `--legacy` it is `still-over` |
 | `fixed` | was over, now under every threshold | report it |
 | `still-over` | over before and after, not worse (shown with `--all`) | context, not a finding |
 | `new` | a new function under every threshold (shown with `--all`) | nothing to do |
 
 - No function the task touched crosses a threshold it did not cross before.
 - A function the task created is under every threshold.
-- A function the task touched that was already over a threshold either
-  comes under it or is left with one sentence in the report saying why not.
+- A function you edited that was already over a threshold either comes
+  under it or is left with one sentence in the report saying why not.
+  With `--legacy`, no sentence is needed.
 - A file the task touched that was already over 500 lines does not grow,
   or the report says why in one sentence.
 - Suppressions did not go up, unless each new one carries its reason.
@@ -154,8 +163,11 @@ row, so judge a `new-over` row against the diff before calling it new.
 
 If the code-shape verdict violates the rules above, the task is not done. Split the function,
 extract the helper, flatten the nesting, then measure again. Not worse is
-the floor; the Boy Scout Rule asks for a little cleaner, so bring a touched
-function under a threshold when the change is small.
+the floor; the Boy Scout Rule asks for a little cleaner. It applies to each
+function you edited: you changed its body or its signature, not only code
+in the same file. Leave each one better in at least one measure, or with
+one fewer smell, when the step stays inside the task. A function you did
+not edit is not yours to clean. This holds with `--legacy` too.
 
 **4. Verify.** Run the project's format and lint gate and the tests that
 cover the touched files. If the project's `CLAUDE.md` names a gate or a
@@ -169,6 +181,9 @@ report. A green measurement proves shape, not behaviour.
 | Correctness | Does it do what the task says? Edge cases, error paths, concurrency. | missing branch, swallowed error, off-by-one |
 | Design | One job per unit? Dependencies point inward? Nothing leaks across a boundary? | rule in the adapter, DTO across a boundary, hidden side effect |
 | Readability | Names, length, nesting, comments. | name says how not what, comment restates the code, flag argument |
+
+Findings apply to the lines the diff changed. Code the diff did not
+change is context, not a finding, except in audit mode.
 
 Every finding is revalidated against the source before it is fixed. A
 finding that does not survive the second look is reported as rejected, with
@@ -235,7 +250,9 @@ by the project, not a rule added to this skill.
   nesting at most 2. These are the script's defaults; the project may
   change them in its `CLAUDE.md`. The 20 counts raw lines, blanks and
   docstrings included: this skill's reading of "functions should hardly
-  ever be 20 lines long", not a limit Uncle Bob set.
+  ever be 20 lines long", not a limit Uncle Bob set. A test function may
+  have 50 lines (`--max-test-lines`): a test builds its data and states its
+  expectations in line. A test is a function in a test file: a file named `test_*.py`, `*_test.py`, `conftest.py`, `*.test.ts(x)`, `*.spec.ts(x)`, `*Test.java`, `*Tests.java` or `*IT.java`, or under `__tests__/` or `src/test/`.
 - **No flag arguments.** A boolean parameter that picks a path means two
   functions.
 - **No hidden side effects.** A function named like a query does not write.
@@ -264,6 +281,7 @@ by the project, not a rule added to this skill.
 | Measure | Threshold | What crossing it usually means |
 |---|---|---|
 | lines | 20 | sections (declarations, setup, loop, output) are several jobs; each section is a function of its own |
+| lines in a test | 50 | the test checks several behaviours, or builds data a fixture or a builder should give; split it, or extract the setup |
 | cc | 10 | an `if` chain or `switch` doing N things; bury it once behind polymorphism, or extract each branch |
 | params | 3 | arguments that travel together are a missing object; a flag argument is two functions |
 | depth | 2 | nested blocks hide the normal flow; extract each block into a one-line call, or return early with a guard clause |
@@ -278,7 +296,7 @@ by the project, not a rule added to this skill.
 | http_in_services | 0 | a service imports `fastapi` or `starlette`; the service knows a status code or a request type; raise a domain error and translate it in the handler |
 | ports | counted | `Protocol` or `ABC` under services or domain; informational, the pattern the other services should follow |
 
-Thresholds change with `--max-lines`, `--max-cc`, `--max-params`,
+Thresholds change with `--max-lines`, `--max-test-lines`, `--max-cc`, `--max-params`,
 `--max-depth`, `--max-file-lines`; the boundary names with `--layers`,
 `--core`, `--domain`. Changing them for a project is a decision that goes
 into that project's `CLAUDE.md`, not into a command line that nobody sees

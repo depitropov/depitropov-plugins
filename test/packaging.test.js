@@ -61,19 +61,29 @@ test('the skill writing-plugins explains every word of the contract that check.j
   const text = fs.readFileSync(path.join(PLUGINS, 'orchestra/skills/writing-plugins/SKILL.md'), 'utf8');
   const words = new Set([
     ...check.SLOTS, ...check.KINDS, ...check.FIXES, ...check.CONFIG_TYPES, ...Object.values(check.DECLARATION_KEYS).flat(),
-    ...check.GATE_KEYS, ...check.BUILD_KEYS, ...check.MEASURE_KEYS, ...check.SETUP_KEYS, ...check.ROLES, ...check.SECTION_KEYS, ...check.PHASES, ...check.ACTIONS,
+    ...check.GATE_KEYS, ...check.BUILD_KEYS, ...check.SETUP_KEYS, ...check.ROLES, ...check.SECTION_KEYS, ...check.PHASES, ...check.ACTIONS,
   ]);
   const quoted = [...text.matchAll(/`([^`]+)`/g)].map(m => m[1]).join('\n');
   for (const w of words) assert.match(quoted, new RegExp(`(^|[^\\w-])${w}([^\\w-]|$)`, 'm'), `writing-plugins does not explain \`${w}\``);
 });
 
-test('the clean-code gate asks for the measure and warns when the stack has none', () => {
+test('the clean-code gate measures with the clean-code plugin it depends on, and warns without it', () => {
   const wf = JSON.parse(fs.readFileSync(path.join(PLUGINS, 'orc-standard-workflow', 'orchestra.json'), 'utf8'));
   assert.equal(wf.gates.find(g => g.name === 'clean-code'), undefined);
   const d = JSON.parse(fs.readFileSync(path.join(PLUGINS, 'orc-global-gates', 'orchestra.json'), 'utf8'));
   const gate = d.gates.find(g => g.name === 'clean-code');
-  assert.deepEqual(gate, { name: 'clean-code', phase: 'implementation-check', kind: 'agent', skill: 'clean-code', always: true, measure: true });
+  assert.deepEqual(gate, { name: 'clean-code', phase: 'implementation-check', kind: 'agent', skill: 'clean-code', always: true });
+  for (const manifest of ['plugin.json', '.claude-plugin/plugin.json']) {
+    const p = JSON.parse(fs.readFileSync(path.join(PLUGINS, 'orc-global-gates', manifest), 'utf8'));
+    assert.deepEqual(p.dependencies, ['clean-code@depitropov-plugins'], manifest);
+  }
   const text = fs.readFileSync(path.join(PLUGINS, 'orc-global-gates', 'skills', 'clean-code', 'SKILL.md'), 'utf8');
-  assert.match(text, /No shape measurement: the Stack Skills plugin declares no measure/);
+  assert.match(text, /clean-code:manifest/);
+  assert.match(text, /No shape measurement: the clean-code plugin is not installed/);
+  for (const skill of ['manifest', 'clean-code-python', 'clean-code-typescript', 'clean-code-java']) {
+    assert.ok(text.includes(`clean-code:${skill}`), skill);
+    assert.ok(fs.existsSync(path.join(PLUGINS, 'clean-code', 'skills', skill, 'SKILL.md')), skill);
+  }
+  assert.ok(fs.existsSync(path.join(PLUGINS, 'clean-code', 'skills', 'clean-code', 'measure.py')));
   assert.match(text, /broken measurement/);
 });
