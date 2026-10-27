@@ -320,3 +320,14 @@ test('a build override runs the project command and its fixer gets the project g
   assert.equal(a.inputs.guide, '.agents/skills/fix-all/SKILL.md');
   assert.match(fs.readFileSync(path.join(t.dir, a.inputs.output), 'utf8'), /process\.exit\(1\)/);
 });
+
+test('a step saved before skill references were full gets its plugin prefix back', () => {
+  const t = setup({ workflowGates: [logicReview] });
+  t.step('implementation-check');
+  const file = `${t.runDir}/implementation-check.state.json`;
+  const state = t.read(file);
+  for (const s of state.steps) if (s.name === 'logic-review') s.skill = 'logic-review';
+  t.write(file, state);
+  assert.equal(t.step('implementation-check').skill, 'wf:logic-review');
+});
+

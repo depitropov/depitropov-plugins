@@ -74,8 +74,8 @@ line names the rule and its fix. Leave the config in place, so the user can fix 
 
 When it passes, tell the user:
 - The config holds only the plugins. Every other key takes its default from the plugin's
-  `orchestra.json`. A project can set those keys, turn gates off with `disable`, and change a gate's
-  `max_rounds` under `gates`.
+  `orchestra.json`. A project can set those keys, turn gates off with `disable`, and override
+  gate and build keys under `gates` and `build`.
 - Commit and push `.orchestra/config.json` and `.gitignore`, so everyone on the project uses the same plugins. A run reads them from `origin/<default>`. init never pushes; the user does.
 - Customize the run for this project with orchestra project: the build, gate settings, project
   gates and project rules.

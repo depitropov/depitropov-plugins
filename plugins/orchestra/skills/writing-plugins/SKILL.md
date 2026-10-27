@@ -92,7 +92,7 @@ section only, overrides `run`, `guide` and `max_rounds` of the build; its `guide
 A project fills the slot `project` itself, with no plugin: `.orchestra/project/orchestra.json` holds
 only `slot`, `gates` and `guides`, in the formats above. A project skill (an `agent` gate's `skill`,
 a fix `guide`) is `.agents/skills/<name>/SKILL.md` in the project; orchestra gives it to the subagent
-by its path. Project gates run after your gates, and project guides come after yours. A project gate
+by its path. Project gates run after your gates of the same kind, and project guides come after yours. A project gate
 name is never one of your gate names. The skill `orchestra:project` writes all of it.
 
 ## A workflow: bin/next.js

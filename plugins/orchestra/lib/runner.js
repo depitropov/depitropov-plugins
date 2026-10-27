@@ -70,6 +70,9 @@ function loadState(ctx) {
   return { state, save: () => writeJson(file, state) };
 }
 
+// A step saved by orchestra before 0.22.0 holds a bare skill name; give it its plugin back.
+const ref = (s, name) => (name.includes(':') || name.endsWith('/SKILL.md') ? name : `${s.plugin}:${name}`);
+
 function fixerDispatch(s, ctx, round) {
   return {
     action: 'dispatch',
@@ -78,7 +81,7 @@ function fixerDispatch(s, ctx, round) {
     result: `${ctx.runDir}/${ctx.phase}.${s.name}.fix${round}.result.json`,
     inputs: {
       output: `${ctx.runDir}/${ctx.phase}.${s.name}.run${round - 1}.log`,
-      guide: s.guide,
+      guide: ref(s, s.guide),
       gate: s.name,
       spec: ctx.run.spec,
       base: ctx.run.base,
@@ -161,7 +164,7 @@ function agentStep(s, ctx, state, save) {
     // Every answer is part of the requirements, so every gate reads them (S66). Only a new answer for this gate restarts it.
     const decisionsFile = `${ctx.run.docs}/decisions.md`;
     if (fs.existsSync(path.join(ctx.project, decisionsFile))) inputs.decisions = decisionsFile;
-    return { action: 'dispatch', skill: s.skill, inputs, result: resultRel, runDir: ctx.runDir };
+    return { action: 'dispatch', skill: ref(s, s.skill), inputs, result: resultRel, runDir: ctx.runDir };
   };
   const retry = res && ((res.status === 'decide' && answers > (state.seen[s.name] || 0)) || (res.status === 'failed' && !reportOnce(resultFile, res)));
   if (retry) {

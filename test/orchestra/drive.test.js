@@ -506,3 +506,18 @@ test('a start with a local project declaration that differs from origin fails an
   assert.equal(git(dir, 'worktree', 'list').split('\n').length, 1);
 });
 
+test('a start fails when a project skill the declaration names is not on origin', () => {
+  const dir = project();
+  fs.appendFileSync(path.join(dir, '.gitignore'), '!.orchestra/project/\n');
+  writeJson(path.join(dir, '.orchestra/project/orchestra.json'), { slot: 'project', gates: [{ name: 'money', phase: 'conventions-check', kind: 'agent', skill: 'check-money', always: true }] });
+  git(dir, 'add', '.gitignore', '.orchestra/project/orchestra.json');
+  git(dir, 'commit', '-m', 'project');
+  git(dir, 'push');
+  fs.mkdirSync(path.join(dir, '.agents/skills/check-money'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.agents/skills/check-money/SKILL.md'), '---\nname: check-money\ndescription: x\n---\n');
+  const a = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  assert.equal(a.action, 'failed');
+  assert.match(a.reason, /\.agents\/skills\/check-money\/SKILL\.md is not on origin\/main\. Commit and push it/);
+  assert.equal(git(dir, 'worktree', 'list').split('\n').length, 1);
+});
+

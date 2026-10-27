@@ -6,7 +6,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { validateAction, withPrompt, inlinePrompt, guidesFor, roleError } = require('../lib/protocol');
 const { load, readJson } = require('../lib/resolved');
-const { CONFIG, PROJECT_FILE } = require('../lib/check');
+const { CONFIG, PROJECT_DIR, PROJECT_SKILLS, PROJECT_FILE } = require('../lib/check');
 const runner = require('../lib/runner');
 const { writeReport } = require('../lib/report');
 const worktree = require('../lib/worktree');
@@ -56,6 +56,19 @@ function drive(project, extraArgs = [], { resume = false, branch, setup = false,
 const readConfig = dir => JSON.parse(fs.readFileSync(path.join(dir, '.orchestra', 'config.json'), 'utf8'));
 // The project declaration too: resolution reads the checkout's, the run reads its files in the worktree (S86).
 const differs = (project, root) => [CONFIG, PROJECT_FILE].find(f => !isDeepStrictEqual(readJson(path.join(project, f)), readJson(path.join(root, f)))) || null;
+// Check reads the project's skills and guides in the checkout; the run reads them in the worktree (S86).
+function missingProjectFile(root) {
+  const d = readJson(path.join(root, PROJECT_FILE)) || {};
+  const build = (readJson(path.join(root, CONFIG))['stack-skills'] || {}).build || {};
+  const skill = name => `${PROJECT_SKILLS}/${name}/SKILL.md`;
+  const files = [
+    ...(Array.isArray(d.gates) ? d.gates : []).flatMap(g => [g && g.kind === 'agent' && g.skill && skill(g.skill), g && g.fix === 'fixer' && g.guide && skill(g.guide)]),
+    ...Object.values(d.guides || {}).map(f => `${PROJECT_DIR}/${f}`),
+    build.guide && skill(build.guide),
+  ].filter(Boolean);
+  return files.find(f => !fs.existsSync(path.join(root, f))) || null;
+}
+
 const reason = (file, base) => `${file} in your checkout differs from the one on ${base}. Commit and push it, then run again.`;
 
 // A detached worktree on origin/<default> whose config matches the checkout's, or a failed action.
@@ -63,9 +76,11 @@ function open(project) {
   const made = worktree.create(project);
   if (made.failed) return { failed: { action: 'failed', reason: made.failed } };
   const changed = differs(project, made.root);
+  const lost = !changed && fs.existsSync(path.join(made.root, CONFIG)) && missingProjectFile(made.root);
   const why = !fs.existsSync(path.join(made.root, '.orchestra', 'config.json'))
     ? `.orchestra/config.json is not on ${made.base}. Commit and push it, then run again.`
-    : changed ? reason(changed, made.base) : null;
+    : changed ? reason(changed, made.base)
+    : lost ? `${lost} is not on ${made.base}. Commit and push it, then run again.` : null;
   if (why) {
     worktree.remove(project, made.root);
     return { failed: { action: 'failed', reason: why } };

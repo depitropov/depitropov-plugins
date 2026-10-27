@@ -160,12 +160,17 @@ function checkGateValues(g, at, fail, config, keys, value = key => config[key].d
       if (!Object.hasOwn(config, m[1])) fail(`${at} uses {config.${m[1]}}, which "config" does not declare`, `declare "${m[1]}" under "config" or fix the name`);
     }
   };
-  if (has('run')) placeholders(g.run);
+  if (has('run')) {
+    if (typeof g.run !== 'string' || !g.run) fail(`${at} "run" is not a command`, 'write the command as text');
+    else placeholders(g.run);
+  }
   if (has('max_rounds') && !wholeNumber(g.max_rounds)) fail(`${at} "max_rounds" is not a whole number of 1 or more`, 'set it to 1 or more');
-  if (has('files') && ![].concat(g.files).every(f => typeof f === 'string' && f)) {
+  if (has('files') && (![].concat(g.files).length || ![].concat(g.files).every(f => typeof f === 'string' && f))) {
     fail(`${at} "files" is not a glob or a list of globs`, 'use a glob such as "**/*.java", or a list of them');
   }
-  if (has('grep')) {
+  if (has('grep') && typeof g.grep !== 'string') {
+    fail(`${at} "grep" is not text`, 'write a regular expression as text');
+  } else if (has('grep')) {
     placeholders(g.grep);
     try {
       new RegExp(String(g.grep).replace(PLACEHOLDER, (m, key) => (Object.hasOwn(config, key) ? String(value(key)) : '')));
@@ -175,7 +180,8 @@ function checkGateValues(g, at, fail, config, keys, value = key => config[key].d
   }
   if (has('when') && typeof g.when !== 'string') fail(`${at} "when" is not text`, 'write the rule in words');
   if (has('always') && typeof g.always !== 'boolean') fail(`${at} "always" is not true or false`, 'set it to true, or remove it');
-  if (!g.always && g.files === undefined && g.grep === undefined && g.when === undefined) {
+  // The same truthiness as select in gates.js: an empty glob list, grep or when selects nothing.
+  if (!g.always && !(g.files && [].concat(g.files).length) && !g.grep && !g.when) {
     fail(`${at} has no selection rule, so it never runs`, 'add "files", "grep", "when" or "always": true');
   }
 }
@@ -354,6 +360,10 @@ function checkProject(project) {
 // gate names no plugin uses, and a folder that git does not ignore.
 function checkProjectSlot(project, config, slots, out) {
   const d = slots.project.declaration;
+  if (isObject(d) && d.slot !== 'project') {
+    out.push(`${PROJECT_FILE}: "slot" is ${JSON.stringify(d.slot)}. Fix: set it to "project".`);
+    return;
+  }
   const skillsDir = path.join(project, PROJECT_SKILLS);
   const declared = checkDeclaration(d, path.join(project, PROJECT_DIR), PROJECT_FILE, skillsDir);
   out.push(...declared);

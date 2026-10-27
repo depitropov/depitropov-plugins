@@ -157,6 +157,11 @@ test('each broken config rule gives one line with the rule and its fix', () => {
     [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', build: { max_rounds: 0 } } }, /"stack-skills\.build\.max_rounds" is not a whole number/],
     [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', build: { guide: 'fix-all' } } }, /names skill "fix-all", which is not in .*\.agents\/skills/],
     [{ workflow: { plugin: 'wf', build: { run: 'x' } }, 'stack-skills': ok }, /section "workflow" has unknown key "build"/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { run: null } } } }, /"stack-skills\.gates\.fmt" "run" is not a command/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { run: 5 } } } }, /"stack-skills\.gates\.fmt" "run" is not a command/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { grep: 5 } } } }, /"stack-skills\.gates\.fmt" "grep" is not text/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { always: false, grep: '' } } } }, /"stack-skills\.gates\.fmt" has no selection rule, so it never runs/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { always: false, when: '' } } } }, /"stack-skills\.gates\.fmt" has no selection rule, so it never runs/],
     [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { nope: { max_rounds: 2 } } } }, /"stack-skills\.gates" names "nope"/],
     [{ workflow: { plugin: 'wf' }, 'stack-skills': ok, nope: { plugin: 'c' } }, /unknown section "nope"/],
   ];
@@ -409,4 +414,18 @@ test('a valid override of a gate and the build passes', () => {
   fs.mkdirSync(path.join(dir, '.agents/skills/fix-all'), { recursive: true });
   fs.writeFileSync(path.join(dir, '.agents/skills/fix-all/SKILL.md'), '---\nname: fix-all\ndescription: Test skill.\n---\n');
   assert.deepEqual(checkProject(dir), []);
+});
+
+test('an empty list of files selects nothing, so check says so', () => {
+  const out = checkProject(both({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { always: false, files: [] } } } })).join('\n');
+  assert.match(out, /"stack-skills\.gates\.fmt" "files" is not a glob or a list of globs/);
+  assert.match(out, /"stack-skills\.gates\.fmt" has no selection rule, so it never runs/);
+});
+
+test('the project declaration must have the slot project', () => {
+  for (const slot of ['workflow', undefined]) {
+    const out = checkProject(addProject(both(), { slot, gates: [] }));
+    assert.equal(out.length, 1, out.join(' | '));
+    assert.match(out[0], /^\.orchestra\/project\/orchestra\.json: "slot" is .+\. Fix: set it to "project"\.$/);
+  }
 });
