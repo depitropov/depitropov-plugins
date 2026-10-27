@@ -18,7 +18,7 @@ All plugins live in this repo (S30).
 
 | Plugin | Role | Holds |
 |---|---|---|
-| `orchestra` | Orchestrator | `orchestra:init`, `orchestra:run` (resolution and driver), the gate runner, the fixer, the select step, `orchestra check`, the authoring skill `writing-plugins` |
+| `orchestra` | Orchestrator | `orchestra:init`, `orchestra:project`, `orchestra:run` (resolution and driver), the gate runner, the fixer, the select step, `orchestra check`, the authoring skill `writing-plugins` |
 | `orc-standard-workflow` | Workflow | `next.js`, one skill per stage, its own gates, its `manifest` skill |
 | `orc-java-stack` | Stack Skills | `build`, its gates, fix guides, its code guide as a file, its `manifest` skill |
 | `orc-ts-stack` | Stack Skills | build, its fix guide, its manifest skill |
@@ -78,6 +78,8 @@ step inside a phase from files on disk. The skills never decide the order.
 | `<slot>.plugin` | orchestra | The plugin that fills the slot. |
 | `<slot>.disable` | orchestra | Gates the project turns off by name, or a guide by its path. Empty or missing = all on (S40). |
 | `<slot>.gates.<name>.max_rounds` | orchestra | Overrides the round limit of one gate. |
+| `<slot>.gates.<name>.<key>` | orchestra | Overrides one key of one gate of that slot: `max_rounds`, `run`, `files`, `grep`, `when` or `always` (S86). |
+| `stack-skills.build.<key>` | orchestra | Overrides one key of the build: `run`, `guide` or `max_rounds` (S86). |
 
 S79 changed a guide's entry from its name to its path. An old config with `"disable": ["code-guide"]`
 fails `orchestra check`, and the fix names the new path (`guides/code.md`).
@@ -131,6 +133,55 @@ no `guides`.
 `resolved.json`. Skill names in the declaration are names inside the same plugin. Every `config`
 key has a `type` (`string`, `number` or `boolean`) and a `default` of that type (S70).
 
+### 4.3 The Project Customization
+
+The Project Customization is what one project changes in its run (S86). It has three verbs.
+
+| Verb | Where | What |
+|---|---|---|
+| Override | `.orchestra/config.json` | A key of the build or of a slot plugin's gate (4.1). A gate keeps its `phase`, `kind`, `fix`, `skill` and `guide`; to change those, the project disables the gate and adds its own. |
+| Amend | `.orchestra/project/orchestra.json` | Project gates, in the format of 6.1. |
+| Guide | `.orchestra/project/orchestra.json` | Project guides by role, as `guides` in 4.2. |
+
+```json
+{
+  "slot": "project",
+  "guides": { "code": "guides/code.md" },
+  "gates": [
+    { "name": "money", "phase": "conventions-check", "kind": "agent", "skill": "check-money",
+      "files": "**/*.java", "grep": "BigDecimal" },
+    { "name": "archunit", "phase": "implementation-check", "kind": "tool",
+      "run": "./mvnw -B -q test -Dtest=ArchitectureTest", "fix": "fixer", "guide": "fix-archunit" }
+  ]
+}
+```
+
+The project files:
+
+```
+.orchestra/config.json              overrides (4.1)
+.orchestra/project/orchestra.json   slot "project": gates and guides only
+.orchestra/project/guides/<role>.md project guides
+.agents/skills/<name>/SKILL.md      project skills: agent gates and fix guides
+.gitignore                          adds !.orchestra/project/
+```
+
+Rules:
+- The folder is the slot. When `.orchestra/project/orchestra.json` exists, `resolve.js` adds the slot
+  `project` to `resolved.json`. It has no plugin, no `manifest` skill, no config section, no
+  `config`, no `build` and no `roles`.
+- A project skill is a normal `SKILL.md` in `.agents/skills/<name>/`. orchestra gives it by path,
+  never by name: the prompt says to read `<run root>/.agents/skills/<name>/SKILL.md` and follow it.
+  Guides already work this way (S76, S79). The skill then works the same on every harness and comes
+  from the run's worktree. A person can still invoke it by hand where the harness finds it.
+- `{plugin}` in a project gate's `run` is `.orchestra/project/` in the run root.
+- A project gate name must differ from every gate name of the other slots. A project never shadows a
+  gate by name; it overrides a key or disables the gate.
+- Project gates run last in each step of a phase (6.2). Project guides come last for their role,
+  after the Curator's and the Stack Skills' guides, so the most specific rule comes last.
+- A project cannot change the stage order, the phases, the place of the build or the triage contract.
+  That needs another workflow plugin.
+
 ## 5. `orchestra`
 
 ### 5.1 `orchestra:init`
@@ -144,6 +195,21 @@ key has a `type` (`string`, `number` or `boolean`) and a `default` of that type 
    result. It commits nothing.
 
 It is the only interactive skill in phase 1.
+
+### 5.1a `orchestra:project`
+
+The skill that writes the Project Customization (4.3, S86). It runs after `orchestra:init`, and again
+whenever the project wants a change. `orchestra:init` ends with one line that points to it.
+
+1. Reads the config and resolves the slots, as `orchestra:run` does.
+2. Shows what the run does now: the build, the gates per phase with their declarer, and the guides
+   per role.
+3. Asks what is different in this project: the build, gate keys to override, gates to turn off,
+   project gates to add, and project rules per role.
+4. Writes the overrides into `.orchestra/config.json`, and the declaration, guides and project
+   skills into `.orchestra/project/` and `.agents/skills/`. Adds `!.orchestra/project/` to
+   `.gitignore`.
+5. Runs `resolve.js`, which runs `orchestra check --project`. It commits nothing.
 
 ### 5.2 `orchestra:run`
 
@@ -186,6 +252,7 @@ config rules and the declaration rules of each resolved plugin. The rules are pl
 | Target | Rules |
 |---|---|
 | Config | Every slot has a section, and every section's plugin is in `resolved.json`. Every other key is declared by that plugin, with the right type. Every name in `disable` and `gates` exists. |
+| Project | Only `slot`, `gates` and `guides`. Every guide file exists. Every project skill exists as `.agents/skills/<name>/SKILL.md` with only `name` and `description` in its frontmatter. No gate name repeats a gate of another slot. Every guide role is declared by the workflow. Every override key in the config is one of 4.1 (S86). |
 | Declaration | Only the keys of its slot; the gate keys and values of 6.1; every `{config.<key>}` declared; every config key typed with a default. `slot` matches the slot it is used in. Every skill it names exists in the plugin. Every `phase` is one of the three standard phases. |
 | Workflow plugin | Has `next.js` and a `manifest` skill. The dry run: `next.js` with a task, in a throwaway git repo with a bare remote, prints a valid action that is not `failed`. |
 | Stack Skills plugin | Has a `build` with `run` and `guide`, and a `manifest` skill. Every tool gate with `fix: fixer` names a `guide`. |
@@ -234,7 +301,7 @@ skip (S27).
 | `conventions-check` | Does it follow our conventions? DTOs, entities, converters. | tool gates → agent gates |
 | `finish` | Is the final state clean and green? Comments, logging, formatting. | agent gates → tool gates → **build** |
 
-Inside each step: workflow gates, then global gates, then stack gates (S80), then the order of declaration.
+Inside each step: workflow gates, then global gates, then stack gates (S80), then project gates (S86), then the order of declaration.
 
 Nothing runs after `finish`. A finish gate must not change behaviour. The final build is the proof.
 A red build in `finish` ends the run with `failed`.
@@ -247,7 +314,7 @@ data that tools like crap4java read. The gate runner calls it at the start of
 `implementation-check` and at the end of `finish`. No gate list can remove or move it. The runner
 records the commit of its last green build, and skips a build when `HEAD` is that commit and the
 tree is clean (S57). The code
-stage uses the same command for its own test runs. Later the PSK can override it.
+stage uses the same command for its own test runs. The project can override it in the config (4.3, S86).
 
 ### 6.4 Selection
 
@@ -304,7 +371,7 @@ it (S66).
 | State | Two folders, both derived from the branch, never passed (S15, S22). The **run folder** `tmp/runs/<branch>/` holds everything the orchestration uses: results, checkpoints, logs, `run.json`, `stages.json` (the order of the stage dispatches, for the report). Git ignores it. The **notes folder** `docs/runs/<branch>/` holds what a human reads: `task.md`, `brief.md`, `plan.md`, `decisions.md`, review notes (`plan-check.md`, `code.md`, `implementation-log.md`, `logic-review.md`) and `report.md`. It is committed and goes to the default branch with the PR (S54, S58). The workflow writes `run.json` with `base`, `branch`, `spec` (`<notes>/brief.md`, the file that holds the acceptance criteria) and `docs` (the notes folder). The gate runner reads it (S55). A resume works on the same machine only, because the run folder is not committed. Both folders are inside the run's worktree (S74). At `done`, before the worktree is removed, orchestra copies the run folder to `tmp/runs/<branch>/` in the checkout, so the logs stay for local debugging. |
 | Worktree | orchestra starts every run in `.orchestra/worktrees/<branch>`, detached at the base. The workflow creates its branch there and never checks out, pulls or switches (S74). |
 | Mode | Headless or interactive is fixed by the workflow's author when the workflow is built. It is not a runtime setting (S12). |
-| Roles | `roles` in `orchestra.json`; each dispatch of a stage with a role carries `role`. orchestra adds the guides of that role to the prompt and fails a role the workflow did not declare (S76). |
+| Roles | `roles` in `orchestra.json`; each dispatch of a stage with a role carries `role`. orchestra adds the guides of that role to the prompt, in the order Curator, Stack Skills, project, and fails a role the workflow did not declare (S76, S86). |
 
 ## 8. `orc-standard-workflow`
 
@@ -510,7 +577,7 @@ now the done test of plan 5.
 
 ## 14. Out of scope
 
-The Curator, the PSK and PSK-over-Stack-Skills precedence (O6), General Knowledge (O7), adapters for
+The Curator, the Project Customization (S86), General Knowledge (O7), adapters for
 external frameworks (O8), the crap4java and mutate4java gates, model per stage, push and PR,
 parallel gates, more than one stack per project.
 

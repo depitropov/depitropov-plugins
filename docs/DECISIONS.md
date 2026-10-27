@@ -292,8 +292,8 @@ wording change needs no entry.
 - **Question:** How does minions' curate part (the backlog, product, direction, decisions and questions of a vibe-coded project) become the Curator, plug into orchestra, and stay usable without it? Who calls curate after a run (O3)?
 - **Options:**
   1. What it owns.
-     - The direction docs only. Chosen. The code-knowledge half (conventions into skills, rules and `CLAUDE.md`) overlaps with the PSK, which is not defined.
-     - Both halves. It ports the knowledge ledger before the PSK exists.
+     - The direction docs only. Chosen. The code-knowledge half (conventions into skills, rules and `CLAUDE.md`) overlaps with the PSK (now the Project Customization, S86), which was not defined then.
+     - Both halves. It ports the knowledge ledger before the PSK (now the Project Customization) exists.
      - BACKLOG and DIRECTION only. PRODUCT, DECISIONS and QUESTIONS would have no writer.
   2. Which skills.
      - The whole long-term tier: shape-project, shape-product, shape-tech, research, backlog, direction, curate. Chosen. Without the shaping skills a new project has empty docs, and the sweep has no rows to work on.
@@ -586,3 +586,50 @@ wording change needs no entry.
   `plugins/orc-ts-stack/`, `plugins/orc-java-stack/`, `test/packaging.test.js`, `test/orchestra/`,
   `docs/harness-exceptions.md`.
 
+## S86: The Project Customization
+
+- **Date:** 2026-10-27
+- **Status:** decided
+- **Question:** A project cannot change its run beyond turning gates and guides off, a gate's round
+  limit and the config keys a plugin declares. It cannot change the build command, add its own
+  gates or give its own rules to the stages. The PSK was the placeholder for this, with the open
+  point O6 on its precedence. What can a project override, add and guide, where do its files live,
+  and how is it written?
+- **Options:**
+  1. Name: keep "PSK", or a plain name. The user chose "Project Customization"; slot `project`.
+  2. Override by shadowing: a project gate with the same name replaces the plugin's gate. Short, but a
+     replacement happens with no line that says so. Or override by explicit keys in the config:
+     every change is one visible key. Chosen: explicit keys.
+  3. Project skills by name, as plugin skills are: the dispatch prompt says "invoke the skill". The
+     harnesses read project skills from different folders (Codex `.agents/skills/`; Claude Code's
+     documented folder is `.claude/skills/`), and they load them from the session's checkout, not
+     from the run's worktree. Or project skills by path: the prompt says "read
+     `<run root>/.agents/skills/<name>/SKILL.md` and follow it". Chosen: by path.
+  4. Scope: a small first version with guides and the build only, or the full version with project
+     gates. Chosen: the full version.
+  5. Entry: more steps in `orchestra:init`, or a new skill. Chosen: a new skill `orchestra:project`;
+     `init` chooses plugins, and this skill describes the project.
+- **Evidence:** The config rules and keys of `docs/DESIGN.md` 4.1. Guides are already given by path
+  (S76, S79), and that works on both harnesses. A web search (2026-10-27) found no official source
+  that Claude Code reads `.agents/skills/`; third-party pages say the `skills` CLI installs there and
+  symlinks into `.claude/skills/`. The user could not confirm it either. The direction of O6 was
+  "the PSK wins".
+- **Decision:** Three verbs. Override in `.orchestra/config.json`: `stack-skills.build.<key>`
+  (`run`, `guide`, `max_rounds`) and `<slot>.gates.<name>.<key>` (`max_rounds`, `run`, `files`,
+  `grep`, `when`, `always`). Amend with project gates and guide with project guides in
+  `.orchestra/project/orchestra.json`, slot `project`, which holds only `gates` and `guides`. The
+  folder is the slot: no plugin, no `manifest`, no config section. Project gates run last in each step
+  of a phase; project guides come last for their role. A project gate name never repeats another
+  slot's. Project skills live in `.agents/skills/<name>/SKILL.md` and orchestra gives them by path.
+  The stage order, the phases, the build's place and triage stay fixed. `orchestra:project` writes all
+  of it and runs `orchestra check`. This closes O6.
+- **Cost and risk:** A project skill that orchestra gives by path is not invoked as a skill, so the
+  harness does not track it as one; the subagent reads it as a file. To invoke it by hand on Claude
+  Code, the project links `.claude/skills/<name>` to it; that is the project's choice, not orchestra's.
+  The overrides of a gate's `run` or `files` change a gate whose fix guide its declarer wrote for the
+  original command; the guide may then fit less well. `resolve.js` reads the project declaration from
+  the checkout, as it reads the config; the files it names are read in the worktree. The Curator
+  writing project guides is a follow-up (O14).
+- **Where it lives:** `docs/DESIGN.md` 4.1, 4.3, 5.1a, 5.3, 6.2 and 7; `docs/CONTEXT.md`. To build:
+  `plugins/orchestra/lib/{check,resolved,gates,protocol}.js`, `plugins/orchestra/skills/project/`,
+  `plugins/orchestra/skills/init/SKILL.md`, `plugins/orchestra/skills/writing-plugins/SKILL.md`.
