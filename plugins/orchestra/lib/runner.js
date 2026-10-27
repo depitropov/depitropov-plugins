@@ -64,7 +64,7 @@ function loadState(ctx) {
     };
     const verdicts = select(gates, changedFiles(ctx.project, ctx.run.base), readFile);
     const chosen = gates.filter((g, i) => verdicts[i].selected);
-    state = { steps: plan(ctx.phase, chosen, buildStep(ctx.resolved)), skipped: verdicts.filter(v => !v.selected), rounds: {}, seen: {} };
+    state = { steps: plan(ctx.phase, chosen, buildStep(ctx.resolved, ctx.config)), skipped: verdicts.filter(v => !v.selected), rounds: {}, seen: {} };
     writeJson(file, state);
   }
   return { state, save: () => writeJson(file, state) };
@@ -78,7 +78,7 @@ function fixerDispatch(s, ctx, round) {
     result: `${ctx.runDir}/${ctx.phase}.${s.name}.fix${round}.result.json`,
     inputs: {
       output: `${ctx.runDir}/${ctx.phase}.${s.name}.run${round - 1}.log`,
-      guide: `${s.plugin}:${s.guide}`,
+      guide: s.guide,
       gate: s.name,
       spec: ctx.run.spec,
       base: ctx.run.base,
@@ -161,7 +161,7 @@ function agentStep(s, ctx, state, save) {
     // Every answer is part of the requirements, so every gate reads them (S66). Only a new answer for this gate restarts it.
     const decisionsFile = `${ctx.run.docs}/decisions.md`;
     if (fs.existsSync(path.join(ctx.project, decisionsFile))) inputs.decisions = decisionsFile;
-    return { action: 'dispatch', skill: `${s.plugin}:${s.skill}`, inputs, result: resultRel, runDir: ctx.runDir };
+    return { action: 'dispatch', skill: s.skill, inputs, result: resultRel, runDir: ctx.runDir };
   };
   const retry = res && ((res.status === 'decide' && answers > (state.seen[s.name] || 0)) || (res.status === 'failed' && !reportOnce(resultFile, res)));
   if (retry) {

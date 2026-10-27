@@ -5,7 +5,12 @@ const PHASE_ORDER = {
   'conventions-check': ['tool', 'agent'],
   finish: ['agent', 'tool', 'build'],
 };
-const PROVIDERS = ['workflow', 'global-gates', 'stack-skills'];
+const PROVIDERS = ['workflow', 'global-gates', 'stack-skills', 'project'];
+
+// A project skill is read by its path in the run root, so it runs on every harness (S86). A plugin skill is invoked by name.
+function skillRef(provider, plugin, name) {
+  return provider === 'project' ? `.agents/skills/${name}/SKILL.md` : `${plugin}:${name}`;
+}
 
 function globToRegExp(glob) {
   let re = '';
@@ -51,17 +56,20 @@ function collect(resolved, config, phase) {
     const disabled = section.disable || [];
     const overrides = section.gates || {};
     const values = slotValues(slot.declaration, section);
-    for (const g of slot.declaration.gates || []) {
-      if (g.phase !== phase || disabled.includes(g.name)) continue;
+    for (const declared of slot.declaration.gates || []) {
+      if (declared.phase !== phase || disabled.includes(declared.name)) continue;
+      const g = { ...declared, ...overrides[declared.name] };
       const fix = g.fix || (g.kind === 'agent' ? 'self' : 'none');
       gates.push({
         ...g,
         provider,
         plugin: slot.plugin,
         fix,
+        skill: g.skill && skillRef(provider, slot.plugin, g.skill),
+        guide: g.guide && skillRef(provider, slot.plugin, g.guide),
         run: g.run && expand(g.run, slot.dir, values),
         grep: g.grep && expand(g.grep, slot.dir, values),
-        max_rounds: (overrides[g.name] || {}).max_rounds ?? g.max_rounds ?? 2,
+        max_rounds: g.max_rounds ?? 2,
         config: values,
       });
     }
@@ -93,17 +101,20 @@ function select(gates, changed, readFile) {
   });
 }
 
-function buildStep(resolved) {
+// The project may override the build in its config; its own fix guide is a project skill (S86).
+function buildStep(resolved, config) {
   const stack = resolved.slots['stack-skills'];
-  const build = stack && stack.declaration.build;
-  if (!build) throw new Error('The stack-skills plugin declares no build.');
+  const declared = stack && stack.declaration.build;
+  if (!declared) throw new Error('The stack-skills plugin declares no build.');
+  const own = (config['stack-skills'] || {}).build || {};
+  const build = { ...declared, ...own };
   return {
     name: 'build',
     kind: 'tool',
     build: true,
     run: build.run.replace(/\{plugin\}/g, () => stack.dir),
     fix: 'fixer',
-    guide: build.guide,
+    guide: own.guide ? skillRef('project', 'project', own.guide) : skillRef('stack-skills', stack.plugin, declared.guide),
     max_rounds: build.max_rounds ?? 2,
     plugin: stack.plugin,
   };
@@ -115,4 +126,4 @@ function plan(phase, gates, build) {
   return order.flatMap(kind => (kind === 'build' ? [build] : gates.filter(g => g.kind === kind)));
 }
 
-module.exports = { PHASE_ORDER, globToRegExp, collect, select, buildStep, plan };
+module.exports = { PHASE_ORDER, skillRef, globToRegExp, collect, select, buildStep, plan };

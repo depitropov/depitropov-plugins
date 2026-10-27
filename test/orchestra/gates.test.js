@@ -91,7 +91,7 @@ test('select takes a list of globs in files', () => {
 });
 
 test('plan orders each phase: build, tools and agents in the fixed order', () => {
-  const build = buildStep(resolved);
+  const build = buildStep(resolved, {});
   assert.equal(build.run, '/p/st/build.sh');
   assert.equal(build.max_rounds, 3);
   const gates = [
@@ -104,5 +104,42 @@ test('plan orders each phase: build, tools and agents in the fixed order', () =>
 });
 
 test('buildStep fails when the stack plugin declares no build', () => {
-  assert.throws(() => buildStep({ slots: { 'stack-skills': { declaration: {} } } }), /declares no build/);
+  assert.throws(() => buildStep({ slots: { 'stack-skills': { declaration: {} } } }, {}), /declares no build/);
+});
+
+const withProject = { slots: { ...resolved.slots, project: { plugin: 'project', dir: '.orchestra/project', declaration: { gates: [
+  { name: 'money', phase: 'conventions-check', kind: 'agent', skill: 'check-money', always: true },
+  { name: 'archunit', phase: 'implementation-check', kind: 'tool', run: '{plugin}/arch.sh', fix: 'fixer', guide: 'fix-arch', always: true },
+] } } } };
+
+test('collect puts project gates last and refers to their skills by path', () => {
+  const gates = collect(withProject, {}, 'implementation-check');
+  assert.deepEqual(gates.map(g => g.name), ['logic-review', 'crap', 'arch', 'archunit']);
+  const archunit = gates.find(g => g.name === 'archunit');
+  assert.equal(archunit.run, '.orchestra/project/arch.sh');
+  assert.equal(archunit.guide, '.agents/skills/fix-arch/SKILL.md');
+  assert.equal(gates.find(g => g.name === 'arch').skill, 'st:review-arch');
+  assert.equal(gates.find(g => g.name === 'crap').guide, 'st:fix-crap');
+  const conventions = collect(withProject, {}, 'conventions-check');
+  assert.equal(conventions.at(-1).skill, '.agents/skills/check-money/SKILL.md');
+});
+
+test('collect merges a gate override over the declaration', () => {
+  const crap = collect(resolved, { 'stack-skills': { gates: { crap: { run: 'crap {plugin}', files: '**/*.kt', max_rounds: 5 } } } }, 'implementation-check').find(g => g.name === 'crap');
+  assert.equal(crap.run, 'crap /p/st');
+  assert.equal(crap.files, '**/*.kt');
+  assert.equal(crap.max_rounds, 5);
+  assert.equal(crap.phase, 'implementation-check');
+  assert.equal(crap.fix, 'fixer');
+});
+
+test('buildStep merges the build override, and a project guide is a path', () => {
+  const plain = buildStep(resolved, {});
+  assert.equal(plain.run, '/p/st/build.sh');
+  assert.equal(plain.guide, 'st:fix-build');
+  assert.equal(plain.max_rounds, 3);
+  const own = buildStep(resolved, { 'stack-skills': { build: { run: 'make all', guide: 'fix-all' } } });
+  assert.equal(own.run, 'make all');
+  assert.equal(own.guide, '.agents/skills/fix-all/SKILL.md');
+  assert.equal(own.max_rounds, 3);
 });

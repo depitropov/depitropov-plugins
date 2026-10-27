@@ -11,14 +11,23 @@ const runner = require('../../plugins/orchestra/lib/runner');
 const ORCHESTRA = path.join(__dirname, '../../plugins/orchestra');
 const OK = 'node -e "process.exit(0)"';
 
-function setup({ build = OK, maxRounds = 1, stackGates = [], workflowGates = [], workflowConfig, workflowValues = {} } = {}) {
+function setup({ build = OK, maxRounds = 1, stackGates = [], workflowGates = [], workflowConfig, workflowValues = {}, projectGates = [], buildOverride } = {}) {
   const dir = makeRepo();
   const plugins = fs.mkdtempSync(path.join(os.tmpdir(), 'plugins-'));
   const mk = (name, declaration) => writePlugin(path.join(plugins, name), name, declaration);
   const wf = mk('wf', { slot: 'workflow', ...(workflowConfig && { config: workflowConfig }), gates: workflowGates });
   const st = mk('st', { slot: 'stack-skills', build: { run: build, guide: 'fix-build', max_rounds: maxRounds }, gates: stackGates });
-  const config = { workflow: { plugin: 'wf', ...workflowValues }, 'stack-skills': { plugin: 'st' } };
+  const config = { workflow: { plugin: 'wf', ...workflowValues }, 'stack-skills': { plugin: 'st', ...(buildOverride && { build: buildOverride }) } };
   writeJson(path.join(dir, '.orchestra/config.json'), config);
+  const own = [...projectGates.map(g => g.skill), buildOverride && buildOverride.guide].filter(Boolean);
+  if (projectGates.length) {
+    writeJson(path.join(dir, '.orchestra/project/orchestra.json'), { slot: 'project', gates: projectGates });
+    fs.appendFileSync(path.join(dir, '.gitignore'), '!.orchestra/project/\n');
+  }
+  for (const s of own) {
+    fs.mkdirSync(path.join(dir, '.agents/skills', s), { recursive: true });
+    fs.writeFileSync(path.join(dir, '.agents/skills', s, 'SKILL.md'), `---\nname: ${s}\ndescription: Test skill.\n---\n`);
+  }
   git(dir, 'add', '-A');
   git(dir, 'commit', '-m', 'config');
   const resolved = resolve(dir, { workflow: wf, 'stack-skills': st }, ORCHESTRA);
@@ -294,4 +303,20 @@ test('a $ in the plugin folder stays literal in a gate command', () => {
   const gate = { name: 'fmt', phase: 'finish', kind: 'tool', run: 'x {plugin}/f', always: true };
   const resolved = { slots: { 'stack-skills': { plugin: 'st', dir: '/p/$&/q', declaration: { slot: 'stack-skills', gates: [gate] } } } };
   assert.equal(collect(resolved, {}, 'finish')[0].run, 'x /p/$&/q/f');
+});
+
+test('a project agent gate is dispatched by the path of its skill', () => {
+  const t = setup({ projectGates: [{ name: 'money', phase: 'implementation-check', kind: 'agent', skill: 'check-money', always: true }] });
+  const a = t.step('implementation-check');
+  assert.equal(a.skill, '.agents/skills/check-money/SKILL.md');
+  assert.match(a.result, /implementation-check\.money\.result\.json$/);
+});
+
+test('a build override runs the project command and its fixer gets the project guide', () => {
+  const red = 'node -e "process.exit(1)"';
+  const t = setup({ buildOverride: { run: red, guide: 'fix-all' } });
+  const a = t.step('implementation-check');
+  assert.equal(a.skill, 'orchestra:fixer');
+  assert.equal(a.inputs.guide, '.agents/skills/fix-all/SKILL.md');
+  assert.match(fs.readFileSync(path.join(t.dir, a.inputs.output), 'utf8'), /process\.exit\(1\)/);
 });
