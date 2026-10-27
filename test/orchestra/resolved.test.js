@@ -52,3 +52,16 @@ test('a broken JSON file names itself and the fix', () => {
   fs.writeFileSync(path.join(dir, '.orchestra/config.json'), '{ nope');
   assert.throws(() => resolve(dir, {}, '/orc'), /config\.json is not valid JSON: .+\. Fix: correct the JSON\./);
 });
+
+test('adds the project slot when .orchestra/project/orchestra.json exists', () => {
+  const wf = plugin('wf', { slot: 'workflow', gates: [] });
+  const st = plugin('st', ST);
+  const without = project();
+  resolve(without, { workflow: wf, 'stack-skills': st }, '/orc');
+  assert.equal(load(without).slots.project, undefined);
+  const dir = project();
+  writeJson(path.join(dir, '.orchestra/project/orchestra.json'), { slot: 'project', gates: [] });
+  fs.appendFileSync(path.join(dir, '.gitignore'), '!.orchestra/project/\n');
+  resolve(dir, { workflow: wf, 'stack-skills': st }, '/orc');
+  assert.deepEqual(load(dir).slots.project, { plugin: 'project', version: 'local', dir: '.orchestra/project', declaration: { slot: 'project', gates: [] } });
+});

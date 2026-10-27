@@ -322,3 +322,75 @@ test('a curator guide for a role the workflow lacks names the curator section in
   const out = checkProject(project(config, { workflow: { ...wf, roles: ['plan', 'code'] }, 'stack-skills': st, curator: cur }));
   assert.deepEqual(out, ['.orchestra/config.json: cur declares a "spec" guide, but the workflow wf has no spec stage. Fix: add "guides/spec.md" to "curator.disable", or choose a workflow with a spec stage.']);
 });
+
+// Writes .orchestra/project/ with its guides, the named skills in .agents/skills/, the resolved slot and the .gitignore line.
+function addProject(dir, d, { skills = [], ignore = false } = {}) {
+  writeJson(path.join(dir, '.orchestra/project/orchestra.json'), d);
+  for (const g of Object.values(d.guides || {})) {
+    fs.mkdirSync(path.dirname(path.join(dir, '.orchestra/project', g)), { recursive: true });
+    fs.writeFileSync(path.join(dir, '.orchestra/project', g), '# A guide\n');
+  }
+  for (const s of skills) {
+    fs.mkdirSync(path.join(dir, '.agents/skills', s), { recursive: true });
+    fs.writeFileSync(path.join(dir, '.agents/skills', s, 'SKILL.md'), `---\nname: ${s}\ndescription: Test skill.\n---\n`);
+  }
+  if (!ignore) fs.appendFileSync(path.join(dir, '.gitignore'), '!.orchestra/project/\n');
+  const file = path.join(dir, '.orchestra/resolved.json');
+  const r = JSON.parse(fs.readFileSync(file, 'utf8'));
+  r.slots.project = { plugin: 'project', version: 'local', dir: '.orchestra/project', declaration: d };
+  writeJson(file, r);
+  return dir;
+}
+const both = (config = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' } }, workflow = wf) => project(config, { workflow, 'stack-skills': st });
+const money = { name: 'money', phase: 'conventions-check', kind: 'agent', skill: 'check-money', files: '**/*.java' };
+
+test('a valid project declaration passes', () => {
+  const d = { slot: 'project', guides: { code: 'guides/code.md' }, gates: [money, { name: 'arch', phase: 'implementation-check', kind: 'tool', run: 'make arch', fix: 'fixer', guide: 'fix-arch', always: true }] };
+  assert.deepEqual(checkProject(addProject(both(), d, { skills: ['check-money', 'fix-arch'] })), []);
+});
+
+test('a project skill must exist in .agents/skills/ with only name and description', () => {
+  const d = { slot: 'project', gates: [money] };
+  const missing = checkProject(addProject(both(), d));
+  assert.equal(missing.length, 1, missing.join(' | '));
+  assert.match(missing[0], /names skill "check-money", which is not in .*\.agents\/skills/);
+  const dir = addProject(both(), d, { skills: ['check-money'] });
+  fs.writeFileSync(path.join(dir, '.agents/skills/check-money/SKILL.md'), '---\nname: check-money\ndescription: x\nmodel: opus\n---\n');
+  const extra = checkProject(dir);
+  assert.equal(extra.length, 1, extra.join(' | '));
+  assert.match(extra[0], /frontmatter has the keys name, description, model/);
+});
+
+test('a project declaration takes only slot, gates and guides', () => {
+  for (const [key, value] of [['build', { run: 'x' }], ['config', {}], ['roles', ['code']]]) {
+    assert.match(checkProject(addProject(both(), { slot: 'project', [key]: value })).join('\n'), new RegExp(`unknown key "${key}" for slot project`));
+  }
+});
+
+test('a project gate may not reuse a plugin gate name, even a disabled one', () => {
+  const out = checkProject(addProject(both({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', disable: ['fmt'] } }), { slot: 'project', gates: [{ ...money, name: 'fmt' }] }, { skills: ['check-money'] }));
+  assert.equal(out.length, 1, out.join(' | '));
+  assert.match(out[0], /gate "fmt".*project.*st.*Fix: .*rename/);
+});
+
+test('a project guide for a role the workflow lacks fails', () => {
+  const out = checkProject(addProject(both(undefined, { ...wf, roles: ['spec', 'plan'] }), { slot: 'project', guides: { code: 'guides/code.md' } }));
+  const mine = out.filter(l => /project declares/.test(l));
+  assert.equal(mine.length, 1, out.join(' | '));
+  assert.match(mine[0], /project declares a "code" guide, but the workflow wf has no code stage\. Fix: remove .+ from \.orchestra\/project\/orchestra\.json/);
+});
+
+test('the project folder must not be ignored', () => {
+  const out = checkProject(addProject(both(), { slot: 'project', gates: [] }, { ignore: true }));
+  assert.equal(out.length, 1, out.join(' | '));
+  assert.match(out[0], /^\.gitignore: \.orchestra\/project\/ is ignored\. Fix: add the line !\.orchestra\/project\/ to \.gitignore\.$/);
+});
+
+test('a plugin cannot fill the project slot', () => {
+  const { checkPlugin } = require('../../plugins/orchestra/lib/check');
+  assert.match(checkPlugin(writePlugin(tmp('p-'), 'p', { slot: 'project', gates: [] })).join('\n'), /"slot" is project, which only a project's \.orchestra\/project\/ fills/);
+});
+
+test('a config section named project is unknown', () => {
+  assert.match(checkProject(both({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, project: { plugin: 'x' } })).join('\n'), /unknown section "project"/);
+});

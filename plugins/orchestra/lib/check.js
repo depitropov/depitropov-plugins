@@ -15,12 +15,16 @@ const REQUIRED_SLOTS = ['workflow', 'stack-skills'];
 const KINDS = ['tool', 'agent'];
 const FIXES = ['self', 'fixer', 'none'];
 const CONFIG_TYPES = ['string', 'number', 'boolean'];
-const DECLARATION_KEYS = { workflow: ['slot', 'config', 'roles', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'guides', 'gates'], curator: ['slot', 'config', 'curate', 'setup', 'guides'], 'global-gates': ['slot', 'config', 'gates'] };
+// The slot project has no plugin and no config section: a project fills it with .orchestra/project/ (S86).
+const DECLARATION_KEYS = { workflow: ['slot', 'config', 'roles', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'guides', 'gates'], curator: ['slot', 'config', 'curate', 'setup', 'guides'], 'global-gates': ['slot', 'config', 'gates'], project: ['slot', 'gates', 'guides'] };
 const GATE_KEYS = ['name', 'phase', 'kind', 'skill', 'run', 'fix', 'guide', 'max_rounds', 'files', 'grep', 'when', 'always'];
 const BUILD_KEYS = ['run', 'guide', 'max_rounds'];
 const SETUP_KEYS = ['skill', 'done'];
 const SECTION_KEYS = ['plugin', 'disable', 'gates'];
 const CONFIG = '.orchestra/config.json';
+const PROJECT_DIR = '.orchestra/project';
+const PROJECT_SKILLS = '.agents/skills';
+const PROJECT_FILE = `${PROJECT_DIR}/orchestra.json`;
 
 const wholeNumber = v => Number.isInteger(v) && v >= 1;
 const isObject = v => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -38,14 +42,14 @@ function parseJson(file, label, out) {
   }
 }
 
-function checkDeclaration(d, dir, where) {
+function checkDeclaration(d, dir, where, skillsDir = path.join(dir, 'skills')) {
   const out = [];
   const fail = (problem, fix) => out.push(`${where}: ${problem}. Fix: ${fix}.`);
   if (!isObject(d)) {
     fail('the declaration is not a JSON object', 'write orchestra.json as an object with a "slot" key');
     return out;
   }
-  if (!SLOTS.includes(d.slot)) {
+  if (!Object.hasOwn(DECLARATION_KEYS, d.slot)) {
     fail(`"slot" is ${JSON.stringify(d.slot)}`, `set it to one of ${SLOTS.join(', ')}`);
     return out;
   }
@@ -62,9 +66,10 @@ function checkDeclaration(d, dir, where) {
       fail(`config key "${key}" has no ${spec.type} default`, `add "default" with a ${spec.type} value`);
     }
   }
+  const skillsLabel = skillsDir.endsWith(PROJECT_SKILLS) ? PROJECT_SKILLS : 'skills';
   const skill = (name, what) => {
     if (typeof name !== 'string') fail(`${what} names no skill`, 'name a skill of this plugin');
-    else if (!skillExists(dir, name)) fail(`${what} names skill "${name}", which is not in skills/`, `add skills/${name}/SKILL.md or fix the name`);
+    else if (!fs.existsSync(path.join(skillsDir, name, 'SKILL.md'))) fail(`${what} names skill "${name}", which is not in ${skillsLabel}/`, `add ${skillsLabel}/${name}/SKILL.md or fix the name`);
   };
   // A guide is a file inside the plugin, named by a path relative to the plugin folder (S79).
   const file = (value, what) => {
@@ -290,6 +295,7 @@ function checkProject(project) {
       owner[g.name] = s.plugin;
     }
   }
+  if (slots.project) checkProjectSlot(project, config, slots, out);
   // A run's worktree lives in the project (S74). Not ignored, it shows in the user's git status.
   try {
     execFileSync('git', ['check-ignore', '-q', `${DIR}/x`], { cwd: project, stdio: 'ignore' });
@@ -299,26 +305,68 @@ function checkProject(project) {
   return out;
 }
 
+// The Project Customization (S86): its declaration, its skills in .agents/skills/, its guide roles,
+// gate names no plugin uses, and a folder that git does not ignore.
+function checkProjectSlot(project, config, slots, out) {
+  const d = slots.project.declaration;
+  const skillsDir = path.join(project, PROJECT_SKILLS);
+  const declared = checkDeclaration(d, path.join(project, PROJECT_DIR), PROJECT_FILE, skillsDir);
+  out.push(...declared);
+  if (!isObject(d)) return;
+  const gates = Array.isArray(d.gates) ? d.gates.filter(isObject) : [];
+  for (const name of new Set(gates.flatMap(g => [g.kind === 'agent' && g.skill, g.fix === 'fixer' && g.guide]))) {
+    const file = path.join(skillsDir, String(name), 'SKILL.md');
+    if (typeof name === 'string' && fs.existsSync(file)) out.push(...checkSkillFile(file, name, `${PROJECT_SKILLS}/${name}/SKILL.md`));
+  }
+  const wf = slots.workflow;
+  if (wf && isObject(wf.declaration) && isObject(d.guides)) {
+    const roles = Array.isArray(wf.declaration.roles) ? wf.declaration.roles : [];
+    for (const [role, file] of Object.entries(d.guides)) {
+      if (ROLES.includes(role) && !roles.includes(role)) out.push(`${PROJECT_FILE}: the project declares a "${role}" guide, but the workflow ${wf.plugin} has no ${role} stage. Fix: remove "${file}" from ${PROJECT_FILE}, or choose a workflow with a ${role} stage.`);
+    }
+  }
+  // A project never shadows a plugin gate by name, not even a disabled one: it overrides a key or disables the gate (S86).
+  for (const slot of SLOTS) {
+    const s = slots[slot];
+    if (!s || !isObject(s.declaration) || !Array.isArray(s.declaration.gates) || !isObject(config[slot])) continue;
+    for (const g of gates) {
+      if (s.declaration.gates.some(p => isObject(p) && p.name === g.name)) {
+        out.push(`${PROJECT_FILE}: gate "${g.name}" of the project is also a gate of ${s.plugin}. Fix: rename the project gate; to replace the gate of ${s.plugin}, add "${g.name}" to "${slot}.disable" and give the project gate another name.`);
+      }
+    }
+  }
+  try {
+    execFileSync('git', ['check-ignore', '-q', PROJECT_FILE], { cwd: project, stdio: 'ignore' });
+    out.push(`.gitignore: ${PROJECT_DIR}/ is ignored. Fix: add the line !${PROJECT_DIR}/ to .gitignore.`);
+  } catch {
+    // Not ignored: the run's worktree gets the project files.
+  }
+}
+
 const HARNESS_WORDS = /Task tool|subagent_type|TodoWrite|Skill tool|claude -p/;
 
 function checkSkills(dir, label) {
   const out = [];
   const skillsDir = path.join(dir, 'skills');
   const names = fs.existsSync(skillsDir) ? fs.readdirSync(skillsDir).filter(s => fs.existsSync(path.join(skillsDir, s, 'SKILL.md'))).sort() : [];
-  for (const s of names) {
-    const where = `${label}/skills/${s}/SKILL.md`;
-    const text = fs.readFileSync(path.join(skillsDir, s, 'SKILL.md'), 'utf8').replace(/\r\n/g, '\n');
-    const m = text.match(/^---\n([\s\S]*?)\n---\n/);
-    if (!m) {
-      out.push(`${where}: it has no frontmatter. Fix: start it with ---, name, description, ---.`);
-    } else {
-      const keys = m[1].split('\n').filter(l => /^\S/.test(l)).map(l => l.split(':')[0]);
-      if (keys.join() !== 'name,description') out.push(`${where}: the frontmatter has the keys ${keys.join(', ')}. Fix: keep only name and description.`);
-      if (!new RegExp(`^name: ${s}$`, 'm').test(m[1])) out.push(`${where}: the frontmatter name is not "${s}". Fix: set name to the folder name.`);
-    }
-    const word = text.match(HARNESS_WORDS);
-    if (word) out.push(`${where}: it names a harness tool (${word[0]}). Fix: name the action instead, such as "dispatch a subagent" or "invoke the skill".`);
+  for (const s of names) out.push(...checkSkillFile(path.join(skillsDir, s, 'SKILL.md'), s, `${label}/skills/${s}/SKILL.md`));
+  return out;
+}
+
+// The frontmatter and harness-word rules for one SKILL.md, of a plugin or of a project.
+function checkSkillFile(file, name, where) {
+  const out = [];
+  const text = fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
+  const m = text.match(/^---\n([\s\S]*?)\n---\n/);
+  if (!m) {
+    out.push(`${where}: it has no frontmatter. Fix: start it with ---, name, description, ---.`);
+  } else {
+    const keys = m[1].split('\n').filter(l => /^\S/.test(l)).map(l => l.split(':')[0]);
+    if (keys.join() !== 'name,description') out.push(`${where}: the frontmatter has the keys ${keys.join(', ')}. Fix: keep only name and description.`);
+    if (!new RegExp(`^name: ${name}$`, 'm').test(m[1])) out.push(`${where}: the frontmatter name is not "${name}". Fix: set name to the folder name.`);
   }
+  const word = text.match(HARNESS_WORDS);
+  if (word) out.push(`${where}: it names a harness tool (${word[0]}). Fix: name the action instead, such as "dispatch a subagent" or "invoke the skill".`);
   return out;
 }
 
@@ -374,6 +422,10 @@ function checkPlugin(dir) {
   out.push(...checkSkills(dir, label));
   const d = parseJson(path.join(dir, 'orchestra.json'), `${label}/orchestra.json`, out);
   if (d === undefined || d === null) return out;
+  if (isObject(d) && d.slot === 'project') {
+    out.push(`${label}/orchestra.json: "slot" is project, which only a project's ${PROJECT_DIR}/ fills. Fix: set it to one of ${SLOTS.join(', ')}.`);
+    return out;
+  }
   const declaration = checkDeclaration(d, dir, `${label}/orchestra.json`);
   out.push(...declaration);
   if (!skillExists(dir, 'manifest')) out.push(`${label}: there is no manifest skill. Fix: add skills/manifest/SKILL.md; it answers PLUGIN_DIR=<folder>.`);
@@ -382,6 +434,6 @@ function checkPlugin(dir) {
 }
 
 module.exports = {
-  SLOTS, REQUIRED_SLOTS, SETUP_KEYS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, ROLES, SECTION_KEYS, PHASES, ACTIONS,
-  parseJson, skillExists, checkDeclaration, checkProject, checkPlugin,
+  SLOTS, REQUIRED_SLOTS, PROJECT_DIR, PROJECT_SKILLS, PROJECT_FILE, SETUP_KEYS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, ROLES, SECTION_KEYS, PHASES, ACTIONS,
+  parseJson, skillExists, checkDeclaration, checkSkillFile, checkProject, checkPlugin,
 };
