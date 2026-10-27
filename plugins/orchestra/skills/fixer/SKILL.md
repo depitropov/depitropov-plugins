@@ -17,7 +17,7 @@ You get the output of one tool that failed, and the name of a fix guide.
 
 ## Procedure
 
-1. Invoke the skill named in `guide`. Follow its rules for this tool.
+1. Invoke the skill named in `guide`. When `guide` is a file path, read that file instead. Follow its rules for this tool.
 2. Read `output`. List each finding it reports. When you run the build or the tool yourself, never
    pipe it through `tail`, `head` or `grep`: the pipe hides the exit code. Write the output to a
    file and check the exit code. Run only the tests that cover the files you change. orchestra runs

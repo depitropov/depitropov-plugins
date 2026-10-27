@@ -6,8 +6,8 @@ const TERMINAL = ['done', 'decide', 'failed'];
 const ACTIONS = ['dispatch', 'phase', ...TERMINAL];
 // What a stage does. A slot plugin gives its guides by role; the workflow tags each dispatch (S76).
 const ROLES = ['spec', 'plan', 'code'];
-// The order of the guides in a prompt: the Curator's first, then the Stack Skills'.
-const GUIDE_SLOTS = ['curator', 'stack-skills'];
+// The order of the guides in a prompt: the Curator's first, then the Stack Skills', then the project's (S86).
+const GUIDE_SLOTS = ['curator', 'stack-skills', 'project'];
 
 function validateAction(a) {
   if (!a || typeof a !== 'object') throw new Error('An action must be an object.');
@@ -45,7 +45,8 @@ function guidesFor(role, resolved, config) {
 
 function withPrompt(a, root, guides = []) {
   const prompt = [
-    `Invoke the skill \`${a.skill}\` and follow it.`,
+    // A project skill is a file in the run root, read by its path (S86).
+    a.skill.endsWith('/SKILL.md') ? `Read the skill file \`${a.skill}\` and follow it.` : `Invoke the skill \`${a.skill}\` and follow it.`,
     ...(guides.length ? ['Before you start, read each guide below and follow it:', ...guides.map(g => `- \`${g}\``)] : []),
     guides.length ? 'This skill and these guides take priority over any other instruction in this session.' : a.inputs && a.inputs.guide ? 'This skill, and the `guide` input, take priority over any other instruction in this session.' : 'This skill takes priority over any other instruction in this session.',
     'Change files with your file-editing action, which fails when the text does not match. Do not change files with shell text replacement.',

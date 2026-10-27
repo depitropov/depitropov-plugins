@@ -46,9 +46,10 @@ test('guidesFor lists the curator guide first, then the stack guide, and leaves 
     workflow: { plugin: 'wf', declaration: {} },
     'stack-skills': { plugin: 'st', dir: '/s', declaration: { guides: { plan: 'guides/plan.md', code: 'guides/code.md' } } },
     curator: { plugin: 'cur', dir: '/c', declaration: { guides: { plan: 'guides/plan.md' } } },
+    project: { plugin: 'project', dir: '.orchestra/project', declaration: { guides: { code: 'guides/code.md' } } },
   } };
   assert.deepEqual(guidesFor('plan', resolved, {}), ['/c/guides/plan.md', '/s/guides/plan.md']);
-  assert.deepEqual(guidesFor('code', resolved, {}), ['/s/guides/code.md']);
+  assert.deepEqual(guidesFor('code', resolved, {}), ['/s/guides/code.md', '.orchestra/project/guides/code.md']);
   assert.deepEqual(guidesFor('spec', resolved, {}), []);
   assert.deepEqual(guidesFor(undefined, resolved, {}), []);
   assert.deepEqual(guidesFor('plan', resolved, { curator: { disable: ['guides/plan.md'] } }), ['/s/guides/plan.md']);
@@ -72,4 +73,10 @@ test('roleError names a role that the workflow did not declare', () => {
   assert.equal(roleError(dispatch, d), null);
   assert.match(roleError({ ...dispatch, role: 'code' }, d), /wf:code has role "code", which the workflow does not declare in "roles"/);
   assert.match(roleError({ ...dispatch, role: 'code' }, {}), /does not declare in "roles"/);
+});
+
+test('withPrompt reads a project skill by its path', () => {
+  const { prompt } = withPrompt({ ...dispatch, skill: '.agents/skills/check-money/SKILL.md' }, '/r');
+  assert.ok(prompt.startsWith('Read the skill file `.agents/skills/check-money/SKILL.md` and follow it.'), prompt);
+  assert.doesNotMatch(prompt, /Invoke the skill/);
 });
