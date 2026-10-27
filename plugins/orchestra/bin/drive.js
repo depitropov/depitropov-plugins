@@ -5,7 +5,8 @@ const { isDeepStrictEqual } = require('node:util');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { validateAction, withPrompt, inlinePrompt, guidesFor, roleError } = require('../lib/protocol');
-const { load } = require('../lib/resolved');
+const { load, readJson } = require('../lib/resolved');
+const { CONFIG, PROJECT_FILE } = require('../lib/check');
 const runner = require('../lib/runner');
 const { writeReport } = require('../lib/report');
 const worktree = require('../lib/worktree');
@@ -44,7 +45,8 @@ function drive(project, extraArgs = [], { resume = false, branch, setup = false,
   if (!runs.length) return { action: 'failed', reason: branch ? `No run on branch "${branch}".` : 'No run to resume. Start a run with a task.' };
   if (runs.length > 1) return { action: 'failed', reason: `Several runs are open: ${runs.map(r => r.branch).join(', ')}. Name one with --branch <name>.` };
   const root = runs[0].root;
-  if (configDiffers(project, root)) return { action: 'failed', reason: configReason("the run's base commit") };
+  const changed = differs(project, root);
+  if (changed) return { action: 'failed', reason: reason(changed, "the run's base commit") };
   copyResolved(project, root);
   if (runs[0].branch.startsWith(SETUP)) return answer(project, root, setupStep(root, runs[0].branch));
   return answer(project, root, step(root, [], resume));
@@ -52,19 +54,21 @@ function drive(project, extraArgs = [], { resume = false, branch, setup = false,
 
 // orchestra check validated the checkout's config; the run reads the worktree's, which is the one on origin.
 const readConfig = dir => JSON.parse(fs.readFileSync(path.join(dir, '.orchestra', 'config.json'), 'utf8'));
-const configDiffers = (project, root) => !isDeepStrictEqual(readConfig(project), readConfig(root));
-const configReason = base => `.orchestra/config.json in your checkout differs from the one on ${base}. Commit and push it, then run again.`;
+// The project declaration too: resolution reads the checkout's, the run reads its files in the worktree (S86).
+const differs = (project, root) => [CONFIG, PROJECT_FILE].find(f => !isDeepStrictEqual(readJson(path.join(project, f)), readJson(path.join(root, f)))) || null;
+const reason = (file, base) => `${file} in your checkout differs from the one on ${base}. Commit and push it, then run again.`;
 
 // A detached worktree on origin/<default> whose config matches the checkout's, or a failed action.
 function open(project) {
   const made = worktree.create(project);
   if (made.failed) return { failed: { action: 'failed', reason: made.failed } };
-  const reason = !fs.existsSync(path.join(made.root, '.orchestra', 'config.json'))
+  const changed = differs(project, made.root);
+  const why = !fs.existsSync(path.join(made.root, '.orchestra', 'config.json'))
     ? `.orchestra/config.json is not on ${made.base}. Commit and push it, then run again.`
-    : configDiffers(project, made.root) ? configReason(made.base) : null;
-  if (reason) {
+    : changed ? reason(changed, made.base) : null;
+  if (why) {
     worktree.remove(project, made.root);
-    return { failed: { action: 'failed', reason } };
+    return { failed: { action: 'failed', reason: why } };
   }
   copyResolved(project, made.root);
   return made;

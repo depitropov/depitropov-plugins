@@ -496,3 +496,13 @@ test('without a curator no action is inline', () => {
   assert.equal(a.action, 'dispatch');
   assert.equal(a.skill, 'orc-standard-workflow:spec');
 });
+
+test('a start with a local project declaration that differs from origin fails and leaves no worktree', () => {
+  const dir = project();
+  writeJson(path.join(dir, '.orchestra/project/orchestra.json'), { slot: 'project', gates: [] });
+  const a = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  assert.equal(a.action, 'failed');
+  assert.match(a.reason, /\.orchestra\/project\/orchestra\.json in your checkout differs from the one on origin\/main/);
+  assert.equal(git(dir, 'worktree', 'list').split('\n').length, 1);
+});
+
