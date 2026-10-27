@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PLUGINS = path.join(__dirname, '../plugins');
-const plugins = fs.readdirSync(PLUGINS);
+const plugins = fs.readdirSync(PLUGINS).filter(p => fs.statSync(path.join(PLUGINS, p)).isDirectory());
 const skills = plugins.flatMap(p => {
   const dir = path.join(PLUGINS, p, 'skills');
   return fs.existsSync(dir) ? fs.readdirSync(dir).map(s => ({ plugin: p, name: s, file: path.join(dir, s, 'SKILL.md') })) : [];
