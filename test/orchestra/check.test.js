@@ -148,7 +148,15 @@ test('each broken config rule gives one line with the rule and its fix', () => {
     [{ workflow: { plugin: 'wf', 'tasks-per-coder': '3' }, 'stack-skills': ok }, /"workflow\.tasks-per-coder" is not a number/],
     [{ workflow: { plugin: 'other' }, 'stack-skills': ok }, /names other, but the resolved folder holds wf/],
     [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', disable: ['nope'] } }, /"stack-skills\.disable" names "nope"/],
-    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { max_rounds: 0 } } } }, /"stack-skills\.gates\.fmt\.max_rounds" is not a whole number/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { max_rounds: 0 } } } }, /"stack-skills\.gates\.fmt" "max_rounds" is not a whole number/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { phase: 'finish' } } } }, /"stack-skills\.gates\.fmt" has unknown key "phase".*max_rounds, run, files, grep, when, always/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { always: false } } } }, /"stack-skills\.gates\.fmt" has no selection rule, so it never runs/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { grep: '(' } } } }, /"stack-skills\.gates\.fmt" "grep" is not a valid regular expression/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { files: 3 } } } }, /"stack-skills\.gates\.fmt" "files" is not a glob/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', build: { run: 'x', cache: true } } }, /unknown build key "cache"/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', build: { max_rounds: 0 } } }, /"stack-skills\.build\.max_rounds" is not a whole number/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', build: { guide: 'fix-all' } } }, /names skill "fix-all", which is not in .*\.agents\/skills/],
+    [{ workflow: { plugin: 'wf', build: { run: 'x' } }, 'stack-skills': ok }, /section "workflow" has unknown key "build"/],
     [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { nope: { max_rounds: 2 } } } }, /"stack-skills\.gates" names "nope"/],
     [{ workflow: { plugin: 'wf' }, 'stack-skills': ok, nope: { plugin: 'c' } }, /unknown section "nope"/],
   ];
@@ -393,4 +401,12 @@ test('a plugin cannot fill the project slot', () => {
 
 test('a config section named project is unknown', () => {
   assert.match(checkProject(both({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, project: { plugin: 'x' } })).join('\n'), /unknown section "project"/);
+});
+
+test('a valid override of a gate and the build passes', () => {
+  const config = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { run: 'y', files: '**/*.ts', max_rounds: 3 } }, build: { run: 'make all', guide: 'fix-all', max_rounds: 4 } } };
+  const dir = project(config, { workflow: wf, 'stack-skills': st });
+  fs.mkdirSync(path.join(dir, '.agents/skills/fix-all'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.agents/skills/fix-all/SKILL.md'), '---\nname: fix-all\ndescription: Test skill.\n---\n');
+  assert.deepEqual(checkProject(dir), []);
 });

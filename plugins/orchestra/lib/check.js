@@ -20,7 +20,9 @@ const DECLARATION_KEYS = { workflow: ['slot', 'config', 'roles', 'gates'], 'stac
 const GATE_KEYS = ['name', 'phase', 'kind', 'skill', 'run', 'fix', 'guide', 'max_rounds', 'files', 'grep', 'when', 'always'];
 const BUILD_KEYS = ['run', 'guide', 'max_rounds'];
 const SETUP_KEYS = ['skill', 'done'];
-const SECTION_KEYS = ['plugin', 'disable', 'gates'];
+const SECTION_KEYS = ['plugin', 'disable', 'gates', 'build'];
+// The keys of a plugin's gate that a project may override in its config section (S86).
+const GATE_OVERRIDE_KEYS = ['max_rounds', 'run', 'files', 'grep', 'when', 'always'];
 const CONFIG = '.orchestra/config.json';
 const PROJECT_DIR = '.orchestra/project';
 const PROJECT_SKILLS = '.agents/skills';
@@ -138,34 +140,47 @@ function checkDeclaration(d, dir, where, skillsDir = path.join(dir, 'skills')) {
     if (!KINDS.includes(g.kind)) fail(`${at} has kind ${JSON.stringify(g.kind)}`, `use one of ${KINDS.join(', ')}`);
     if (g.kind === 'agent') skill(g.skill, at);
     if (g.kind === 'tool' && typeof g.run !== 'string') fail(`${at} is a tool gate with no "run" command`, 'add "run"');
-    if (g.run !== undefined) placeholders(g.run, at);
     if (g.fix !== undefined && !FIXES.includes(g.fix)) fail(`${at} has fix ${JSON.stringify(g.fix)}`, `use one of ${FIXES.join(', ')}`);
     if (g.fix === 'fixer') {
       if (g.guide === undefined) fail(`${at} uses the fixer but names no guide`, 'add "guide" with its fix guide skill');
       else skill(g.guide, `${at} "guide"`);
     }
-    if (g.max_rounds !== undefined && !wholeNumber(g.max_rounds)) fail(`${at} "max_rounds" is not a whole number of 1 or more`, 'set it to 1 or more');
-    if (g.files !== undefined && ![].concat(g.files).every(f => typeof f === 'string' && f)) {
-      fail(`${at} "files" is not a glob or a list of globs`, 'use a glob such as "**/*.java", or a list of them');
-    }
-    if (g.grep !== undefined) {
-      placeholders(g.grep, at);
-      try {
-        new RegExp(String(g.grep).replace(PLACEHOLDER, (m, key) => (Object.hasOwn(config, key) ? String(config[key].default) : '')));
-      } catch (e) {
-        fail(`${at} "grep" is not a valid regular expression: ${e.message}`, 'fix the pattern');
-      }
-    }
-    if (g.when !== undefined && typeof g.when !== 'string') fail(`${at} "when" is not text`, 'write the rule in words');
-    if (g.always !== undefined && typeof g.always !== 'boolean') fail(`${at} "always" is not true or false`, 'set it to true, or remove it');
-    if (!g.always && g.files === undefined && g.grep === undefined && g.when === undefined) {
-      fail(`${at} has no selection rule, so it never runs`, 'add "files", "grep", "when" or "always": true');
-    }
+    checkGateValues(g, at, fail, config, GATE_OVERRIDE_KEYS);
   }
   return out;
 }
 
-function checkSection(slot, section, s, out) {
+// The value rules of the gate keys a project may override, for the keys given, then the selection rule
+// on the whole gate. A declaration passes every key; a config override passes only its own keys, so a
+// declaration error is not reported twice. `value` gives the config value a grep expands with.
+function checkGateValues(g, at, fail, config, keys, value = key => config[key].default) {
+  const has = key => keys.includes(key) && g[key] !== undefined;
+  const placeholders = text => {
+    for (const m of String(text).matchAll(PLACEHOLDER)) {
+      if (!Object.hasOwn(config, m[1])) fail(`${at} uses {config.${m[1]}}, which "config" does not declare`, `declare "${m[1]}" under "config" or fix the name`);
+    }
+  };
+  if (has('run')) placeholders(g.run);
+  if (has('max_rounds') && !wholeNumber(g.max_rounds)) fail(`${at} "max_rounds" is not a whole number of 1 or more`, 'set it to 1 or more');
+  if (has('files') && ![].concat(g.files).every(f => typeof f === 'string' && f)) {
+    fail(`${at} "files" is not a glob or a list of globs`, 'use a glob such as "**/*.java", or a list of them');
+  }
+  if (has('grep')) {
+    placeholders(g.grep);
+    try {
+      new RegExp(String(g.grep).replace(PLACEHOLDER, (m, key) => (Object.hasOwn(config, key) ? String(value(key)) : '')));
+    } catch (e) {
+      fail(`${at} "grep" is not a valid regular expression: ${e.message}`, 'fix the pattern');
+    }
+  }
+  if (has('when') && typeof g.when !== 'string') fail(`${at} "when" is not text`, 'write the rule in words');
+  if (has('always') && typeof g.always !== 'boolean') fail(`${at} "always" is not true or false`, 'set it to true, or remove it');
+  if (!g.always && g.files === undefined && g.grep === undefined && g.when === undefined) {
+    fail(`${at} has no selection rule, so it never runs`, 'add "files", "grep", "when" or "always": true');
+  }
+}
+
+function checkSection(project, slot, section, s, out) {
   const fail = (problem, fix) => out.push(`${CONFIG}: ${problem}. Fix: ${fix}.`);
   const d = s.declaration;
   if (!isObject(d)) {
@@ -200,11 +215,21 @@ function checkSection(slot, section, s, out) {
           fail(`"${slot}.gates" names "${name}", which is no gate of ${s.plugin}`, `use one of: ${gates.join(', ')}`);
           continue;
         }
-        for (const k of Object.keys(override || {})) {
-          if (k !== 'max_rounds') fail(`"${slot}.gates.${name}" has unknown key "${k}"`, 'only "max_rounds" is allowed');
+        const at = `"${slot}.gates.${name}"`;
+        if (!isObject(override)) {
+          fail(`${at} is not an object`, 'write { "<key>": <value> } with only the keys you change');
+          continue;
         }
-        if (!override || !wholeNumber(override.max_rounds)) fail(`"${slot}.gates.${name}.max_rounds" is not a whole number of 1 or more`, 'set it to 1 or more');
+        const keys = Object.keys(override);
+        for (const k of keys) {
+          if (!GATE_OVERRIDE_KEYS.includes(k)) fail(`${at} has unknown key "${k}"`, `remove it; the allowed keys are ${GATE_OVERRIDE_KEYS.join(', ')}`);
+        }
+        const gate = d.gates.find(g => g && g.name === name);
+        const value = k => (Object.hasOwn(section, k) && typeof section[k] === declared[k].type ? section[k] : declared[k].default);
+        checkGateValues({ ...gate, ...override }, at, fail, declared, keys, value);
       }
+    } else if (key === 'build' && slot === 'stack-skills') {
+      checkBuildOverride(project, value, fail, out);
     } else if (!Object.hasOwn(declared, key)) {
       const keys = Object.keys(declared);
       fail(`section "${slot}" has unknown key "${key}"`, keys.length ? `remove it or use a key that ${s.plugin} declares: ${keys.join(', ')}` : `remove it; ${s.plugin} declares no config keys`);
@@ -229,6 +254,26 @@ function checkSection(slot, section, s, out) {
     } catch (e) {
       fail(`the values of section "${slot}" make the "grep" of gate "${g.name}" invalid: ${e.message}`, 'fix the value of the key that the pattern uses');
     }
+  }
+}
+
+// The project's build: its keys, and a fix guide that is a project skill (S86).
+function checkBuildOverride(project, b, fail, out) {
+  if (!isObject(b)) {
+    fail('"stack-skills.build" is not an object', 'write { "run": "<command>" } with only the keys you change');
+    return;
+  }
+  for (const key of Object.keys(b)) {
+    if (!BUILD_KEYS.includes(key)) fail(`"stack-skills.build" has unknown build key "${key}"`, `remove it; the allowed keys are ${BUILD_KEYS.join(', ')}`);
+  }
+  if (b.run !== undefined && typeof b.run !== 'string') fail('"stack-skills.build.run" is not a command', 'write the full build command as text');
+  if (b.max_rounds !== undefined && !wholeNumber(b.max_rounds)) fail('"stack-skills.build.max_rounds" is not a whole number of 1 or more', 'set it to 1 or more');
+  if (b.guide === undefined) return;
+  const file = path.join(project, PROJECT_SKILLS, String(b.guide), 'SKILL.md');
+  if (typeof b.guide !== 'string' || !fs.existsSync(file)) {
+    fail(`"stack-skills.build.guide" names skill ${JSON.stringify(b.guide)}, which is not in ${PROJECT_SKILLS}/`, `add ${PROJECT_SKILLS}/${b.guide}/SKILL.md or fix the name`);
+  } else {
+    out.push(...checkSkillFile(file, b.guide, `${PROJECT_SKILLS}/${b.guide}/SKILL.md`));
   }
 }
 
@@ -263,7 +308,7 @@ function checkProject(project) {
       fail(`section "${slot}" names ${section.plugin}, but the resolved folder holds ${s.plugin}`, `give the folder of ${section.plugin}, or name ${s.plugin} in the config`);
       continue;
     }
-    checkSection(slot, section, s, out);
+    checkSection(project, slot, section, s, out);
   }
   // A guide is given by role. A guide for a role the workflow has no stage for never reaches a stage (S76).
   const wf = slots.workflow;
@@ -434,6 +479,6 @@ function checkPlugin(dir) {
 }
 
 module.exports = {
-  SLOTS, REQUIRED_SLOTS, PROJECT_DIR, PROJECT_SKILLS, PROJECT_FILE, SETUP_KEYS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, ROLES, SECTION_KEYS, PHASES, ACTIONS,
+  SLOTS, REQUIRED_SLOTS, PROJECT_DIR, PROJECT_SKILLS, PROJECT_FILE, SETUP_KEYS, GATE_OVERRIDE_KEYS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, ROLES, SECTION_KEYS, PHASES, ACTIONS,
   parseJson, skillExists, checkDeclaration, checkSkillFile, checkProject, checkPlugin,
 };
