@@ -77,6 +77,8 @@ When it passes, tell the user:
   `orchestra.json`. A project can set those keys, turn gates off with `disable`, and change a gate's
   `max_rounds` under `gates`.
 - Commit and push `.orchestra/config.json` and `.gitignore`, so everyone on the project uses the same plugins. A run reads them from `origin/<default>`. init never pushes; the user does.
+- Customize the run for this project with orchestra project: the build, gate settings, project
+  gates and project rules.
 - Start a run with orchestra run.
 
 ## Permitted actions

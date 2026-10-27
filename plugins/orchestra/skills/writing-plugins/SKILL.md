@@ -77,11 +77,23 @@ A Curator keeps a project's direction docs current. orchestra knows only its dec
 
 ## The project config
 
-A project's `.orchestra/config.json` has one section per slot. orchestra owns three keys in it:
-`plugin`, `disable` (gate names or guide paths to turn off) and `gates`
-(`{ "<gate>": { "max_rounds": <n> } }`). Every other key must be one your `config` declares.
-`.gitignore` must ignore `.orchestra/*` except `.orchestra/config.json`: each run works in a worktree
-under `.orchestra/worktrees/`. orchestra check fails otherwise.
+A project's `.orchestra/config.json` has one section per slot. orchestra owns four keys in it:
+`plugin`, `disable` (gate names or guide paths to turn off), `gates` and `build`. Every other key must
+be one your `config` declares. `.gitignore` must ignore `.orchestra/*` except `.orchestra/config.json`:
+each run works in a worktree under `.orchestra/worktrees/`. orchestra check fails otherwise.
+
+`gates` overrides keys of your gates: `{ "<gate>": { "<key>": <value> } }`, with the keys
+`max_rounds`, `run`, `files`, `grep`, `when` and `always`. A gate keeps its `phase`, `kind`, `fix`,
+`skill` and `guide`; your fix guide may then meet a changed command. `build`, in the `stack-skills`
+section only, overrides `run`, `guide` and `max_rounds` of the build; its `guide` is a project skill.
+
+## A project's own gates and guides
+
+A project fills the slot `project` itself, with no plugin: `.orchestra/project/orchestra.json` holds
+only `slot`, `gates` and `guides`, in the formats above. A project skill (an `agent` gate's `skill`,
+a fix `guide`) is `.agents/skills/<name>/SKILL.md` in the project; orchestra gives it to the subagent
+by its path. Project gates run after your gates, and project guides come after yours. A project gate
+name is never one of your gate names. The skill `orchestra:project` writes all of it.
 
 ## A workflow: bin/next.js
 
