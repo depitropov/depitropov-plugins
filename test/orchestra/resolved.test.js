@@ -65,3 +65,13 @@ test('adds the project slot when .orchestra/project/orchestra.json exists', () =
   resolve(dir, { workflow: wf, 'stack-skills': st }, '/orc');
   assert.deepEqual(load(dir).slots.project, { plugin: 'project', version: 'local', dir: '.orchestra/project', declaration: { slot: 'project', gates: [] } });
 });
+
+test('a project file that is not an object fails the check, not silently', () => {
+  const dir = project();
+  fs.mkdirSync(path.join(dir, '.orchestra/project'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.orchestra/project/orchestra.json'), 'null\n');
+  fs.appendFileSync(path.join(dir, '.gitignore'), '!.orchestra/project/\n');
+  assert.throws(() => resolve(dir, { workflow: plugin('wf', { slot: 'workflow', gates: [] }), 'stack-skills': plugin('st', ST) }, '/orc'),
+    /\.orchestra\/project\/orchestra\.json: the declaration is not a JSON object/);
+});
+

@@ -53,7 +53,6 @@ function drive(project, extraArgs = [], { resume = false, branch, setup = false,
 }
 
 // orchestra check validated the checkout's config; the run reads the worktree's, which is the one on origin.
-const readConfig = dir => JSON.parse(fs.readFileSync(path.join(dir, '.orchestra', 'config.json'), 'utf8'));
 // The project declaration too: resolution reads the checkout's, the run reads its files in the worktree (S86).
 const differs = (project, root) => [CONFIG, PROJECT_FILE].find(f => !isDeepStrictEqual(readJson(path.join(project, f)), readJson(path.join(root, f)))) || null;
 // Check reads the project's skills and guides in the checkout; the run reads them in the worktree (S86).
@@ -150,7 +149,7 @@ function keepRunFolder(project, root, branch) {
 // The model is told the branch and the worktree on every action, so it never guesses where the commits went.
 function answer(project, root, action) {
   const prompts = {
-    dispatch: a => withPrompt(a, root, guidesFor(a.role, load(root), readConfig(root))),
+    dispatch: a => withPrompt(a, root, guidesFor(a.role, load(root), readJson(path.join(root, CONFIG)))),
     inline: a => ({ ...a, prompt: inlinePrompt(a, root) }),
   };
   const prompted = prompts[action.action] ? prompts[action.action](action) : action;

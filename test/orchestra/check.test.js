@@ -158,6 +158,8 @@ test('each broken config rule gives one line with the rule and its fix', () => {
     [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', build: { guide: 'fix-all' } } }, /names skill "fix-all", which is not in .*\.agents\/skills/],
     [{ workflow: { plugin: 'wf', build: { run: 'x' } }, 'stack-skills': ok }, /section "workflow" has unknown key "build"/],
     [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { run: null } } } }, /"stack-skills\.gates\.fmt" "run" is not a command/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', build: { run: '' } } }, /"stack-skills\.build\.run" is not a command/],
+    [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', build: { run: 'make {config.x}' } } }, /"stack-skills\.build\.run" uses \{config\.x\}/],
     [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { run: 5 } } } }, /"stack-skills\.gates\.fmt" "run" is not a command/],
     [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { grep: 5 } } } }, /"stack-skills\.gates\.fmt" "grep" is not text/],
     [{ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { fmt: { always: false, grep: '' } } } }, /"stack-skills\.gates\.fmt" has no selection rule, so it never runs/],
@@ -428,4 +430,24 @@ test('the project declaration must have the slot project', () => {
     assert.equal(out.length, 1, out.join(' | '));
     assert.match(out[0], /^\.orchestra\/project\/orchestra\.json: "slot" is .+\. Fix: set it to "project"\.$/);
   }
+});
+
+test('a broken declared gate with an override says "never runs" once', () => {
+  const bad = stack({ gates: [{ name: 'bad', phase: 'finish', kind: 'tool', run: 'x' }] });
+  const out = checkProject(project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', gates: { bad: { max_rounds: 3 } } } }, { workflow: wf, 'stack-skills': bad }));
+  assert.equal(out.filter(l => /never runs/.test(l)).length, 1, out.join(' | '));
+});
+
+test('a grep the override replaces is not tested with the section values', () => {
+  const d = stack({ config: { pat: { type: 'string', default: '@Entity' } }, gates: [{ name: 'g', phase: 'finish', kind: 'agent', skill: 's', grep: '{config.pat}' }] });
+  const config = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', pat: '(', gates: { g: { grep: 'Entity' } } } };
+  assert.deepEqual(checkProject(project(config, { workflow: wf, 'stack-skills': d })), []);
+});
+
+test('a missing project guide names the project folder, not a plugin', () => {
+  const dir = addProject(both(), { slot: 'project', guides: { code: 'guides/code.md' } });
+  fs.rmSync(path.join(dir, '.orchestra/project/guides/code.md'));
+  const out = checkProject(dir);
+  assert.equal(out.length, 1, out.join(' | '));
+  assert.match(out[0], /names the file "guides\/code\.md", which is not in \.orchestra\/project\//);
 });

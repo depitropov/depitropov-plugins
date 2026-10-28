@@ -32,8 +32,8 @@ function resolve(project, slotDirs, orchestraDir) {
     slots[slot] = { plugin: info.name, version: info.version, dir: path.resolve(dir), declaration: readJson(path.join(dir, 'orchestra.json')) };
   }
   // The Project Customization has no plugin: its folder is the slot, relative to the run root (S86).
-  const own = readJson(path.join(project, PROJECT_FILE));
-  if (own) slots.project = { plugin: 'project', version: 'local', dir: PROJECT_DIR, declaration: own };
+  const own = path.join(project, PROJECT_FILE);
+  if (fs.existsSync(own)) slots.project = { plugin: 'project', version: 'local', dir: PROJECT_DIR, declaration: readJson(own) };
   const resolved = { orchestra: { dir: path.resolve(orchestraDir) }, slots };
   fs.writeFileSync(path.join(project, FILE), JSON.stringify(resolved, null, 2) + '\n');
   const failures = checkProject(project);

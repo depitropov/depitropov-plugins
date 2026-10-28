@@ -69,6 +69,7 @@ function checkDeclaration(d, dir, where, skillsDir = path.join(dir, 'skills')) {
     }
   }
   const skillsLabel = skillsDir.endsWith(PROJECT_SKILLS) ? PROJECT_SKILLS : 'skills';
+  const home = skillsLabel === PROJECT_SKILLS ? `${PROJECT_DIR}/` : 'the plugin';
   const skill = (name, what) => {
     if (typeof name !== 'string') fail(`${what} names no skill`, 'name a skill of this plugin');
     else if (!fs.existsSync(path.join(skillsDir, name, 'SKILL.md'))) fail(`${what} names skill "${name}", which is not in ${skillsLabel}/`, `add ${skillsLabel}/${name}/SKILL.md or fix the name`);
@@ -76,8 +77,8 @@ function checkDeclaration(d, dir, where, skillsDir = path.join(dir, 'skills')) {
   // A guide is a file inside the plugin, named by a path relative to the plugin folder (S79).
   const file = (value, what) => {
     if (typeof value !== 'string') fail(`${what} names no file`, 'name a guide file of this plugin, such as "guides/code.md"');
-    else if (path.isAbsolute(value) || value.split(/[\\/]/).includes('..')) fail(`${what} names "${value}", which is not inside the plugin`, 'use a path relative to the plugin folder, with no ".."');
-    else if (!fs.existsSync(path.join(dir, value))) fail(`${what} names the file "${value}", which is not in the plugin`, `add ${path.join(dir, value)} or fix the path`);
+    else if (path.isAbsolute(value) || value.split(/[\\/]/).includes('..')) fail(`${what} names "${value}", which is not inside ${home}`, `use a path relative to ${home}, with no ".."`);
+    else if (!fs.existsSync(path.join(dir, value))) fail(`${what} names the file "${value}", which is not in ${home}`, `add ${path.join(dir, value)} or fix the path`);
   };
   const placeholders = (text, what) => {
     for (const m of String(text).matchAll(PLACEHOLDER)) {
@@ -181,7 +182,7 @@ function checkGateValues(g, at, fail, config, keys, value = key => config[key].d
   if (has('when') && typeof g.when !== 'string') fail(`${at} "when" is not text`, 'write the rule in words');
   if (has('always') && typeof g.always !== 'boolean') fail(`${at} "always" is not true or false`, 'set it to true, or remove it');
   // The same truthiness as select in gates.js: an empty glob list, grep or when selects nothing.
-  if (!g.always && !(g.files && [].concat(g.files).length) && !g.grep && !g.when) {
+  if (keys.some(k => ['files', 'grep', 'when', 'always'].includes(k)) && !g.always && !(g.files && [].concat(g.files).length) && !g.grep && !g.when) {
     fail(`${at} has no selection rule, so it never runs`, 'add "files", "grep", "when" or "always": true');
   }
 }
@@ -248,7 +249,7 @@ function checkSection(project, slot, section, s, out) {
   const dflt = k => (Object.hasOwn(declared, k) ? declared[k].default : '');
   const set = k => Object.hasOwn(declared, k) && Object.hasOwn(section, k) && typeof section[k] === declared[k].type;
   for (const g of Array.isArray(d.gates) ? d.gates : []) {
-    if (!g || typeof g.grep !== 'string' || !Object.keys(section).some(k => set(k) && g.grep.includes(`{config.${k}}`))) continue;
+    if (!g || typeof g.grep !== 'string' || (isObject(section.gates) && isObject(section.gates[g.name]) && section.gates[g.name].grep !== undefined) || !Object.keys(section).some(k => set(k) && g.grep.includes(`{config.${k}}`))) continue;
     const expand = pick => g.grep.replace(PLACEHOLDER, (m, k) => String(pick(k)));
     try {
       new RegExp(expand(dflt));
@@ -272,7 +273,10 @@ function checkBuildOverride(project, b, fail, out) {
   for (const key of Object.keys(b)) {
     if (!BUILD_KEYS.includes(key)) fail(`"stack-skills.build" has unknown build key "${key}"`, `remove it; the allowed keys are ${BUILD_KEYS.join(', ')}`);
   }
-  if (b.run !== undefined && typeof b.run !== 'string') fail('"stack-skills.build.run" is not a command', 'write the full build command as text');
+  if (b.run !== undefined && (typeof b.run !== 'string' || !b.run)) fail('"stack-skills.build.run" is not a command', 'write the full build command as text');
+  else if (b.run !== undefined) {
+    for (const m of b.run.matchAll(PLACEHOLDER)) fail(`"stack-skills.build.run" uses {config.${m[1]}}, but the build command expands only {plugin}`, 'write the value into the command');
+  }
   if (b.max_rounds !== undefined && !wholeNumber(b.max_rounds)) fail('"stack-skills.build.max_rounds" is not a whole number of 1 or more', 'set it to 1 or more');
   if (b.guide === undefined) return;
   const file = path.join(project, PROJECT_SKILLS, String(b.guide), 'SKILL.md');
