@@ -1,7 +1,8 @@
 {
-  "slot": "global-gates",
+  "slot": "core",
   "config": { "legacy": { "type": "boolean", "default": false } },
   "gates": [
     { "name": "clean-code", "phase": "implementation-check", "kind": "agent", "skill": "clean-code", "always": true }
-  ]
+  ],
+  "shared-roles": { "triage": "triage" }
 }

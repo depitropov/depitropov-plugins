@@ -5,7 +5,7 @@
   "plugins": [
     { "name": "orchestra", "source": "./plugins/orchestra", "description": "Runs one task through a configured workflow and its gates." },
     { "name": "orc-standard-workflow", "source": "./plugins/orc-standard-workflow", "description": "Headless, stack-agnostic workflow." },
-    { "name": "orc-global-gates", "source": "./plugins/orc-global-gates", "description": "Gates that every orchestra workflow runs: clean-code." },
+    { "name": "orc-core", "source": "./plugins/orc-core", "description": "A person's or company's rules for every orchestra workflow: the triage method and the clean-code gate." },
     { "name": "orc-java-stack", "source": "./plugins/orc-java-stack", "description": "Stack Skills for Java with Maven." },
     { "name": "orc-ts-stack", "source": "./plugins/orc-ts-stack", "description": "Stack Skills for TypeScript with npm." },
     { "name": "clean-code", "source": "./plugins/clean-code", "description": "Clean code rules and measurement for Python, TypeScript and Java; the measure and rules of the orchestra clean-code gate." },

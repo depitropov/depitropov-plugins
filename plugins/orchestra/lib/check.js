@@ -3,14 +3,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const { execFileSync } = require('node:child_process');
-const { PHASES, ACTIONS, STAGES, validateAction } = require('./protocol');
+const { PHASES, ACTIONS, STAGES, SHARED_ROLES, validateAction } = require('./protocol');
 const { scratchRepo, cleanEnv } = require('./git');
 const { DIR } = require('./worktree');
 
 // The contract of a plugin declaration and of the project config. The skill writing-plugins explains
 // every word in these lists; a test fails when one is missing there.
-const SLOTS = ['workflow', 'stack-skills', 'global-gates', 'curator'];
-// A project may leave the curator and global-gates slots empty: then it runs with no Curator (S76) and no global gates (S80).
+const SLOTS = ['workflow', 'stack-skills', 'core', 'curator'];
+// A project may leave the curator and core slots empty: then it runs with no Curator (S76) and no core gates or shared roles (S80, S87).
 const REQUIRED_SLOTS = ['workflow', 'stack-skills'];
 const KINDS = ['tool', 'agent'];
 const FIXES = ['self', 'fixer', 'none'];
@@ -18,7 +18,7 @@ const CONFIG_TYPES = ['string', 'number', 'boolean'];
 // The slot project has no plugin and no config section: a project fills it with .orchestra/project/ (S86).
 // Keys that were renamed (S87): the fix names the new key.
 const RENAMED = { roles: 'stages' };
-const DECLARATION_KEYS = { workflow: ['slot', 'config', 'stages', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'guides', 'gates'], curator: ['slot', 'config', 'curate', 'setup', 'guides'], 'global-gates': ['slot', 'config', 'gates'], project: ['slot', 'gates', 'guides'] };
+const DECLARATION_KEYS = { workflow: ['slot', 'config', 'stages', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'guides', 'gates'], curator: ['slot', 'config', 'curate', 'setup', 'guides'], core: ['slot', 'config', 'gates', 'shared-roles'], project: ['slot', 'gates', 'guides', 'shared-roles'] };
 const GATE_KEYS = ['name', 'phase', 'kind', 'skill', 'run', 'fix', 'guide', 'max_rounds', 'files', 'grep', 'when', 'always'];
 const BUILD_KEYS = ['run', 'guide', 'max_rounds'];
 const SETUP_KEYS = ['skill', 'done'];
@@ -91,6 +91,11 @@ function checkDeclaration(d, dir, where, skillsDir = path.join(dir, 'skills')) {
   for (const [stage, name] of Object.entries(isObject(d.guides) ? d.guides : {})) {
     if (!STAGES.includes(stage)) fail(`unknown guide stage "${stage}"`, `use one of ${STAGES.join(', ')}`);
     file(name, `guide "${stage}"`);
+  }
+  if (d['shared-roles'] !== undefined && !isObject(d['shared-roles'])) fail('"shared-roles" is not an object', 'write { "<shared role>": "<skill name>" }');
+  for (const [role, name] of Object.entries(isObject(d['shared-roles']) ? d['shared-roles'] : {})) {
+    if (!SHARED_ROLES.includes(role)) fail(`unknown shared role "${role}"`, `use one of ${SHARED_ROLES.join(', ')}`);
+    else skill(name, `shared role "${role}"`);
   }
   if (d.stages !== undefined && (!Array.isArray(d.stages) || !d.stages.every(r => STAGES.includes(r)) || new Set(d.stages).size !== d.stages.length)) {
     fail(`"stages" is ${JSON.stringify(d.stages)}`, `list each of your stages once, from ${STAGES.join(', ')}`);
@@ -303,6 +308,10 @@ function checkProject(project) {
   const slots = resolved.slots || {};
   for (const [slot, section] of Object.entries(config)) {
     const fail = (problem, fix) => out.push(`${CONFIG}: ${problem}. Fix: ${fix}.`);
+    if (slot === 'global-gates') {
+      fail('section "global-gates" is now "core"', 'rename the section to "core" and choose orc-core');
+      continue;
+    }
     if (!SLOTS.includes(slot)) {
       fail(`unknown section "${slot}"`, `use the slots ${SLOTS.join(', ')}`);
       continue;
@@ -495,6 +504,6 @@ function checkPlugin(dir) {
 }
 
 module.exports = {
-  SLOTS, REQUIRED_SLOTS, CONFIG, PROJECT_DIR, PROJECT_SKILLS, PROJECT_FILE, SETUP_KEYS, GATE_OVERRIDE_KEYS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, STAGES, SECTION_KEYS, PHASES, ACTIONS,
+  SLOTS, REQUIRED_SLOTS, CONFIG, PROJECT_DIR, PROJECT_SKILLS, PROJECT_FILE, SETUP_KEYS, GATE_OVERRIDE_KEYS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, STAGES, SHARED_ROLES, SECTION_KEYS, PHASES, ACTIONS,
   parseJson, skillExists, checkDeclaration, checkSkillFile, checkProject, checkPlugin,
 };

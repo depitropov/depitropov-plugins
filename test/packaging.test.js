@@ -10,9 +10,9 @@ const skills = plugins.flatMap(p => {
   const dir = path.join(PLUGINS, p, 'skills');
   return fs.existsSync(dir) ? fs.readdirSync(dir).map(s => ({ plugin: p, name: s, file: path.join(dir, s, 'SKILL.md') })) : [];
 });
-const REFERENCED = ['orchestra/run', 'orchestra/fixer', 'orchestra/triage', 'orc-standard-workflow/manifest', 'orc-standard-workflow/spec',
+const REFERENCED = ['orchestra/run', 'orchestra/fixer', 'orc-standard-workflow/manifest', 'orc-standard-workflow/spec',
   'orc-standard-workflow/plan', 'orc-standard-workflow/plan-check', 'orc-standard-workflow/plan-conformance', 'orc-standard-workflow/code',
-  'orc-standard-workflow/logic-review', 'orc-global-gates/clean-code', 'orc-global-gates/manifest', 'orc-java-stack/manifest', 'orc-java-stack/fix-build'];
+  'orc-standard-workflow/logic-review', 'orc-core/triage', 'orc-core/clean-code', 'orc-core/manifest', 'orc-java-stack/manifest', 'orc-java-stack/fix-build'];
 
 const { checkPlugin } = require('../plugins/orchestra/lib/check');
 
@@ -32,15 +32,15 @@ test('shipped skills carry no ship.cars names', () => {
   for (const s of skills) assert.doesNotMatch(fs.readFileSync(s.file, 'utf8'), /cars\.ship|SC[A-Z]\w*Utils|scValue|LITE-/, s.file);
 });
 
-test('every judging skill takes its triage from orchestra:triage, not from its own copy', () => {
+test('every judging skill takes its triage from orc-core:triage, not from its own copy', () => {
   const judging = [
     ...['plan-check', 'plan-conformance', 'logic-review'].map(n => ['orc-standard-workflow', n]),
-    ['orc-global-gates', 'clean-code'],
+    ['orc-core', 'clean-code'],
     ...skills.filter(s => s.plugin === 'orc-java-stack' && s.name.startsWith('review-')).map(s => [s.plugin, s.name]),
   ];
   for (const [plugin, name] of judging) {
     const text = fs.readFileSync(path.join(PLUGINS, plugin, 'skills', name, 'SKILL.md'), 'utf8');
-    assert.match(text, /invoke the skill\s+`orchestra:triage`/i, name);
+    assert.match(text, /invoke the skill\s+`orc-core:triage`/i, name);
     assert.doesNotMatch(text, /\*\*Noise\*\*: not a real problem/, `${name} still has its own bucket list`);
   }
 });
@@ -70,14 +70,14 @@ test('the skill writing-plugins explains every word of the contract that check.j
 test('the clean-code gate measures with the clean-code plugin it depends on, and warns without it', () => {
   const wf = JSON.parse(fs.readFileSync(path.join(PLUGINS, 'orc-standard-workflow', 'orchestra.json'), 'utf8'));
   assert.equal(wf.gates.find(g => g.name === 'clean-code'), undefined);
-  const d = JSON.parse(fs.readFileSync(path.join(PLUGINS, 'orc-global-gates', 'orchestra.json'), 'utf8'));
+  const d = JSON.parse(fs.readFileSync(path.join(PLUGINS, 'orc-core', 'orchestra.json'), 'utf8'));
   const gate = d.gates.find(g => g.name === 'clean-code');
   assert.deepEqual(gate, { name: 'clean-code', phase: 'implementation-check', kind: 'agent', skill: 'clean-code', always: true });
   for (const manifest of ['plugin.json', '.claude-plugin/plugin.json']) {
-    const p = JSON.parse(fs.readFileSync(path.join(PLUGINS, 'orc-global-gates', manifest), 'utf8'));
+    const p = JSON.parse(fs.readFileSync(path.join(PLUGINS, 'orc-core', manifest), 'utf8'));
     assert.deepEqual(p.dependencies, ['clean-code@depitropov-plugins'], manifest);
   }
-  const text = fs.readFileSync(path.join(PLUGINS, 'orc-global-gates', 'skills', 'clean-code', 'SKILL.md'), 'utf8');
+  const text = fs.readFileSync(path.join(PLUGINS, 'orc-core', 'skills', 'clean-code', 'SKILL.md'), 'utf8');
   assert.match(text, /clean-code:manifest/);
   assert.match(text, /No shape measurement: the clean-code plugin is not installed/);
   for (const skill of ['manifest', 'clean-code-python', 'clean-code-typescript', 'clean-code-java']) {

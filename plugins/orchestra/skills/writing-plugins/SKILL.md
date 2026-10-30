@@ -1,15 +1,15 @@
 ---
 name: writing-plugins
-description: Use when writing or changing a plugin that fills an orchestra slot — a workflow plugin, a Stack Skills plugin, a Curator plugin or a global-gates plugin — its orchestra.json, its gates or its next.js.
+description: Use when writing or changing a plugin that fills an orchestra slot — a workflow plugin, a Stack Skills plugin, a Curator plugin or a core plugin — its orchestra.json, its gates or its next.js.
 ---
 
 # Writing an orchestra plugin
 
-A plugin fills one slot: `workflow`, `stack-skills`, `curator` or `global-gates`. A project must fill the first two; `curator` and `global-gates` are optional. orchestra reads the plugin's declaration
+A plugin fills one slot: `workflow`, `stack-skills`, `curator` or `core`. A project must fill the first two; `curator` and `core` are optional. orchestra reads the plugin's declaration
 and runs it. The plugin never runs or orders its own gates. This page is the reference. orchestra
 check is the guarantee: run it when you finish (last section).
 
-A `global-gates` plugin holds the gates that every workflow gets. Such a gate reads only the inputs every workflow gives (`spec`, `base`, `notes`, `decisions`, and its plugin's `config` values), never a workflow's own files such as its plan. A gate that reads them belongs in the workflow. A gate may use another plugin through that plugin's skills when its `plugin.json` lists it under `dependencies`: it invokes the other plugin's `manifest` skill to find its folder. orchestra does not resolve it. `orc-global-gates` uses `clean-code` this way.
+A `core` plugin holds rules that every workflow gets. Its gates read only the inputs every workflow gives (`spec`, `base`, `notes`, `decisions`, and its plugin's `config` values), never a workflow's own files such as its plan; a gate that reads them belongs in the workflow. Its `shared-roles` maps each shared role it fills to one of its skills. The shared roles are `triage`, `writing-style`, `pr-review` and `pr-description`. A gate may use another plugin through that plugin's skills when its `plugin.json` lists it under `dependencies`: it invokes the other plugin's `manifest` skill to find its folder. orchestra does not resolve it. `orc-core` uses `clean-code` this way.
 
 `<orchestra>` is the folder two levels above this skill's folder.
 
@@ -26,9 +26,10 @@ A `global-gates` plugin holds the gates that every workflow gets. Such a gate re
 
 | Key | Slot | Meaning |
 |---|---|---|
-| `slot` | all | `workflow`, `stack-skills`, `curator` or `global-gates`. |
+| `slot` | all | `workflow`, `stack-skills`, `curator` or `core`. |
 | `config` | all | Keys a project may set in its config section. Each is `{ "type": …, "default": … }`, with type `string`, `number` or `boolean`, and a default of that type. Each `agent` gate of the plugin gets every value as the input `config.<key>`. |
-| `gates` | `workflow`, `global-gates`, `stack-skills` | The checks after the code. See "A gate". |
+| `gates` | `workflow`, `core`, `stack-skills` | The checks after the code. See "A gate". |
+| `shared-roles` | `core`, project | Maps each shared role the plugin fills to one of its skills: `{ "triage": "triage" }`. |
 | `build` | `stack-skills`, required | `run`: the full build and the tests. `guide`: its fix guide skill. `max_rounds`: fixer rounds, default 2. |
 | `guides` | `stack-skills`, `curator` | `{ "<stage>": "<path>" }`: a guide, a path to a guide file inside the plugin (for example `guides/code.md`: no frontmatter, short write-time rules), for one stage. The stages are `spec`, `plan` and `code`. orchestra tells the stage to read its guides. A project turns one off with `disable`. |
 | `curate` | `curator`, required | The skill that brings the project's direction docs up to date at the end of a run. orchestra runs it in the main session, not in a subagent, when the workflow is done. |
@@ -55,7 +56,7 @@ a config value; the key must be declared under `config`. The `build` command tak
 | `when` | A rule in words, judged on the diff. |
 | `always` | `true`: the gate runs on every run. |
 
-A gate needs at least one of `files`, `grep`, `when` or `always`. Inside a phase, orchestra orders by kind, then workflow gates, then global gates, then stack gates;
+A gate needs at least one of `files`, `grep`, `when` or `always`. Inside a phase, orchestra orders by kind, then workflow gates, then core gates, then stack gates;
 you do not order them. A gate name is unique across the slots of a project; orchestra check fails on a name two slots declare.
 
 ## A Curator

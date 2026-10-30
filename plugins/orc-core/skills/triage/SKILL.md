@@ -1,6 +1,6 @@
 ---
 name: triage
-description: The contract for sorting review findings into Decide, Patch, Evaluate and Noise, with the axes, the rules, the finding format and the notes format. Invoked by every judging stage and agent gate of an orchestra run.
+description: The contract for sorting review findings into Decide, Patch, Evaluate and Noise, with the axes, the rules, the finding format and the notes format. Invoked by a judging stage or an agent gate when an orchestra run gives it as the triage shared role.
 ---
 
 # Triage

@@ -5,7 +5,7 @@ const PHASE_ORDER = {
   'conventions-check': ['tool', 'agent'],
   finish: ['agent', 'tool', 'build'],
 };
-const PROVIDERS = ['workflow', 'global-gates', 'stack-skills', 'project'];
+const PROVIDERS = ['workflow', 'core', 'stack-skills', 'project'];
 
 // A project skill is read by its path in the run root, so it runs on every harness (S86). A plugin skill is invoked by name.
 function skillRef(provider, plugin, name) {

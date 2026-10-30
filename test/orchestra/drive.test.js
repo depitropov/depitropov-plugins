@@ -20,8 +20,8 @@ function project({ curator } = {}) {
   writePlugin(st, 'st', { slot: 'stack-skills', build: { run: 'node -e "process.exit(0)"', guide: 'fix-build' }, gates: [] });
   const config = { workflow: { plugin: 'orc-standard-workflow' }, 'stack-skills': { plugin: 'st' } };
   const dirs = { workflow: path.join(PLUGINS, 'orc-standard-workflow'), 'stack-skills': st };
-  config['global-gates'] = { plugin: 'orc-global-gates' };
-  dirs['global-gates'] = path.join(PLUGINS, 'orc-global-gates');
+  config.core = { plugin: 'orc-core' };
+  dirs.core = path.join(PLUGINS, 'orc-core');
   if (curator) {
     const cur = fs.mkdtempSync(path.join(os.tmpdir(), 'cur-'));
     writePlugin(cur, 'cur', { slot: 'curator', curate: 'curate', setup: { skill: 'setup', done: 'docs/curator/.setup' }, guides: { plan: 'guides/plan.md' } });
@@ -48,7 +48,7 @@ function toReview(dir) {
 // Passes the clean-code gate, which follows logic-review, and returns the next action.
 function afterReview(dir) {
   const cc = drive(dir);
-  assert.equal(cc.skill, 'orc-global-gates:clean-code');
+  assert.equal(cc.skill, 'orc-core:clean-code');
   writeJson(path.join(wt(dir, cc), cc.result), { stage: 'clean-code', status: 'ok' });
   return drive(dir);
 }

@@ -45,7 +45,7 @@ them unread. `<notes>/code.md` is the one exception, and only in step 6.
    it, like a point of step 1; when it has none, that is a Patch finding. A `business fact:` line in
    `code.md` is not a repeat: it is a placeholder for a value nobody gave, so it is a Decide finding
    (triage, B1).
-7. Invoke the skill `orchestra:triage` and follow it: give every finding its axes and one bucket.
+7. Invoke the skill `orc-core:triage` and follow it: give every finding its axes and one bucket.
 8. Write `<notes>/logic-review.md` in the triage notes format. Under **Checked**, put the list from
    step 1, and for each point the test you found and whether it fails on the wrong version.
 9. If there is an open Decide finding (one that `decisions` does not answer), stop here. Do not fix

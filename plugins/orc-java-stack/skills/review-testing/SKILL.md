@@ -22,7 +22,7 @@ description: Reviews the style of the changed Java tests against the testing con
    way, follow the project: that rule is not a finding.
 4. The title of each finding starts with its rule number, as in `▸ Rule 3: <title>`, and its "In the
    code" line gives `file:line`.
-5. Invoke the skill `orchestra:triage` and follow it: give every finding its axes and one bucket.
+5. Invoke the skill `orc-core:triage` and follow it: give every finding its axes and one bucket.
 6. Write `<notes>/testing.md` in the triage notes format.
 7. If there is an open Decide finding (one that `decisions` does not answer), stop here. Do not fix
    anything. Write the result with `"status": "decide"`.

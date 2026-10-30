@@ -92,7 +92,7 @@ function project(config, declarations) {
   const dir = makeRepo();
   const slots = {};
   for (const [slot, d] of Object.entries(declarations)) {
-    const name = { workflow: 'wf', 'stack-skills': 'st', curator: 'cur', 'global-gates': 'gg' }[slot];
+    const name = { workflow: 'wf', 'stack-skills': 'st', curator: 'cur', core: 'core' }[slot];
     slots[slot] = { plugin: name, version: '0.0.1', dir: writePlugin(tmp(`${name}-`), name, d), declaration: d };
   }
   writeJson(path.join(dir, '.orchestra/config.json'), config);
@@ -117,23 +117,23 @@ test('a stack that declares measure fails: the clean-code gate measures by itsel
   assert.match(errors(stack({ gates: [{ name: 'a', phase: 'finish', kind: 'agent', skill: 's', always: true, measure: true }] })).join('\n'), /measure/);
 });
 
-test('a global-gates declaration takes only slot, config and gates', () => {
+test('a core declaration takes only slot, config, gates and shared-roles', () => {
   const gate = { name: 'shape', phase: 'implementation-check', kind: 'agent', skill: 'review-shape', always: true };
-  assert.deepEqual(errors({ slot: 'global-gates', config: {}, gates: [gate] }), []);
+  assert.deepEqual(errors({ slot: 'core', config: {}, gates: [gate] }), []);
   for (const key of ['guides', 'build', 'measure']) {
-    assert.match(errors({ slot: 'global-gates', gates: [], [key]: {} }).join('\n'), new RegExp(`unknown key "${key}" for slot global-gates`));
+    assert.match(errors({ slot: 'core', gates: [], [key]: {} }).join('\n'), new RegExp(`unknown key "${key}" for slot core`));
   }
 });
 
 test('a gate name declared by two slots fails, unless one section disables it', () => {
   const shape = { name: 'shape', phase: 'implementation-check', kind: 'agent', skill: 'review-shape', always: true };
   const wf2 = { slot: 'workflow', stages: ['code'], gates: [shape] };
-  const gg = { slot: 'global-gates', gates: [shape] };
-  const config = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, 'global-gates': { plugin: 'gg' } };
-  assert.deepEqual(checkProject(project(config, { workflow: wf2, 'stack-skills': st, 'global-gates': gg })),
-    ['.orchestra/config.json: gate "shape" is declared by both wf and gg. Fix: add "shape" to the "disable" list of one of the two sections, or rename it in one plugin.']);
-  config['global-gates'].disable = ['shape'];
-  assert.deepEqual(checkProject(project(config, { workflow: wf2, 'stack-skills': st, 'global-gates': gg })), []);
+  const core = { slot: 'core', gates: [shape] };
+  const config = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, core: { plugin: 'core' } };
+  assert.deepEqual(checkProject(project(config, { workflow: wf2, 'stack-skills': st, core })),
+    ['.orchestra/config.json: gate "shape" is declared by both wf and core. Fix: add "shape" to the "disable" list of one of the two sections, or rename it in one plugin.']);
+  config.core.disable = ['shape'];
+  assert.deepEqual(checkProject(project(config, { workflow: wf2, 'stack-skills': st, core })), []);
 });
 
 test('a valid project config passes', () => {
@@ -454,4 +454,18 @@ test('a missing project guide names the project folder, not a plugin', () => {
   const out = checkProject(dir);
   assert.equal(out.length, 1, out.join(' | '));
   assert.match(out[0], /names the file "guides\/code\.md", which is not in \.orchestra\/project\//);
+});
+
+test('shared-roles names known roles and skills of the plugin, and only core and project carry it', () => {
+  assert.deepEqual(errors({ slot: 'core', gates: [], 'shared-roles': { triage: 'triage' } }), []);
+  assert.match(errors({ slot: 'core', 'shared-roles': { review: 'x' } }).join('\n'), /unknown shared role "review"\. Fix: use one of triage, writing-style, pr-review, pr-description/);
+  assert.match(errors(stack({ 'shared-roles': { triage: 'triage' } })).join('\n'), /unknown key "shared-roles" for slot stack-skills/);
+  const d = { slot: 'core', 'shared-roles': { triage: 'triage' } };
+  const dir = writePlugin(tmp('core-'), 'core', { slot: 'core' });
+  assert.match(checkDeclaration(d, dir, 'core/orchestra.json').join('\n'), /shared role "triage" names skill "triage", which is not in skills\//);
+});
+
+test('a config with the old global-gates section fails with the rename', () => {
+  const out = checkProject(project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, 'global-gates': { plugin: 'orc-global-gates' } }, { workflow: wf, 'stack-skills': st }));
+  assert.deepEqual(out, ['.orchestra/config.json: section "global-gates" is now "core". Fix: rename the section to "core" and choose orc-core.']);
 });

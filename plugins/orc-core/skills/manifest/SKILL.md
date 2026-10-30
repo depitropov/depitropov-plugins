@@ -1,6 +1,6 @@
 ---
 name: manifest
-description: Reports where the orc-global-gates plugin is installed. Invoked by orchestra run during resolution; not for direct use.
+description: Reports where the orc-core plugin is installed. Invoked by orchestra run during resolution; not for direct use.
 ---
 
 # Manifest

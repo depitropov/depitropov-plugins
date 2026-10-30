@@ -1,6 +1,6 @@
 ---
 name: init
-description: Use when the user wants to set up orchestra in a project — "orchestra init", "set up orchestra here" — or to change which workflow, Stack Skills, Curator or global-gates plugin the project uses.
+description: Use when the user wants to set up orchestra in a project — "orchestra init", "set up orchestra here" — or to change which workflow, Stack Skills, Curator or core plugin the project uses.
 ---
 
 # orchestra init
@@ -21,10 +21,10 @@ Look at the list of skills available to you. Each skill named `<plugin>:manifest
 plugin that can fill a slot.
 
 If the list shows no manifest skills, ask the user for the name of the workflow plugin and of the
-Stack Skills plugin. Offer `orc-standard-workflow` as the default workflow plugin. Offer `orc-java-stack` and `orc-ts-stack` as the Stack Skills plugins. Offer `orc-global-gates` as the global-gates plugin.
+Stack Skills plugin. Offer `orc-standard-workflow` as the default workflow plugin. Offer `orc-java-stack` and `orc-ts-stack` as the Stack Skills plugins. Offer `orc-core` as the core plugin.
 
 For each plugin, invoke the skill `<plugin>:manifest`. It answers with one line,
-`PLUGIN_DIR=<folder>`. Read `<folder>/orchestra.json`. Its `slot` is `workflow`, `stack-skills`, `curator` or `global-gates`.
+`PLUGIN_DIR=<folder>`. Read `<folder>/orchestra.json`. Its `slot` is `workflow`, `stack-skills`, `curator` or `core`.
 
 ## 3. Ask
 
@@ -34,7 +34,7 @@ plugin for each of these two slots, and stop.
 
 The `curator` slot is optional. When a Curator plugin is in the list, ask the user if the project wants it; it keeps the project's backlog and direction docs current, and its setup writes the Curator's docs before the first run. When there is none, leave the slot out.
 
-The `global-gates` slot is optional. When a global-gates plugin is in the list, ask the user if the project wants it; it holds the gates that every workflow runs, such as `clean-code`. Say that without it the project runs no `clean-code` gate. When there is none, leave the slot out.
+The `core` slot is optional. When a core plugin is in the list, ask the user if the project wants it; it holds a person's or company's rules for every workflow: gates such as `clean-code`, and shared roles such as `triage`. Say that without it no `clean-code` gate runs and no shared role is filled. When there is none, leave the slot out.
 
 ## 4. Write
 
@@ -49,7 +49,7 @@ Write `.orchestra/config.json` with only `plugin` in each section:
 
 Add `"curator": { "plugin": "<Curator plugin>" }` only when the user chose one.
 
-Add `"global-gates": { "plugin": "<global-gates plugin>" }` only when the user chose one.
+Add `"core": { "plugin": "<core plugin>" }` only when the user chose one.
 
 Add each of these lines to `.gitignore` when it is missing. Create the file when there is none.
 
@@ -67,7 +67,7 @@ Run:
 node <orchestra>/bin/resolve.js workflow=<workflow folder> stack-skills=<Stack Skills folder>
 ```
 
-Add `curator=<Curator folder>` to the command when the config has a curator section, and `global-gates=<folder>` when it has a global-gates section.
+Add `curator=<Curator folder>` to the command when the config has a curator section, and `core=<folder>` when it has a core section.
 
 It resolves the plugins and runs orchestra check on the config. If it fails, show each line: every
 line names the rule and its fix. Leave the config in place, so the user can fix it.

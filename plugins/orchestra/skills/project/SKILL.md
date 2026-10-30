@@ -48,7 +48,7 @@ Ask one topic at a time:
   holds short rules.
 - Each project skill goes into `.agents/skills/<name>/SKILL.md`, with only `name` and `description`
   in its frontmatter. A review skill of an agent gate takes its triage from the skill
-  `orchestra:triage`: it tells the reader to invoke that skill.
+  `orc-core:triage`: it tells the reader to invoke that skill.
 - Add the line `!.orchestra/project/` to `.gitignore` when it is missing.
 
 ## 5. Check

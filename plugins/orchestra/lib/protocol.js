@@ -6,6 +6,8 @@ const TERMINAL = ['done', 'decide', 'failed'];
 const ACTIONS = ['dispatch', 'phase', ...TERMINAL];
 // What a stage does. A slot plugin gives its guides by stage; the workflow tags each dispatch (S76, S87).
 const STAGES = ['spec', 'plan', 'code'];
+// The roles a core or project plugin may fill for every workflow (S87).
+const SHARED_ROLES = ['triage', 'writing-style', 'pr-review', 'pr-description'];
 // The order of the guides in a prompt: the Curator's first, then the Stack Skills', then the project's (S86).
 const GUIDE_SLOTS = ['curator', 'stack-skills', 'project'];
 
@@ -70,4 +72,4 @@ function inlinePrompt(a, root) {
   ].join('\n');
 }
 
-module.exports = { PHASES, TERMINAL, ACTIONS, STAGES, validateAction, stageError, guidesFor, withPrompt, inlinePrompt };
+module.exports = { PHASES, TERMINAL, ACTIONS, STAGES, SHARED_ROLES, validateAction, stageError, guidesFor, withPrompt, inlinePrompt };

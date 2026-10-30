@@ -20,7 +20,7 @@ which asks for cleaner, not merely no worse.
 
 ## In orchestra
 
-The orchestra gate `clean-code` in `orc-global-gates` depends on this plugin
+The orchestra gate `clean-code` in `orc-core` depends on this plugin
 (S85). It finds this plugin's folder through the `manifest` skill, runs
 `measure.py` from here, and loads `clean-code-python`, `clean-code-typescript`
 or `clean-code-java` by the extension of the changed files. This is the only

@@ -20,15 +20,15 @@ const resolved = {
   },
 };
 
-test('collect orders the providers workflow, global-gates, stack-skills, and honours disable', () => {
-  const withGlobal = { slots: { ...resolved.slots, 'global-gates': { plugin: 'gg', dir: '/p/gg', declaration: { gates: [
+test('collect orders the providers workflow, core, stack-skills, and honours disable', () => {
+  const withGlobal = { slots: { ...resolved.slots, 'core': { plugin: 'gg', dir: '/p/gg', declaration: { gates: [
     { name: 'clean-code', phase: 'implementation-check', kind: 'agent', skill: 'clean-code', always: true },
   ] } } } };
   const gates = collect(withGlobal, {}, 'implementation-check');
   assert.deepEqual(gates.map(g => g.name), ['logic-review', 'clean-code', 'crap', 'arch']);
-  assert.equal(gates[1].provider, 'global-gates');
+  assert.equal(gates[1].provider, 'core');
   assert.equal(gates[1].plugin, 'gg');
-  const off = collect(withGlobal, { 'global-gates': { disable: ['clean-code'] } }, 'implementation-check');
+  const off = collect(withGlobal, { 'core': { disable: ['clean-code'] } }, 'implementation-check');
   assert.deepEqual(off.map(g => g.name), ['logic-review', 'crap', 'arch']);
 });
 
