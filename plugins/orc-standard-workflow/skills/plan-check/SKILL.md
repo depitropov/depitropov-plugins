@@ -37,10 +37,10 @@ problems are still cheap. You fix what you can in the two files. You do not writ
      value or rule of who qualifies that the plan uses with no source.
    - **External facts**: every line under Integration points has a source, or is an assumption with the cost of being wrong. Every claim in the plan about another service, library or contract has a line there.
    - **Other repos**: a change that another repo must make, in a repo the task does not name.
-4. Invoke the skill `orc-core:triage` and follow it: give every finding its axes and one bucket.
-   A business fact that neither the brief nor `decisions` gives is Decide (triage, B1).
+4. If the input `shared-role.triage` is given, follow that skill: give every finding its axes and one bucket. Otherwise sort each finding by your own judgement: Decide (a person must answer it), Patch (you fix it), Evaluate (a person should look at it later) or Noise (not a real problem).
+   A business fact that neither the brief nor `decisions` gives is Decide.
    A change in a repo the task does not name is Decide: the call is not ours (S69).
-5. Write `<notes>/plan-check.md` in the triage notes format, with the checks of step 3 and their
+5. Write `<notes>/plan-check.md`, one line per finding with its bucket, in the triage notes format when a triage skill is given. Put the checks of step 3 and their
    outcome under **Checked**.
 6. If there is a Decide finding, stop here. Do not fix any finding in the brief or the plan. Write
    the result with `"status": "decide"`.

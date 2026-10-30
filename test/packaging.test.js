@@ -32,7 +32,7 @@ test('shipped skills carry no ship.cars names', () => {
   for (const s of skills) assert.doesNotMatch(fs.readFileSync(s.file, 'utf8'), /cars\.ship|SC[A-Z]\w*Utils|scValue|LITE-/, s.file);
 });
 
-test('every judging skill takes its triage from orc-core:triage, not from its own copy', () => {
+test('every judging skill uses the triage shared role only when it is given', () => {
   const judging = [
     ...['plan-check', 'plan-conformance', 'logic-review'].map(n => ['orc-standard-workflow', n]),
     ['orc-core', 'clean-code'],
@@ -40,9 +40,16 @@ test('every judging skill takes its triage from orc-core:triage, not from its ow
   ];
   for (const [plugin, name] of judging) {
     const text = fs.readFileSync(path.join(PLUGINS, plugin, 'skills', name, 'SKILL.md'), 'utf8');
-    assert.match(text, /invoke the skill\s+`orc-core:triage`/i, name);
+    assert.match(text, /If the input `shared-role\.triage` is given, follow that skill/, name);
+    assert.doesNotMatch(text, /orchestra:triage|orc-core:triage|\(triage, B1\)/, name);
     assert.doesNotMatch(text, /\*\*Noise\*\*: not a real problem/, `${name} still has its own bucket list`);
   }
+});
+
+test('writing-plugins tells a workflow author to end with a PR step that uses the shared roles', () => {
+  const text = fs.readFileSync(path.join(PLUGINS, 'orchestra', 'skills', 'writing-plugins', 'SKILL.md'), 'utf8');
+  assert.match(text, /ends with a PR/);
+  assert.match(text, /shared-role\.pr-review/);
 });
 
 test('the run skill stops when it cannot dispatch a subagent, and never does a stage itself', () => {

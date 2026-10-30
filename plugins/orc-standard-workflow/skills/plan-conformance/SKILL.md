@@ -40,8 +40,8 @@ flag.
 
    Commits that orchestra or its fixer made (`fix(<gate>): …`, `orchestra: …`) belong to no task and
    are not deviations: leave them out of these checks.
-4. Invoke the skill `orc-core:triage` and follow it: give every finding its axes and one bucket.
-5. Write `<notes>/plan-conformance.md` in the triage notes format, with the checks of step 3 under
+4. If the input `shared-role.triage` is given, follow that skill: give every finding its axes and one bucket. Otherwise sort each finding by your own judgement: Decide (a person must answer it), Patch (you fix it), Evaluate (a person should look at it later) or Noise (not a real problem).
+5. Write `<notes>/plan-conformance.md`, one line per finding with its bucket, in the triage notes format when a triage skill is given. Put the checks of step 3 under
    **Checked**.
 6. If there is an open Decide finding (one that `decisions` does not answer), stop here. Do not fix
    anything. Write the result with `"status": "decide"`.

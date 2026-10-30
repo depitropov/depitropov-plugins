@@ -59,8 +59,8 @@ description: Reviews the shape of the changed code and the clean-code rules — 
 6. The title of each finding starts with its rule, as in `▸ Rule 3: <title>` or
    `▸ TS rule 4: <title>`, or with the bold title of a language rule that has no number, and its "In the code" line gives `file:line`. A finding against rule 3
    gives the before and after numbers of its row.
-7. Invoke the skill `orc-core:triage` and follow it: give every finding its axes and one bucket.
-8. Write `<notes>/clean-code.md` in the triage notes format. Under Checked, give the `SUMMARY`,
+7. If the input `shared-role.triage` is given, follow that skill: give every finding its axes and one bucket. Otherwise sort each finding by your own judgement: Decide (a person must answer it), Patch (you fix it), Evaluate (a person should look at it later) or Noise (not a real problem).
+8. Write `<notes>/clean-code.md`, one line per finding with its bucket, in the triage notes format when a triage skill is given. Under Checked, give the `SUMMARY`,
    `BEFORE` and `VERDICT` lines of the measurement, or the reason there is none.
 9. If there is an open Decide finding (one that `decisions` does not answer), stop here. Do not fix
    anything. Write the result with `"status": "decide"`.

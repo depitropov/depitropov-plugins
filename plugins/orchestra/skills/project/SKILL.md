@@ -38,17 +38,20 @@ Ask one topic at a time:
 4. Project gates to add: what each one checks, in which phase, on which files, and whether it is a
    command or a review by a subagent.
 5. Project rules, per stage: `spec`, `plan`, `code`.
+6. Shared roles (`triage`, `writing-style`, `pr-review`, `pr-description`): replace one with a project
+   skill (override), or add short rules to it (amend).
 
 ## 4. Write
 
 - Overrides go into `.orchestra/config.json`: `<slot>.gates.<gate>.<key>`, `<slot>.disable`, and
   `stack-skills.build`. A build fix guide of the project is a project skill.
 - Project gates and guides go into `.orchestra/project/orchestra.json` (only `slot: "project"`,
-  `gates` and `guides`) and `.orchestra/project/guides/<stage>.md`. A guide has no frontmatter and
-  holds short rules.
+  `gates`, `guides` and `shared-roles`) and `.orchestra/project/guides/<stage>.md`. A guide has no
+  frontmatter and holds short rules. An override goes under `shared-roles` in that file. An amend is
+  `.orchestra/project/guides/<shared role>.md`, listed under `guides`.
 - Each project skill goes into `.agents/skills/<name>/SKILL.md`, with only `name` and `description`
-  in its frontmatter. A review skill of an agent gate takes its triage from the skill
-  `orc-core:triage`: it tells the reader to invoke that skill.
+  in its frontmatter. A review skill of an agent gate uses the triage shared role only when it is
+  given: it says "If the input `shared-role.triage` is given, follow that skill."
 - Add the line `!.orchestra/project/` to `.gitignore` when it is missing.
 
 ## 5. Check

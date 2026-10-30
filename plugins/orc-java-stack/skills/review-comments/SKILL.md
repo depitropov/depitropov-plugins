@@ -26,8 +26,8 @@ description: Reviews the comments and Javadoc of the changed Java code against t
    way, follow the project: that rule is not a finding.
 4. The title of each finding starts with its rule number, as in `▸ Rule 3: <title>`, and its "In the
    code" line gives `file:line`.
-5. Invoke the skill `orc-core:triage` and follow it: give every finding its axes and one bucket.
-6. Write `<notes>/comments.md` in the triage notes format.
+5. If the input `shared-role.triage` is given, follow that skill: give every finding its axes and one bucket. Otherwise sort each finding by your own judgement: Decide (a person must answer it), Patch (you fix it), Evaluate (a person should look at it later) or Noise (not a real problem).
+6. Write `<notes>/comments.md`, one line per finding with its bucket, in the triage notes format when a triage skill is given.
 7. If there is an open Decide finding (one that `decisions` does not answer), stop here. Do not fix
    anything. Write the result with `"status": "decide"`.
 8. Otherwise fix every Patch finding and every answered Decide. Your fixes must not change
