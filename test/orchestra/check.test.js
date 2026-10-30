@@ -465,6 +465,10 @@ test('shared-roles names known roles and skills of the plugin, and only core and
   assert.match(checkDeclaration(d, dir, 'core/orchestra.json').join('\n'), /shared role "triage" names skill "triage", which is not in skills\//);
 });
 
+test('a declaration with the old global-gates slot fails with the rename', () => {
+  assert.deepEqual(checkDeclaration({ slot: 'global-gates' }, tmp('gg-'), 'gg/orchestra.json'), ['gg/orchestra.json: "slot" is "global-gates". Fix: rename it to "core".']);
+});
+
 test('a config with the old global-gates section fails with the rename', () => {
   const out = checkProject(project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, 'global-gates': { plugin: 'orc-global-gates' } }, { workflow: wf, 'stack-skills': st }));
   assert.deepEqual(out, ['.orchestra/config.json: section "global-gates" is now "core". Fix: rename the section to "core" and choose orc-core.']);

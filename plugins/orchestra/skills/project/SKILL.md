@@ -39,7 +39,8 @@ Ask one topic at a time:
    command or a review by a subagent.
 5. Project rules, per stage: `spec`, `plan`, `code`.
 6. Shared roles (`triage`, `writing-style`, `pr-review`, `pr-description`): replace one with a project
-   skill (override), or add short rules to it (amend).
+   skill (override), or add short rules to it (amend). A shared role has an effect only when a skill
+   of the chosen workflow or gates reads it. The shipped plugins read only `triage` today.
 
 ## 4. Write
 

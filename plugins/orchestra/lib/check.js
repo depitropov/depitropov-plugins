@@ -54,7 +54,8 @@ function checkDeclaration(d, dir, where, skillsDir = path.join(dir, 'skills')) {
     return out;
   }
   if (!Object.hasOwn(DECLARATION_KEYS, d.slot)) {
-    fail(`"slot" is ${JSON.stringify(d.slot)}`, `set it to one of ${SLOTS.join(', ')}`);
+    if (d.slot === 'global-gates') fail('"slot" is "global-gates"', 'rename it to "core"');
+    else fail(`"slot" is ${JSON.stringify(d.slot)}`, `set it to one of ${SLOTS.join(', ')}`);
     return out;
   }
   const allowed = DECLARATION_KEYS[d.slot];

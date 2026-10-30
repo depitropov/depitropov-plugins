@@ -664,4 +664,4 @@ wording change needs no entry.
   message; there is no alias. The `sc-*` copies follow with the porting work.
 - **Cost and risk:** Every gate skill changes. The `sc-*` copies break until they are ported. A run
   with no core plugin escalates by the model's own judgement.
-- **Where it lives:** The files of the plan `docs/superpowers/plans/2026-10-29-shared-roles.md`.
+- **Where it lives:** The files of the plan `docs/superpowers/plans/2026-10-30-shared-roles.md`.

@@ -92,14 +92,14 @@ section only, overrides `run`, `guide` and `max_rounds` of the build; its `guide
 
 The shared roles are `triage`, `writing-style`, `pr-review` and `pr-description`. Only the `core` plugin and the project fill them. Every dispatch gets the input `shared-role.<role>` (the skill) for each role that is filled, and `shared-role.<role>.guide` when the project amends it. A project may also key one of its `guides` by a shared role: that guide amends the role with short rules.
 
-- A gate or a judging stage says: "If the input `shared-role.triage` is given, follow that skill." Without it, the skill sorts by its own judgement. A skill that writes for people says the same for `writing-style`.
+- A gate or a judging stage says: "If the input `shared-role.triage` is given, follow that skill." Without it, the skill sorts by its own judgement. A skill that writes for people says the same for `writing-style`: "If the input `shared-role.writing-style` is given, follow that skill for every text a person reads."
 - A workflow author asks whether the workflow ends with a PR. If it does, the PR step invokes `shared-role.pr-review` and `shared-role.pr-description` when they are given.
 - The result contract does not change: `status`, `decide` (the run stops) and `evaluate` (the report shows it). The triage method is optional.
 
 ## A project's own gates and guides
 
 A project fills the slot `project` itself, with no plugin: `.orchestra/project/orchestra.json` holds
-only `slot`, `gates` and `guides`, in the formats above. A project skill (an `agent` gate's `skill`,
+only `slot`, `gates`, `guides` and `shared-roles`, in the formats above. A project skill (an `agent` gate's `skill`,
 a fix `guide`) is `.agents/skills/<name>/SKILL.md` in the project; orchestra gives it to the subagent
 by its path. Project gates run after your gates of the same kind, and project guides come after yours. A project gate
 name is never one of your gate names. The skill `orchestra:project` writes all of it.
