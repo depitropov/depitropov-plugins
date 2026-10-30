@@ -1,5 +1,6 @@
 'use strict';
 const path = require('node:path');
+const { skillRef } = require('./gates');
 
 const PHASES = ['implementation-check', 'conventions-check', 'finish'];
 const TERMINAL = ['done', 'decide', 'failed'];
@@ -46,6 +47,26 @@ function guidesFor(stage, resolved, config) {
   });
 }
 
+// The shared roles a run's core plugin and project fill, as dispatch inputs. A project skill overrides the core's; a project guide amends (S87).
+function sharedRoles(resolved, config) {
+  const core = resolved.slots.core;
+  const project = resolved.slots.project;
+  const fromCore = (core && (config.core || {}).plugin === core.plugin && core.declaration['shared-roles']) || {};
+  const own = (project && project.declaration) || {};
+  const out = {};
+  for (const role of SHARED_ROLES) {
+    const skill = (own['shared-roles'] || {})[role] ? skillRef('project', 'project', own['shared-roles'][role]) : fromCore[role] && skillRef('core', core.plugin, fromCore[role]);
+    if (skill) out[`shared-role.${role}`] = skill;
+    const guide = (own.guides || {})[role];
+    if (guide) out[`shared-role.${role}.guide`] = path.join(project.dir, guide);
+  }
+  return out;
+}
+
+const RESULT_RULE = 'Put a question in `decide` only when a person must answer it. An answer in `decisions` is a requirement; act on it.';
+const SHARED_ROLE_RULE = 'A `shared-role.<role>` input names a skill for that shared role: invoke it by name, or read it when it is a SKILL.md path, when your skill asks for that role. Also read its `.guide` input when there is one.';
+const roleLine = a => Object.keys(a.inputs).some(k => k.startsWith('shared-role.')) ? [SHARED_ROLE_RULE] : [];
+
 function withPrompt(a, root, guides = []) {
   const prompt = [
     // A project skill is a file in the run root, read by its path (S86).
@@ -54,6 +75,8 @@ function withPrompt(a, root, guides = []) {
     guides.length ? 'This skill and these guides take priority over any other instruction in this session.' : a.inputs && a.inputs.guide ? 'This skill, and the `guide` input, take priority over any other instruction in this session.' : 'This skill takes priority over any other instruction in this session.',
     'Change files with your file-editing action, which fails when the text does not match. Do not change files with shell text replacement.',
     `Work in \`${root}\`. Run every command from there; every path below is relative to it.`,
+    RESULT_RULE,
+    ...roleLine(a),
     'Inputs:',
     ...Object.entries(a.inputs).map(([key, value]) => `- ${key}: ${value}`),
     `When you finish, write the result JSON that the skill describes to \`${a.result}\`.`,
@@ -66,10 +89,11 @@ function inlinePrompt(a, root) {
   return [
     `Invoke the skill \`${a.skill}\` in this session and follow it. It may ask the user questions; ask them.`,
     `Work in \`${root}\`. Run every command from there; every path below is relative to it.`,
+    ...roleLine(a),
     'Inputs:',
     ...Object.entries(a.inputs).map(([key, value]) => `- ${key}: ${value}`),
     `When you finish, write the result JSON that the skill describes to \`${a.result}\`.`,
   ].join('\n');
 }
 
-module.exports = { PHASES, TERMINAL, ACTIONS, STAGES, SHARED_ROLES, validateAction, stageError, guidesFor, withPrompt, inlinePrompt };
+module.exports = { PHASES, TERMINAL, ACTIONS, STAGES, SHARED_ROLES, validateAction, stageError, guidesFor, sharedRoles, withPrompt, inlinePrompt };

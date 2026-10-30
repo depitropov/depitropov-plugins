@@ -89,7 +89,8 @@ function checkDeclaration(d, dir, where, skillsDir = path.join(dir, 'skills')) {
   };
   if (d.guides !== undefined && !isObject(d.guides)) fail('"guides" is not an object', 'write { "<stage>": "<path of a guide file in the plugin>" }');
   for (const [stage, name] of Object.entries(isObject(d.guides) ? d.guides : {})) {
-    if (!STAGES.includes(stage)) fail(`unknown guide stage "${stage}"`, `use one of ${STAGES.join(', ')}`);
+    // A project guide may amend a shared role (S87).
+    if (!STAGES.includes(stage) && !(d.slot === 'project' && SHARED_ROLES.includes(stage))) fail(`unknown guide stage "${stage}"`, `use one of ${STAGES.join(', ')}${d.slot === 'project' ? `, or a shared role: ${SHARED_ROLES.join(', ')}` : ''}`);
     file(name, `guide "${stage}"`);
   }
   if (d['shared-roles'] !== undefined && !isObject(d['shared-roles'])) fail('"shared-roles" is not an object', 'write { "<shared role>": "<skill name>" }');
@@ -387,6 +388,16 @@ function checkProjectSlot(project, config, slots, out) {
   for (const name of new Set(gates.flatMap(g => [g.kind === 'agent' && g.skill, g.fix === 'fixer' && g.guide]))) {
     const file = path.join(skillsDir, String(name), 'SKILL.md');
     if (typeof name === 'string' && fs.existsSync(file)) out.push(...checkSkillFile(file, name, `${PROJECT_SKILLS}/${name}/SKILL.md`));
+  }
+  const own = isObject(d['shared-roles']) ? d['shared-roles'] : {};
+  for (const name of new Set(Object.values(own))) {
+    const file = path.join(skillsDir, String(name), 'SKILL.md');
+    if (typeof name === 'string' && fs.existsSync(file)) out.push(...checkSkillFile(file, name, `${PROJECT_SKILLS}/${name}/SKILL.md`));
+  }
+  const core = slots.core;
+  const coreRoles = core && isObject(core.declaration) && isObject(config.core) && config.core.plugin === core.plugin && isObject(core.declaration['shared-roles']) ? core.declaration['shared-roles'] : {};
+  for (const role of Object.keys(isObject(d.guides) ? d.guides : {})) {
+    if (SHARED_ROLES.includes(role) && !coreRoles[role] && !own[role]) out.push(`${PROJECT_FILE}: the project declares a "${role}" guide, but no core plugin or project skill fills the shared role ${role}. Fix: add a core plugin that fills it, add "${role}" under "shared-roles" with a project skill, or remove the guide.`);
   }
   const wf = slots.workflow;
   if (wf && isObject(wf.declaration) && isObject(d.guides)) {

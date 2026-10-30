@@ -14,14 +14,16 @@ const PLUGINS = path.join(__dirname, '../../plugins');
 const wt = (dir, a) => path.join(dir, a.worktree);
 const doneReport = (dir, a) => git(dir, 'show', `${a.branch}:${a.report}`);
 
-function project({ curator } = {}) {
+function project({ curator, core = true } = {}) {
   const dir = makeRepo();
   const st = fs.mkdtempSync(path.join(os.tmpdir(), 'st-'));
   writePlugin(st, 'st', { slot: 'stack-skills', build: { run: 'node -e "process.exit(0)"', guide: 'fix-build' }, gates: [] });
   const config = { workflow: { plugin: 'orc-standard-workflow' }, 'stack-skills': { plugin: 'st' } };
   const dirs = { workflow: path.join(PLUGINS, 'orc-standard-workflow'), 'stack-skills': st };
-  config.core = { plugin: 'orc-core' };
-  dirs.core = path.join(PLUGINS, 'orc-core');
+  if (core) {
+    config.core = { plugin: 'orc-core' };
+    dirs.core = path.join(PLUGINS, 'orc-core');
+  }
   if (curator) {
     const cur = fs.mkdtempSync(path.join(os.tmpdir(), 'cur-'));
     writePlugin(cur, 'cur', { slot: 'curator', curate: 'curate', setup: { skill: 'setup', done: 'docs/curator/.setup' }, guides: { plan: 'guides/plan.md' } });
@@ -53,11 +55,12 @@ function afterReview(dir) {
   return drive(dir);
 }
 
-// Walks spec, plan and plan-check with ok results, and returns the first code dispatch.
-function toCode(dir, tasks = 1) {
+// Walks spec, plan and plan-check with ok results, and returns the first code dispatch. `seen` gets each dispatch on the way.
+function toCode(dir, tasks = 1, seen = () => {}) {
   let a = drive(dir, ['--task-file', '.orchestra/task.txt']);
   for (const stage of ['spec', 'plan']) {
     assert.equal(a.skill, `orc-standard-workflow:${stage}`);
+    seen(a);
     writeJson(path.join(wt(dir, a), a.result), { stage, status: 'ok' });
     a = drive(dir);
   }
@@ -521,3 +524,20 @@ test('a start fails when a project skill the declaration names is not on origin'
   assert.equal(git(dir, 'worktree', 'list').split('\n').length, 1);
 });
 
+
+test('the core plugin fills shared-role.triage on the spec and logic-review dispatches, and a run without core carries none', () => {
+  const dir = project();
+  let spec;
+  const code = toCode(dir, 1, a => { spec = spec || a; });
+  assert.equal(spec.inputs['shared-role.triage'], 'orc-core:triage');
+  assert.match(spec.prompt, /A `shared-role\.<role>` input names a skill/);
+  fs.writeFileSync(path.join(wt(dir, code), 'Discount.java'), 'class Discount {}\n');
+  git(wt(dir, code), 'add', 'Discount.java');
+  git(wt(dir, code), 'commit', '-m', 'feat: discount');
+  writeJson(path.join(wt(dir, code), code.result), { stage: 'code', status: 'ok' });
+  const review = toReview(dir);
+  assert.equal(review.skill, 'orc-standard-workflow:logic-review');
+  assert.equal(review.inputs['shared-role.triage'], 'orc-core:triage');
+  const bare = drive(project({ core: false }), ['--task-file', '.orchestra/task.txt']);
+  assert.deepEqual(Object.keys(bare.inputs).filter(k => k.startsWith('shared-role.')), []);
+});

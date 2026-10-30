@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { validateAction, withPrompt, guidesFor, stageError, PHASES, STAGES } = require('../../plugins/orchestra/lib/protocol');
+const { validateAction, withPrompt, guidesFor, stageError, sharedRoles, PHASES, STAGES } = require('../../plugins/orchestra/lib/protocol');
 
 const dispatch = { action: 'dispatch', skill: 'wf:code', inputs: { spec: 'a/task.md' }, result: 'a/code.result.json', runDir: 'a' };
 
@@ -83,4 +83,23 @@ test('withPrompt reads a project skill by its path', () => {
   const { prompt } = withPrompt({ ...dispatch, skill: '.agents/skills/check-money/SKILL.md' }, '/r');
   assert.ok(prompt.startsWith('Read the skill file `.agents/skills/check-money/SKILL.md` and follow it.'), prompt);
   assert.doesNotMatch(prompt, /Invoke the skill/);
+});
+
+const core = { plugin: 'orc-core', dir: '/p/core', declaration: { slot: 'core', 'shared-roles': { triage: 'triage', 'writing-style': 'style' } } };
+test('sharedRoles maps the core roles, and a project skill or guide overrides or amends one', () => {
+  assert.deepEqual(sharedRoles({ slots: {} }, {}), {});
+  assert.deepEqual(sharedRoles({ slots: { core } }, { core: { plugin: 'orc-core' } }),
+    { 'shared-role.triage': 'orc-core:triage', 'shared-role.writing-style': 'orc-core:style' });
+  const project = { plugin: 'project', dir: '.orchestra/project', declaration: { slot: 'project', 'shared-roles': { triage: 'our-triage' }, guides: { 'writing-style': 'guides/writing-style.md', code: 'guides/code.md' } } };
+  assert.deepEqual(sharedRoles({ slots: { core, project } }, { core: { plugin: 'orc-core' } }), {
+    'shared-role.triage': '.agents/skills/our-triage/SKILL.md',
+    'shared-role.writing-style': 'orc-core:style',
+    'shared-role.writing-style.guide': '.orchestra/project/guides/writing-style.md',
+  });
+});
+test('withPrompt states the result rule always, and how to load a shared role only when one is given', () => {
+  assert.match(withPrompt(dispatch, '/r').prompt, /Put a question in `decide` only when a person must answer it\. An answer in `decisions` is a requirement; act on it\./);
+  assert.doesNotMatch(withPrompt(dispatch, '/r').prompt, /shared-role/);
+  const a = withPrompt({ ...dispatch, inputs: { ...dispatch.inputs, 'shared-role.triage': 'orc-core:triage' } }, '/r');
+  assert.match(a.prompt, /A `shared-role\.<role>` input names a skill.*invoke it by name, or read it when it is a SKILL\.md path.*`\.guide` input/s);
 });

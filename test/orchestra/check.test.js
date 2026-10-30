@@ -469,3 +469,12 @@ test('a config with the old global-gates section fails with the rename', () => {
   const out = checkProject(project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, 'global-gates': { plugin: 'orc-global-gates' } }, { workflow: wf, 'stack-skills': st }));
   assert.deepEqual(out, ['.orchestra/config.json: section "global-gates" is now "core". Fix: rename the section to "core" and choose orc-core.']);
 });
+
+test('a project guide may be keyed by a shared role that the core plugin or the project fills', () => {
+  const amend = { slot: 'project', guides: { triage: 'guides/triage.md' } };
+  assert.deepEqual(checkProject(addProject(both(), amend)), ['.orchestra/project/orchestra.json: the project declares a "triage" guide, but no core plugin or project skill fills the shared role triage. Fix: add a core plugin that fills it, add "triage" under "shared-roles" with a project skill, or remove the guide.']);
+  assert.deepEqual(checkProject(addProject(both(), { ...amend, 'shared-roles': { triage: 'our-triage' } }, { skills: ['our-triage'] })), []);
+  const withCore = project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, core: { plugin: 'core' } }, { workflow: wf, 'stack-skills': st, core: { slot: 'core', 'shared-roles': { triage: 'triage' } } });
+  assert.deepEqual(checkProject(addProject(withCore, amend)), []);
+  assert.match(checkProject(addProject(both(), { slot: 'project', guides: { review: 'guides/review.md' } })).join('\n'), /unknown guide stage "review"/);
+});

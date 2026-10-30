@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const { isDeepStrictEqual } = require('node:util');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
-const { validateAction, withPrompt, inlinePrompt, guidesFor, stageError } = require('../lib/protocol');
+const { validateAction, withPrompt, inlinePrompt, guidesFor, sharedRoles, stageError } = require('../lib/protocol');
 const { load, readJson } = require('../lib/resolved');
 const { CONFIG, PROJECT_DIR, PROJECT_SKILLS, PROJECT_FILE } = require('../lib/check');
 const runner = require('../lib/runner');
@@ -62,6 +62,7 @@ function missingProjectFile(root) {
   const skill = name => `${PROJECT_SKILLS}/${name}/SKILL.md`;
   const files = [
     ...(Array.isArray(d.gates) ? d.gates : []).flatMap(g => [g && g.kind === 'agent' && g.skill && skill(g.skill), g && g.fix === 'fixer' && g.guide && skill(g.guide)]),
+    ...Object.values(d['shared-roles'] || {}).map(skill),
     ...Object.values(d.guides || {}).map(f => `${PROJECT_DIR}/${f}`),
     build.guide && skill(build.guide),
   ].filter(Boolean);
@@ -152,7 +153,10 @@ function answer(project, root, action) {
     dispatch: a => withPrompt(a, root, guidesFor(a.stage, load(root), readJson(path.join(root, CONFIG)))),
     inline: a => ({ ...a, prompt: inlinePrompt(a, root) }),
   };
-  const prompted = prompts[action.action] ? prompts[action.action](action) : action;
+  const build = prompts[action.action];
+  // Every dispatch and inline action carries the shared roles that the core plugin and the project fill (S87).
+  const roles = build ? sharedRoles(load(root), readJson(path.join(root, CONFIG))) : {};
+  const prompted = build ? build({ ...action, inputs: { ...action.inputs, ...roles } }) : action;
   const out = { ...prompted, branch: git(root, 'branch', '--show-current'), worktree: path.relative(project, root) };
   if (action.action !== 'done' && action.action !== 'setup-done') return out;
   if (action.action === 'done') keepRunFolder(project, root, out.branch);
