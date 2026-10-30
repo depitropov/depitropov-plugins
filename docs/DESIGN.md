@@ -187,7 +187,7 @@ Rules:
 
 1. Finds the plugins from the `<plugin>:manifest` skills in its skill list. It asks the user when
    it finds none (S70).
-2. Asks which plugin fills each slot. The `curator` and `core` slots are optional (S76, S80).
+2. Asks which plugin fills each slot. The `curator` and `core` slots are optional (S76, S80, S87).
 3. Writes `.orchestra/config.json` with only `plugin` per section, and adds the three `.gitignore`
    lines.
 4. Runs `resolve.js`, which resolves the plugins and runs `orchestra check --project`. Shows the
@@ -454,7 +454,7 @@ pushes and never opens a PR.
 Judgement stages (plan-check) and every agent gate put each finding into one bucket. The bucket
 sets the action. The full contract (the five axes, the bucket rules, the Decide test, the finding
 format, the notes format) is one skill, `orc-core:triage` (optional, S87), ported in full from be-coding-agent's
-`triage.md` (S64). Every judging skill invokes it. This table is the short form:
+`triage.md` (S64). A judging skill invokes it when `shared-role.triage` is given; otherwise it sorts by its own judgement. This table is the short form:
 
 | Bucket | Action |
 |---|---|
@@ -479,7 +479,7 @@ orchestra writes it (S55). Steps are in run order. An empty phase shows "ok (no 
 |---|---|---|
 | `build` | yes | The full build and tests, with coverage. Its fix guide and round limit (6.3). |
 | `gates` | no | The stack's gates (6.1). |
-| `guides` | no | `{ "<stage>": "<path>" }`, a file in the plugin, for example `guides/code.md`: short rules for the stages of one name, 5–15 per area (R3, S76, S79). |
+| `guides` | no | `{ "<stage>": "<path>" }`, a file in the plugin, for example `guides/code.md`: short rules for the stage it is keyed by, 5–15 per area (R3, S76, S79). |
 | `manifest` skill | yes | Resolution (5.2). |
 
 The stack plugin declares what and where. It never declares an order or a loop. Every gate skill
@@ -543,7 +543,7 @@ Pillar 4 applies from the first commit (S33):
 ```
 plugins/
   orchestra/
-    skills/{init,run,fixer,triage,select,writing-plugins}/SKILL.md
+    skills/{init,project,run,fixer,select,writing-plugins}/SKILL.md
     bin/{check.js,resolve.js,drive.js}
     lib/{check.js,resolved.js,gates.js,runner.js,protocol.js,report.js,git.js}
   orc-standard-workflow/
@@ -552,7 +552,7 @@ plugins/
     bin/next.js
   orc-core/
     orchestra.json            (plugin.json: dependencies clean-code)
-    skills/{manifest,clean-code}/SKILL.md
+    skills/{manifest,clean-code,triage}/SKILL.md
   orc-java-stack/
     orchestra.json
     guides/code.md
