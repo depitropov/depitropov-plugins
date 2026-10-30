@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { validateAction, withPrompt, guidesFor, roleError, PHASES, ROLES } = require('../../plugins/orchestra/lib/protocol');
+const { validateAction, withPrompt, guidesFor, stageError, PHASES, STAGES } = require('../../plugins/orchestra/lib/protocol');
 
 const dispatch = { action: 'dispatch', skill: 'wf:code', inputs: { spec: 'a/task.md' }, result: 'a/code.result.json', runDir: 'a' };
 
@@ -35,10 +35,10 @@ test('the prompt puts the skill first and asks for file edits that fail loudly',
   assert.doesNotMatch(a.prompt, /guide/);
 });
 
-test('the roles are spec, plan and code, and a dispatch may name one of them', () => {
-  assert.deepEqual(ROLES, ['spec', 'plan', 'code']);
-  assert.ok(validateAction({ ...dispatch, role: 'code' }));
-  assert.throws(() => validateAction({ ...dispatch, role: 'review' }), /unknown role: review/);
+test('the stages are spec, plan and code, and a dispatch may name one of them', () => {
+  assert.deepEqual(STAGES, ['spec', 'plan', 'code']);
+  assert.ok(validateAction({ ...dispatch, stage: 'code' }));
+  assert.throws(() => validateAction({ ...dispatch, stage: 'review' }), /unknown stage: review/);
 });
 
 test('guidesFor lists the curator guide first, then the stack guide, and leaves out disabled ones', () => {
@@ -67,12 +67,16 @@ test('withPrompt names the guide input in the priority sentence', () => {
   assert.match(a.prompt, /This skill, and the `guide` input, take priority over any other instruction in this session\./);
 });
 
-test('roleError names a role that the workflow did not declare', () => {
-  const d = { roles: ['spec', 'plan'] };
-  assert.equal(roleError({ ...dispatch, role: 'plan' }, d), null);
-  assert.equal(roleError(dispatch, d), null);
-  assert.match(roleError({ ...dispatch, role: 'code' }, d), /wf:code has role "code", which the workflow does not declare in "roles"/);
-  assert.match(roleError({ ...dispatch, role: 'code' }, {}), /does not declare in "roles"/);
+test('a dispatch with the old key role fails with the rename', () => {
+  assert.throws(() => validateAction({ ...dispatch, role: 'code' }), /dispatch key "role" is now "stage"\. Rename it in next\.js/);
+});
+
+test('stageError names a stage that the workflow did not declare', () => {
+  const d = { stages: ['spec', 'plan'] };
+  assert.equal(stageError({ ...dispatch, stage: 'plan' }, d), null);
+  assert.equal(stageError(dispatch, d), null);
+  assert.match(stageError({ ...dispatch, stage: 'code' }, d), /wf:code has stage "code", which the workflow does not declare in "stages"/);
+  assert.match(stageError({ ...dispatch, stage: 'code' }, {}), /does not declare in "stages"/);
 });
 
 test('withPrompt reads a project skill by its path', () => {

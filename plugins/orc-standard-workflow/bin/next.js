@@ -116,7 +116,7 @@ function answerLines(docsAbs, name) {
 
 // One step of the workflow: dispatch it, or stop on its result. Returns null when the step is done.
 // A Decide result records how many answers existed when it stopped (`seen`). Only a new answer starts the step again.
-function stage(ctx, name, inputs, { skill = name, role } = {}) {
+function stage(ctx, name, inputs, { skill = name, stage } = {}) {
   const result = `${ctx.runDir}/${name}.result.json`;
   const file = path.join(ctx.project, result);
   const answers = countAnswers(path.join(ctx.project, ctx.run.docs), name);
@@ -138,7 +138,7 @@ function stage(ctx, name, inputs, { skill = name, role } = {}) {
     if (lost) return { action: 'failed', reason: lost.reason, runDir: ctx.runDir };
     const decisionsFile = `${ctx.run.docs}/decisions.md`;
     const decisions = fs.existsSync(path.join(ctx.project, decisionsFile)) ? { decisions: decisionsFile } : {};
-    return { action: 'dispatch', skill: `orc-standard-workflow:${skill}`, ...(role ? { role } : {}), inputs: { ...inputs, ...decisions }, result, runDir: ctx.runDir };
+    return { action: 'dispatch', skill: `orc-standard-workflow:${skill}`, ...(stage ? { stage } : {}), inputs: { ...inputs, ...decisions }, result, runDir: ctx.runDir };
   }
   if (res.status === 'failed') return { action: 'failed', reason: res.reason || `Stage ${name} failed. See ${result}.`, runDir: ctx.runDir };
   if (res.status === 'decide') {
@@ -173,7 +173,7 @@ function next(project, taskFile) {
   const ctx = { project, runDir, run };
   const notes = run.docs;
   const plan = `${notes}/plan.md`;
-  const specStep = stage(ctx, 'spec', { task: `${notes}/task.md`, notes }, { role: 'spec' });
+  const specStep = stage(ctx, 'spec', { task: `${notes}/task.md`, notes }, { stage: 'spec' });
   if (specStep) return specStep;
   const facts = openFacts(path.join(project, run.spec));
   if (facts.length) {
@@ -189,7 +189,7 @@ function next(project, taskFile) {
     ['plan-check', { spec: run.spec, plan, notes }],
   ];
   for (const [name, inputs] of steps) {
-    const a = stage(ctx, name, inputs, { role: 'plan' });
+    const a = stage(ctx, name, inputs, { stage: 'plan' });
     if (a) return a;
   }
   const total = planTasks(path.join(project, plan));
@@ -202,7 +202,7 @@ function next(project, taskFile) {
   }
   for (let from = 1; from <= total; from += s.perCoder) {
     const to = Math.min(from + s.perCoder - 1, total);
-    const a = stage(ctx, `code-${from}`, { spec: run.spec, plan, from, to, base: run.base, build: s.build, notes }, { skill: 'code', role: 'code' });
+    const a = stage(ctx, `code-${from}`, { spec: run.spec, plan, from, to, base: run.base, build: s.build, notes }, { skill: 'code', stage: 'code' });
     if (a) return a;
   }
   for (const phase of PHASES) {

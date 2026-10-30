@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const { isDeepStrictEqual } = require('node:util');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
-const { validateAction, withPrompt, inlinePrompt, guidesFor, roleError } = require('../lib/protocol');
+const { validateAction, withPrompt, inlinePrompt, guidesFor, stageError } = require('../lib/protocol');
 const { load, readJson } = require('../lib/resolved');
 const { CONFIG, PROJECT_DIR, PROJECT_SKILLS, PROJECT_FILE } = require('../lib/check');
 const runner = require('../lib/runner');
@@ -149,7 +149,7 @@ function keepRunFolder(project, root, branch) {
 // The model is told the branch and the worktree on every action, so it never guesses where the commits went.
 function answer(project, root, action) {
   const prompts = {
-    dispatch: a => withPrompt(a, root, guidesFor(a.role, load(root), readJson(path.join(root, CONFIG)))),
+    dispatch: a => withPrompt(a, root, guidesFor(a.stage, load(root), readJson(path.join(root, CONFIG)))),
     inline: a => ({ ...a, prompt: inlinePrompt(a, root) }),
   };
   const prompted = prompts[action.action] ? prompts[action.action](action) : action;
@@ -189,7 +189,7 @@ function step(project, extraArgs, resume) {
     const a = validateAction(callNext(nextJs, project, args));
     args = [];
     if (a.action === 'dispatch') {
-      const bad = roleError(a, resolved.slots.workflow.declaration);
+      const bad = stageError(a, resolved.slots.workflow.declaration);
       if (bad) return finish(project, { action: 'failed', reason: bad, runDir: a.runDir }, resolved);
       remember(project, a);
       return a;

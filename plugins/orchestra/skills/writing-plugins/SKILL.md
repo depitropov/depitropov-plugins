@@ -30,10 +30,10 @@ A `global-gates` plugin holds the gates that every workflow gets. Such a gate re
 | `config` | all | Keys a project may set in its config section. Each is `{ "type": …, "default": … }`, with type `string`, `number` or `boolean`, and a default of that type. Each `agent` gate of the plugin gets every value as the input `config.<key>`. |
 | `gates` | `workflow`, `global-gates`, `stack-skills` | The checks after the code. See "A gate". |
 | `build` | `stack-skills`, required | `run`: the full build and the tests. `guide`: its fix guide skill. `max_rounds`: fixer rounds, default 2. |
-| `guides` | `stack-skills`, `curator` | `{ "<role>": "<path>" }`: a guide, a path to a guide file inside the plugin (for example `guides/code.md`: no frontmatter, short write-time rules), for the stages of one role. The roles are `spec`, `plan` and `code`. orchestra tells the stage to read the guides of its role. A project turns one off with `disable`. |
+| `guides` | `stack-skills`, `curator` | `{ "<stage>": "<path>" }`: a guide, a path to a guide file inside the plugin (for example `guides/code.md`: no frontmatter, short write-time rules), for one stage. The stages are `spec`, `plan` and `code`. orchestra tells the stage to read its guides. A project turns one off with `disable`. |
 | `curate` | `curator`, required | The skill that brings the project's direction docs up to date at the end of a run. orchestra runs it in the main session, not in a subagent, when the workflow is done. |
 | `setup` | `curator`, required | `skill`: the skill that sets the Curator up in a project; it may interview the user. `done`: a file path relative to the project root. The skill writes this file as its last step. orchestra checks the file on the default branch when a run starts. When it is missing, no task branch is made, and the user chooses to set up first or to go on without it. |
-| `roles` | `workflow` | The roles of its stages, each once: `spec`, `plan`, `code`. orchestra check fails when a slot plugin declares a guide for a role that is not here. |
+| `stages` | `workflow` | The stages it has, each once: `spec`, `plan`, `code`. orchestra check fails when a slot plugin declares a guide for a stage that is not here. |
 
 In a command, `{plugin}` is the plugin's folder. In a gate's `run` or `grep`, `{config.<key>}` is
 a config value; the key must be declared under `config`. The `build` command takes only `{plugin}`.
@@ -101,7 +101,7 @@ Node, standard library only. orchestra calls `node bin/next.js --project <dir>`,
 `--task-file <file>` on the first call of a run. Each call decides from the files on disk and prints
 one action as JSON on its last line:
 
-- `dispatch`: `skill`, `inputs`, `result` (the file the subagent writes) and `runDir`. Optional `role`: the stage's role, one of your `roles`. orchestra adds that role's guides to the prompt; a role you did not declare fails the run.
+- `dispatch`: `skill`, `inputs`, `result` (the file the subagent writes) and `runDir`. Optional `stage`: the stage this dispatch is, one of your `stages`. orchestra adds that stage's guides to the prompt; a stage you did not declare fails the run.
 - `phase`: `name` (one of the three phases) and `runDir`. orchestra runs that phase's gates.
 - `done`, `decide` (with `gate`, the step that asks, and `questions`; optional `result`, its result
   file) or `failed` (with `reason`). orchestra writes the report.

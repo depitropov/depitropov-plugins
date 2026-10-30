@@ -49,16 +49,16 @@ test('each broken declaration rule gives one line with the rule and its fix', ()
     [curator({ setup: { skill: 'setup', done: '/abs/.setup' } }), /setup "done" is "\/abs\/\.setup"/],
     [curator({ setup: { skill: 'setup', done: '../out/.setup' } }), /setup "done" is "\.\.\/out\/\.setup"/],
     [curator({ build: { run: 'make' } }), /unknown key "build" for slot curator/],
-    [curator({ guides: { review: 'x' } }), /unknown guide role "review"/],
+    [curator({ guides: { review: 'x' } }), /unknown guide stage "review"/],
     [stack({ params: [] }), /unknown key "params"/],
     [{ slot: 'workflow', build: { run: 'make' } }, /unknown key "build" for slot workflow/],
     [{ slot: 'stack-skills' }, /no "build" with a "run" command/],
     [stack({ config: { n: { type: 'number' } } }), /config key "n" has no number default/],
     [stack({ config: { disable: { type: 'string', default: '' } } }), /config key "disable" is reserved/],
-    [stack({ guides: { review: 'x' } }), /unknown guide role "review"/],
+    [stack({ guides: { review: 'x' } }), /unknown guide stage "review"/],
     [stack({ guides: 'plan-guide' }), /"guides" is not an object/],
-    [{ slot: 'workflow', roles: ['spec', 'review'] }, /"roles" is \["spec","review"\]/],
-    [{ slot: 'workflow', roles: ['plan', 'plan'] }, /"roles" is \["plan","plan"\]/],
+    [{ slot: 'workflow', stages: ['spec', 'review'] }, /"stages" is \["spec","review"\]/],
+    [{ slot: 'workflow', stages: ['plan', 'plan'] }, /"stages" is \["plan","plan"\]/],
     [{ slot: 'workflow', guides: { plan: 'x' } }, /unknown key "guides" for slot workflow/],
     [stack({ gates: [{ name: 'a', phase: 'later', kind: 'agent', skill: 's', always: true }] }), /gate "a" has phase "later"/],
     [stack({ gates: [tool({ run: undefined })] }), /gate "a" is a tool gate with no "run"/],
@@ -85,7 +85,7 @@ test('a skill the declaration names must exist in skills/', () => {
 });
 
 const curator = (extra = {}) => ({ slot: 'curator', curate: 'curate', setup: { skill: 'setup', done: 'docs/curator/.setup' }, ...extra });
-const wf = { slot: 'workflow', config: { 'tasks-per-coder': { type: 'number', default: 2 } }, roles: ['spec', 'plan', 'code'], gates: [] };
+const wf = { slot: 'workflow', config: { 'tasks-per-coder': { type: 'number', default: 2 } }, stages: ['spec', 'plan', 'code'], gates: [] };
 const st = stack({ guides: { code: 'guides/code.md' }, gates: [{ name: 'fmt', phase: 'finish', kind: 'tool', run: 'x', always: true }] });
 
 function project(config, declarations) {
@@ -100,8 +100,12 @@ function project(config, declarations) {
   return dir;
 }
 
-test('a guide for a role the workflow has no stage for fails, unless the config disables it', () => {
-  const noCode = { ...wf, roles: ['spec', 'plan'] };
+test('a workflow declaration with the old key roles fails with the rename', () => {
+  assert.match(errors({ slot: 'workflow', roles: ['code'] }).join('\n'), /unknown key "roles" for slot workflow\. Fix: rename it to "stages"/);
+});
+
+test('a guide for a stage the workflow has no stage for fails, unless the config disables it', () => {
+  const noCode = { ...wf, stages: ['spec', 'plan'] };
   const out = checkProject(project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' } }, { workflow: noCode, 'stack-skills': st }));
   assert.deepEqual(out, ['.orchestra/config.json: st declares a "code" guide, but the workflow wf has no code stage. Fix: add "guides/code.md" to "stack-skills.disable", or choose a workflow with a code stage.']);
   const off = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st', disable: ['guides/code.md'] } };
@@ -123,7 +127,7 @@ test('a global-gates declaration takes only slot, config and gates', () => {
 
 test('a gate name declared by two slots fails, unless one section disables it', () => {
   const shape = { name: 'shape', phase: 'implementation-check', kind: 'agent', skill: 'review-shape', always: true };
-  const wf2 = { slot: 'workflow', roles: ['code'], gates: [shape] };
+  const wf2 = { slot: 'workflow', stages: ['code'], gates: [shape] };
   const gg = { slot: 'global-gates', gates: [shape] };
   const config = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, 'global-gates': { plugin: 'gg' } };
   assert.deepEqual(checkProject(project(config, { workflow: wf2, 'stack-skills': st, 'global-gates': gg })),
@@ -331,10 +335,10 @@ test('a valid curator declaration passes, and the curator section is optional', 
   assert.deepEqual(checkProject(project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' } }, { workflow: wf, 'stack-skills': st })), []);
 });
 
-test('a curator guide for a role the workflow lacks names the curator section in its fix', () => {
+test('a curator guide for a stage the workflow lacks names the curator section in its fix', () => {
   const cur = curator({ guides: { spec: 'guides/spec.md' } });
   const config = { workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, curator: { plugin: 'cur' } };
-  const out = checkProject(project(config, { workflow: { ...wf, roles: ['plan', 'code'] }, 'stack-skills': st, curator: cur }));
+  const out = checkProject(project(config, { workflow: { ...wf, stages: ['plan', 'code'] }, 'stack-skills': st, curator: cur }));
   assert.deepEqual(out, ['.orchestra/config.json: cur declares a "spec" guide, but the workflow wf has no spec stage. Fix: add "guides/spec.md" to "curator.disable", or choose a workflow with a spec stage.']);
 });
 
@@ -377,7 +381,7 @@ test('a project skill must exist in .agents/skills/ with only name and descripti
 });
 
 test('a project declaration takes only slot, gates and guides', () => {
-  for (const [key, value] of [['build', { run: 'x' }], ['config', {}], ['roles', ['code']]]) {
+  for (const [key, value] of [['build', { run: 'x' }], ['config', {}], ['stages', ['code']]]) {
     assert.match(checkProject(addProject(both(), { slot: 'project', [key]: value })).join('\n'), new RegExp(`unknown key "${key}" for slot project`));
   }
 });
@@ -388,8 +392,8 @@ test('a project gate may not reuse a plugin gate name, even a disabled one', () 
   assert.match(out[0], /gate "fmt".*project.*st.*Fix: .*rename/);
 });
 
-test('a project guide for a role the workflow lacks fails', () => {
-  const out = checkProject(addProject(both(undefined, { ...wf, roles: ['spec', 'plan'] }), { slot: 'project', guides: { code: 'guides/code.md' } }));
+test('a project guide for a stage the workflow lacks fails', () => {
+  const out = checkProject(addProject(both(undefined, { ...wf, stages: ['spec', 'plan'] }), { slot: 'project', guides: { code: 'guides/code.md' } }));
   const mine = out.filter(l => /project declares/.test(l));
   assert.equal(mine.length, 1, out.join(' | '));
   assert.match(mine[0], /project declares a "code" guide, but the workflow wf has no code stage\. Fix: remove .+ from \.orchestra\/project\/orchestra\.json/);

@@ -4,8 +4,8 @@ const path = require('node:path');
 const PHASES = ['implementation-check', 'conventions-check', 'finish'];
 const TERMINAL = ['done', 'decide', 'failed'];
 const ACTIONS = ['dispatch', 'phase', ...TERMINAL];
-// What a stage does. A slot plugin gives its guides by role; the workflow tags each dispatch (S76).
-const ROLES = ['spec', 'plan', 'code'];
+// What a stage does. A slot plugin gives its guides by stage; the workflow tags each dispatch (S76, S87).
+const STAGES = ['spec', 'plan', 'code'];
 // The order of the guides in a prompt: the Curator's first, then the Stack Skills', then the project's (S86).
 const GUIDE_SLOTS = ['curator', 'stack-skills', 'project'];
 
@@ -17,7 +17,8 @@ function validateAction(a) {
       if (typeof a[key] !== 'string') throw new Error(`dispatch needs ${key}`);
     }
     if (!a.inputs || typeof a.inputs !== 'object') throw new Error('dispatch needs inputs');
-    if (a.role !== undefined && !ROLES.includes(a.role)) throw new Error(`unknown role: ${a.role}`);
+    if (a.role !== undefined) throw new Error('dispatch key "role" is now "stage". Rename it in next.js.');
+    if (a.stage !== undefined && !STAGES.includes(a.stage)) throw new Error(`unknown stage: ${a.stage}`);
   }
   if (a.action === 'phase') {
     if (!PHASES.includes(a.name)) throw new Error(`unknown phase: ${a.name}`);
@@ -26,18 +27,18 @@ function validateAction(a) {
   return a;
 }
 
-// null when the dispatch has no role, or a role that the workflow's orchestra.json declares.
-function roleError(a, workflowDeclaration) {
-  const roles = (workflowDeclaration && workflowDeclaration.roles) || [];
-  if (a.role === undefined || roles.includes(a.role)) return null;
-  return `The dispatch of ${a.skill} has role "${a.role}", which the workflow does not declare in "roles". Fix the workflow's orchestra.json or its next.js.`;
+// null when the dispatch has no stage, or a stage that the workflow's orchestra.json declares.
+function stageError(a, workflowDeclaration) {
+  const stages = (workflowDeclaration && workflowDeclaration.stages) || [];
+  if (a.stage === undefined || stages.includes(a.stage)) return null;
+  return `The dispatch of ${a.skill} has stage "${a.stage}", which the workflow does not declare in "stages". Fix the workflow's orchestra.json or its next.js.`;
 }
 
-function guidesFor(role, resolved, config) {
-  if (role === undefined) return [];
+function guidesFor(stage, resolved, config) {
+  if (stage === undefined) return [];
   return GUIDE_SLOTS.flatMap(slot => {
     const s = resolved.slots[slot];
-    const file = s && s.declaration && (s.declaration.guides || {})[role];
+    const file = s && s.declaration && (s.declaration.guides || {})[stage];
     const off = (config[slot] || {}).disable || [];
     return file && !off.includes(file) ? [path.join(s.dir, file)] : [];
   });
@@ -69,4 +70,4 @@ function inlinePrompt(a, root) {
   ].join('\n');
 }
 
-module.exports = { PHASES, TERMINAL, ACTIONS, ROLES, validateAction, roleError, guidesFor, withPrompt, inlinePrompt };
+module.exports = { PHASES, TERMINAL, ACTIONS, STAGES, validateAction, stageError, guidesFor, withPrompt, inlinePrompt };

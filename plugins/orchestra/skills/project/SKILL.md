@@ -24,7 +24,7 @@ error and stop.
 From `.orchestra/resolved.json` and the config, show:
 - The build command.
 - The gates per phase, with the plugin that declares each one.
-- The guides per role.
+- The guides per stage.
 - What the config already overrides or turns off, and what `.orchestra/project/` already adds.
 
 ## 3. Ask
@@ -37,14 +37,14 @@ Ask one topic at a time:
 3. Gates to turn off.
 4. Project gates to add: what each one checks, in which phase, on which files, and whether it is a
    command or a review by a subagent.
-5. Project rules for the stages, per role: `spec`, `plan`, `code`.
+5. Project rules, per stage: `spec`, `plan`, `code`.
 
 ## 4. Write
 
 - Overrides go into `.orchestra/config.json`: `<slot>.gates.<gate>.<key>`, `<slot>.disable`, and
   `stack-skills.build`. A build fix guide of the project is a project skill.
 - Project gates and guides go into `.orchestra/project/orchestra.json` (only `slot: "project"`,
-  `gates` and `guides`) and `.orchestra/project/guides/<role>.md`. A guide has no frontmatter and
+  `gates` and `guides`) and `.orchestra/project/guides/<stage>.md`. A guide has no frontmatter and
   holds short rules.
 - Each project skill goes into `.agents/skills/<name>/SKILL.md`, with only `name` and `description`
   in its frontmatter. A review skill of an agent gate takes its triage from the skill

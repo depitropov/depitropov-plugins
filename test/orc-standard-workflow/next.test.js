@@ -73,7 +73,7 @@ test('prepare makes the task branch and the run folder, then dispatches spec', (
   assert.deepEqual(a, {
     action: 'dispatch',
     skill: 'orc-standard-workflow:spec',
-    role: 'spec',
+    stage: 'spec',
     inputs: { task: `${docs}/task.md`, notes: docs },
     result: `${runDir}/spec.result.json`,
     runDir,
@@ -92,17 +92,17 @@ test('spec, plan and plan-check run in order with their inputs', () => {
   assert.equal(checked(dir, check, 1).skill, 'orc-standard-workflow:code');
 });
 
-test('spec, plan, plan-check and code carry their role, and no guide input', () => {
+test('spec, plan, plan-check and code carry their stage, and no guide input', () => {
   const dir = project({ guides: { plan: 'guides/plan.md', code: 'guides/code.md' } });
   const spec = next(dir, '.orchestra/task.txt');
-  assert.equal(spec.role, 'spec');
+  assert.equal(spec.stage, 'spec');
   const plan = pass(dir, spec);
-  assert.equal(plan.role, 'plan');
+  assert.equal(plan.stage, 'plan');
   assert.equal(plan.inputs.guide, undefined);
   const check = pass(dir, plan);
-  assert.equal(check.role, 'plan');
+  assert.equal(check.stage, 'plan');
   const code = checked(dir, check, 1);
-  assert.equal(code.role, 'code');
+  assert.equal(code.stage, 'code');
   assert.equal(code.inputs.guide, undefined);
 });
 

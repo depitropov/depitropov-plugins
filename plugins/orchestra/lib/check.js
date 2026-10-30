@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const { execFileSync } = require('node:child_process');
-const { PHASES, ACTIONS, ROLES, validateAction } = require('./protocol');
+const { PHASES, ACTIONS, STAGES, validateAction } = require('./protocol');
 const { scratchRepo, cleanEnv } = require('./git');
 const { DIR } = require('./worktree');
 
@@ -16,7 +16,9 @@ const KINDS = ['tool', 'agent'];
 const FIXES = ['self', 'fixer', 'none'];
 const CONFIG_TYPES = ['string', 'number', 'boolean'];
 // The slot project has no plugin and no config section: a project fills it with .orchestra/project/ (S86).
-const DECLARATION_KEYS = { workflow: ['slot', 'config', 'roles', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'guides', 'gates'], curator: ['slot', 'config', 'curate', 'setup', 'guides'], 'global-gates': ['slot', 'config', 'gates'], project: ['slot', 'gates', 'guides'] };
+// Keys that were renamed (S87): the fix names the new key.
+const RENAMED = { roles: 'stages' };
+const DECLARATION_KEYS = { workflow: ['slot', 'config', 'stages', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'guides', 'gates'], curator: ['slot', 'config', 'curate', 'setup', 'guides'], 'global-gates': ['slot', 'config', 'gates'], project: ['slot', 'gates', 'guides'] };
 const GATE_KEYS = ['name', 'phase', 'kind', 'skill', 'run', 'fix', 'guide', 'max_rounds', 'files', 'grep', 'when', 'always'];
 const BUILD_KEYS = ['run', 'guide', 'max_rounds'];
 const SETUP_KEYS = ['skill', 'done'];
@@ -57,7 +59,7 @@ function checkDeclaration(d, dir, where, skillsDir = path.join(dir, 'skills')) {
   }
   const allowed = DECLARATION_KEYS[d.slot];
   for (const key of Object.keys(d)) {
-    if (!allowed.includes(key)) fail(`unknown key "${key}" for slot ${d.slot}`, `remove it; the allowed keys are ${allowed.join(', ')}`);
+    if (!allowed.includes(key)) fail(`unknown key "${key}" for slot ${d.slot}`, RENAMED[key] ? `rename it to "${RENAMED[key]}"` : `remove it; the allowed keys are ${allowed.join(', ')}`);
   }
   const config = isObject(d.config) ? d.config : {};
   for (const [key, spec] of Object.entries(config)) {
@@ -85,13 +87,13 @@ function checkDeclaration(d, dir, where, skillsDir = path.join(dir, 'skills')) {
       if (!Object.hasOwn(config, m[1])) fail(`${what} uses {config.${m[1]}}, which "config" does not declare`, `declare "${m[1]}" under "config" or fix the name`);
     }
   };
-  if (d.guides !== undefined && !isObject(d.guides)) fail('"guides" is not an object', 'write { "<role>": "<path of a guide file in the plugin>" }');
-  for (const [role, name] of Object.entries(isObject(d.guides) ? d.guides : {})) {
-    if (!ROLES.includes(role)) fail(`unknown guide role "${role}"`, `use one of ${ROLES.join(', ')}`);
-    file(name, `guide "${role}"`);
+  if (d.guides !== undefined && !isObject(d.guides)) fail('"guides" is not an object', 'write { "<stage>": "<path of a guide file in the plugin>" }');
+  for (const [stage, name] of Object.entries(isObject(d.guides) ? d.guides : {})) {
+    if (!STAGES.includes(stage)) fail(`unknown guide stage "${stage}"`, `use one of ${STAGES.join(', ')}`);
+    file(name, `guide "${stage}"`);
   }
-  if (d.roles !== undefined && (!Array.isArray(d.roles) || !d.roles.every(r => ROLES.includes(r)) || new Set(d.roles).size !== d.roles.length)) {
-    fail(`"roles" is ${JSON.stringify(d.roles)}`, `list the role of each of your stages once, from ${ROLES.join(', ')}`);
+  if (d.stages !== undefined && (!Array.isArray(d.stages) || !d.stages.every(r => STAGES.includes(r)) || new Set(d.stages).size !== d.stages.length)) {
+    fail(`"stages" is ${JSON.stringify(d.stages)}`, `list each of your stages once, from ${STAGES.join(', ')}`);
   }
   if (d.slot === 'stack-skills') {
     const b = d.build;
@@ -320,18 +322,18 @@ function checkProject(project) {
     }
     checkSection(project, slot, section, s, out);
   }
-  // A guide is given by role. A guide for a role the workflow has no stage for never reaches a stage (S76).
+  // A guide is given by stage. A guide for a stage the workflow lacks never reaches a stage (S76).
   const wf = slots.workflow;
   if (wf && isObject(wf.declaration) && wf.declaration.slot === 'workflow' && isObject(config.workflow) && config.workflow.plugin === wf.plugin) {
-    const roles = Array.isArray(wf.declaration.roles) ? wf.declaration.roles : [];
+    const stages = Array.isArray(wf.declaration.stages) ? wf.declaration.stages : [];
     for (const slot of SLOTS) {
       const s = slots[slot];
       const section = config[slot];
       if (!s || !isObject(section) || section.plugin !== s.plugin || !isObject(s.declaration) || !isObject(s.declaration.guides)) continue;
       const off = Array.isArray(section.disable) ? section.disable : [];
-      for (const [role, name] of Object.entries(s.declaration.guides)) {
-        if (!ROLES.includes(role) || roles.includes(role) || off.includes(name)) continue;
-        out.push(`${CONFIG}: ${s.plugin} declares a "${role}" guide, but the workflow ${wf.plugin} has no ${role} stage. Fix: add "${name}" to "${slot}.disable", or choose a workflow with a ${role} stage.`);
+      for (const [stage, name] of Object.entries(s.declaration.guides)) {
+        if (!STAGES.includes(stage) || stages.includes(stage) || off.includes(name)) continue;
+        out.push(`${CONFIG}: ${s.plugin} declares a "${stage}" guide, but the workflow ${wf.plugin} has no ${stage} stage. Fix: add "${name}" to "${slot}.disable", or choose a workflow with a ${stage} stage.`);
       }
     }
   }
@@ -360,7 +362,7 @@ function checkProject(project) {
   return out;
 }
 
-// The Project Customization (S86): its declaration, its skills in .agents/skills/, its guide roles,
+// The Project Customization (S86): its declaration, its skills in .agents/skills/, its guide stages,
 // gate names no plugin uses, and a folder that git does not ignore.
 function checkProjectSlot(project, config, slots, out) {
   const d = slots.project.declaration;
@@ -379,9 +381,9 @@ function checkProjectSlot(project, config, slots, out) {
   }
   const wf = slots.workflow;
   if (wf && isObject(wf.declaration) && isObject(d.guides)) {
-    const roles = Array.isArray(wf.declaration.roles) ? wf.declaration.roles : [];
-    for (const [role, file] of Object.entries(d.guides)) {
-      if (ROLES.includes(role) && !roles.includes(role)) out.push(`${PROJECT_FILE}: the project declares a "${role}" guide, but the workflow ${wf.plugin} has no ${role} stage. Fix: remove "${file}" from ${PROJECT_FILE}, or choose a workflow with a ${role} stage.`);
+    const stages = Array.isArray(wf.declaration.stages) ? wf.declaration.stages : [];
+    for (const [stage, file] of Object.entries(d.guides)) {
+      if (STAGES.includes(stage) && !stages.includes(stage)) out.push(`${PROJECT_FILE}: the project declares a "${stage}" guide, but the workflow ${wf.plugin} has no ${stage} stage. Fix: remove "${file}" from ${PROJECT_FILE}, or choose a workflow with a ${stage} stage.`);
     }
   }
   // A project never shadows a plugin gate by name, not even a disabled one: it overrides a key or disables the gate (S86).
@@ -493,6 +495,6 @@ function checkPlugin(dir) {
 }
 
 module.exports = {
-  SLOTS, REQUIRED_SLOTS, CONFIG, PROJECT_DIR, PROJECT_SKILLS, PROJECT_FILE, SETUP_KEYS, GATE_OVERRIDE_KEYS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, ROLES, SECTION_KEYS, PHASES, ACTIONS,
+  SLOTS, REQUIRED_SLOTS, CONFIG, PROJECT_DIR, PROJECT_SKILLS, PROJECT_FILE, SETUP_KEYS, GATE_OVERRIDE_KEYS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, STAGES, SECTION_KEYS, PHASES, ACTIONS,
   parseJson, skillExists, checkDeclaration, checkSkillFile, checkProject, checkPlugin,
 };

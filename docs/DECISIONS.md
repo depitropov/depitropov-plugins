@@ -633,3 +633,35 @@ wording change needs no entry.
 - **Where it lives:** `docs/DESIGN.md` 4.1, 4.3, 5.1a, 5.3, 6.2 and 7; `docs/CONTEXT.md`. To build:
   `plugins/orchestra/lib/{check,resolved,gates,protocol}.js`, `plugins/orchestra/skills/project/`,
   `plugins/orchestra/skills/init/SKILL.md`, `plugins/orchestra/skills/writing-plugins/SKILL.md`.
+
+## S87: Shared roles and the core slot
+
+- **Date:** 2026-10-29
+- **Status:** decided
+- **Question:** Company rules (triage, writing style, PR review and description) are hard-coded or
+  have no place. A company with another ranking must fork every gate. Where do these rules live, who
+  fills them, and how does a project change them?
+- **Options:**
+  1. Only the core slot fills the shared roles; a project may override or amend. Chosen.
+  2. Any slot fills them, and a conflict fails `orchestra check`. Rejected.
+  3. Any slot fills them, and a fixed order picks the winner. Rejected: the winner is silent.
+  4. Triage as a plain convention. Rejected: a stack plugin would carry one company's ranking.
+  5. Writing style as a stage guide. Rejected: guides reach only `spec`, `plan` and `code`.
+  6. Keep the stop-and-ask rules in orchestra. Only the minimum: the result JSON already carries
+     `decide`.
+- **Evidence:** The brainstorming of 2026-10-29 and the spec
+  `docs/superpowers/specs/2026-10-29-shared-roles-design.md`.
+- **Decision:** Orchestra knows a fixed list of shared roles: `triage`, `writing-style`,
+  `pr-review`, `pr-description`. Only the optional `core` slot fills them, by a `shared-roles` map in
+  its declaration. `orc-core` replaces `orc-global-gates`, and the slot `global-gates` becomes `core`
+  (this changes S80). A project overrides a shared role with a project skill, or amends it with a
+  guide keyed by the shared role (this extends S86). Every dispatch gets the filled roles as
+  `shared-role.<role>` inputs; a skill uses a role only when it is given. The triage method moves to
+  `orc-core:triage` and becomes optional; orchestra keeps the result contract (`decide`, `evaluate`,
+  the status) and one rule on answers. The PR roles belong to the workflow: a workflow that ends with
+  a PR invokes them when given. Role becomes Stage everywhere (this changes S76): `ROLES` is
+  `STAGES`, `roles` is `stages`, the dispatch key `role` is `stage`. Old names fail with a fix
+  message; there is no alias. The `sc-*` copies follow with the porting work.
+- **Cost and risk:** Every gate skill changes. The `sc-*` copies break until they are ported. A run
+  with no core plugin escalates by the model's own judgement.
+- **Where it lives:** The files of the plan `docs/superpowers/plans/2026-10-29-shared-roles.md`.
