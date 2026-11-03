@@ -31,11 +31,18 @@ stack from the code in the evidence, or from the project's `.orchestra/config.js
 whose level has no matching plugin in this repo, and say what it needs. Never edit an installed
 copy of a plugin; edit only this repo and the project at the note's path.
 
+When the note needs the project (a `project` note, or the stack from its config), check it now:
+- When the project path does not exist on this machine, skip the note.
+- A `project` note for a project with no `.orchestra/config.json` is skipped too: say that the
+  project needs orchestra init first.
+
 ## 3. Find the home
 
 For each note, find the gate, guide or skill that should have caught the problem: first the one the
 note's origin names, then the others of the target. Read it. When the rule is already there, say so
-and propose nothing new; the finding may be that the existing rule is unclear. Otherwise pick the
+and propose nothing new, or only a sharper wording when the existing rule is unclear. The note is
+then "already covered": it still goes to `evals/pending/` (step 6), with the line
+"existing rule, not followed", because it is the best red/green case. Otherwise pick the
 closest one to extend. Propose a new gate or guide only when nothing fits, and say why.
 
 ## 4. Propose
@@ -45,10 +52,11 @@ material (step 6). Stop for the user's approval. The user approves, changes or d
 
 ## 5. Implement
 
-Write the approved changes, following this repo's rules. Before you write in a project:
-- When the project path does not exist on this machine, skip the note.
-- When the project is not on its default branch, or the files to change have uncommitted changes,
-  stop and ask the user.
+Write the approved changes, following this repo's rules. Before you write in a project: when the
+project is not on its default branch, or the files to change have uncommitted changes,
+stop and ask the user. After you write a Project Customization, check it as `orchestra:project` does: run
+`node <orchestra>/bin/resolve.js` with the resolved slots, where `<orchestra>` is the folder two
+levels above this skill's folder. Show each failing line.
 
 Commit nothing unless this repo's rules or the user say so.
 
@@ -57,10 +65,10 @@ Commit nothing unless this repo's rules or the user say so.
 - When a command can check part of the rule (a pattern, a config fact), add a `node --test` test with
   fixtures from the note's evidence. In a project, only when it has a test setup for it.
 - Copy the note, with a first line that names the change it produced, to
-  `plugins/<plugin>/evals/pending/<slug>.md` in the plugin that changed. For a project change, copy
-  it to `.orchestra/project/evals/pending/<slug>.md` in the project.
+  `plugins/<plugin>/evals/pending/<slug>.md` in the plugin that changed or already covers the rule.
+  For a project change, copy it to `.orchestra/project/evals/pending/<slug>.md` in the project.
 
 ## 7. Report
 
-Per note, one line: done (the files changed), skipped (the reason, and what it needs), or dropped by
-the user.
+Per note, one line: done (the files changed), already covered (the rule's file), skipped (the
+reason, and what it needs), or dropped by the user.

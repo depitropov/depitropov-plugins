@@ -32,3 +32,27 @@ test('process-feedback extends before it adds, stops for approval, and keeps the
   assert.match(text, /does not exist/);
   assert.doesNotMatch(text, /plugins\/cache|\.claude\/plugins/);
 });
+
+test('log-feedback redacts secrets and names a missing orchestra setup in the origin', () => {
+  const text = read('log-feedback');
+  assert.match(text, /<redacted>/);
+  assert.match(text, /no orchestra plugins/);
+});
+
+test('process-feedback keeps an already-covered rule as eval material and reports it', () => {
+  const text = read('process-feedback');
+  assert.match(text, /propose nothing new/);
+  assert.match(text, /existing rule, not followed/);
+  assert.match(text, /already covered/);
+});
+
+test('process-feedback checks the project before it proposes, and checks what it wrote', () => {
+  const text = read('process-feedback');
+  const step3 = text.indexOf('## 3.');
+  const missing = text.search(/path does not exist on this machine, skip/);
+  assert.ok(missing > -1 && missing < step3, 'the path check comes before the proposal');
+  const noConfig = text.search(/no `\.orchestra\/config\.json`.*orchestra init/s);
+  assert.ok(noConfig > -1 && noConfig < step3, 'a project without orchestra is skipped before the proposal');
+  assert.match(text, /stop and ask the user/);
+  assert.match(text, /resolve\.js/);
+});

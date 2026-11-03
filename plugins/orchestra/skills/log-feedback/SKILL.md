@@ -19,9 +19,11 @@ rule, the evidence and the expected result. It works in any repo, with or withou
    but do not cut it short to save space.
 4. A problem with no code (a build fact, a config fact) gets the fact and the file where it shows.
    Never invent code to fill the section.
-5. Read `.orchestra/resolved.json` when it exists: the plugin in each slot and its version. When it
+5. Replace every secret in what you copy (keys, tokens, passwords, connection strings) with
+   `<redacted>`. The note may later be committed.
+6. Read `.orchestra/resolved.json` when it exists: the plugin in each slot and its version. When it
    does not exist, the origin says "no orchestra plugins".
-6. Ask the user only for what you cannot find: usually the expected result, sometimes the origin.
+7. Ask the user only for what you cannot find: usually the expected result, sometimes the origin.
 
 ## 2. Write
 
