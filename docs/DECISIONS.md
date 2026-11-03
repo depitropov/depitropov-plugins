@@ -665,3 +665,31 @@ wording change needs no entry.
 - **Cost and risk:** Every gate skill changes. The `sc-*` copies break until they are ported. A run
   with no core plugin escalates by the model's own judgement.
 - **Where it lives:** The files of the plan `docs/superpowers/plans/2026-10-30-shared-roles.md`.
+
+## S88: Feedback skills
+
+- **Date:** 2026-11-03
+- **Status:** decided
+- **Question:** Observations from runs, reviews and other sessions stay as loose notes and lose their
+  context. How do we turn them into rules of the plugins or of a project, and keep what we need to
+  prove each rule later?
+- **Options:**
+  1. `process-feedback` runs in the project and asks for the path of each plugin's source repo.
+     Rejected: the installed plugin is a cache copy, so the source path must be asked every time.
+  2. `process-feedback` runs in a plugins repo, writes where it runs, and writes project changes
+     directly at the path the note gives. Chosen: the user keeps one plugins repo per owner and runs
+     the skill only where the project and the plugins belong together.
+  3. Build red/green evals now with `claude plugin eval`, promptfoo or Inspect AI. Deferred: each
+     needs work or a workaround (R12), and the notes can carry the eval material until then.
+- **Evidence:** `docs/research/R12-skill-evals.md`; the brainstorming of 2026-11-03 and the spec
+  `docs/superpowers/specs/2026-11-03-feedback-skills-design.md`.
+- **Decision:** Two skills in `orchestra`. `log-feedback` writes one self-contained note outside the
+  repo: the rule, the evidence with the code copied in and the expected result, the origin, and a
+  proposed level. `process-feedback` decides the level, extends the closest existing gate, guide or
+  skill before it adds one, stops for approval, writes the change, adds a `node --test` test when a
+  command can check the rule, and keeps the note in `evals/pending/` of what changed.
+- **Cost and risk:** Rules land without a model eval until a runner exists. A note processed in the
+  wrong plugins repo changes the wrong plugin; the user prevents this by where they run it.
+- **Where it lives:** `plugins/orchestra/skills/log-feedback/SKILL.md`,
+  `plugins/orchestra/skills/process-feedback/SKILL.md`, `test/orchestra/feedback.test.js`,
+  `evals/pending/` of each changed plugin or project.

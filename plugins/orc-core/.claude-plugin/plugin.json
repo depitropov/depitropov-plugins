@@ -1,1 +1,1 @@
-{ "name": "orc-core", "version": "0.23.0", "dependencies": ["clean-code@depitropov-plugins"], "description": "A person's or company's rules for every orchestra workflow: the triage method and the clean-code gate." }
+{ "name": "orc-core", "version": "0.24.0", "dependencies": ["clean-code@depitropov-plugins"], "description": "A person's or company's rules for every orchestra workflow: the triage method and the clean-code gate." }
