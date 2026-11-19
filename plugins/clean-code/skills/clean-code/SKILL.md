@@ -87,7 +87,7 @@ stderr measured nothing: the package is missing an `__init__.py`.
 Python only in this version; a TypeScript tree is a broken run that names
 `dependency-cruiser`, a Java tree one that names ArchUnit. Keep its SUMMARY as a second before-line.
 
-**2. Write.** Follow the rules below and the language skill.
+**2. Write.** Follow `rules.md` and the language skill.
 
 **3. Measure after.** Measure the same paths against the before:
 
@@ -95,29 +95,10 @@ Python only in this version; a TypeScript tree is a broken run that names
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/clean-code/measure.py" <paths> --changed --base main --compare
 ```
 
-`--changed` keeps the files that differ from the merge-base with `--base`
-(default `origin/main`; pass `--base <ref>` when the trunk has another
-name, or the run measures nothing). `--compare` measures those files a
-second time at the merge-base (or at `--compare <ref>`) and judges every
-function and file on its own, because a SUMMARY is a sum and hides a swap:
-one function coming under a threshold and another crossing one leave the
-counts unchanged. Put the paths before `--compare`, or the first path is
-read as its ref. The last line is the verdict:
-
-```text
-VERDICT new_over=0 crossed=0 grew=1 fixed=0 file_new_over=0 file_crossed=0 file_grew=1 suppressions_up=0
-```
-
-On legacy code, add `--legacy`. A function or file that was already over
-a threshold may then grow without a finding: `grew` becomes `still-over`
-for a function, and a file that grew drops out. `new-over`, `crossed` and
-`suppressions-up` still block. Use it when the project's `CLAUDE.md` asks
-for it, or when the user says the code is legacy.
-
-When another session or agent may have uncommitted work in the same tree,
-add `--at HEAD`: the after side is then the committed files, and
-`--changed` lists committed changes only, no untracked files. The same
-goes for measuring a commit that is not checked out (`--at <sha>`).
+`measurement.md` explains each option, the output lines and the verdicts. The last line is the
+`VERDICT` line. Add `--legacy` when the project's `CLAUDE.md` asks for it, or when the user says
+the code is legacy. Add `--at HEAD` when another session or agent may have uncommitted work in the
+same tree.
 
 When `boundaries.py` ran before, or the change touches more than one file,
 run it with `--compare` over the whole package:
@@ -137,31 +118,21 @@ evidence and reason; do not change thresholds or policy merely to pass.
 Where no project-specific policy exists, use the Clean Architecture rules
 in `architecture.md` as this plugin's default.
 
-The verdicts map to the rules below:
-
-| Verdict | Meaning | Rule |
-|---|---|---|
-| `new-over` | a function or file the task created is over a threshold | blocks: split it |
-| `crossed` | a touched function crossed a threshold it was under, or a file crossed 500 lines | blocks: split it |
-| `suppressions-up` | a file has more suppressions than before | each new one has its reason on the line, or it goes |
-| `grew` | over before and after, and a measure that is over went up; for a file, over 500 lines and longer | one sentence in the report saying why, and what the split would be; with `--legacy` it is `still-over` |
-| `fixed` | was over, now under every threshold | report it |
-| `still-over` | over before and after, not worse (shown with `--all`) | context, not a finding |
-| `new` | a new function under every threshold (shown with `--all`) | nothing to do |
+`measurement.md` lists the verdicts and what to do with each. In short:
 
 - No function the task touched crosses a threshold it did not cross before.
 - A function the task created is under every threshold.
 - A function you edited that was already over a threshold either comes
   under it or is left with one sentence in the report saying why not.
   With `--legacy`, no sentence is needed.
-- A file the task touched that was already over 500 lines does not grow,
+- A file the task touched that was already over the file limit does not grow,
   or the report says why in one sentence.
 - Suppressions did not go up, unless each new one carries its reason.
 
-A function is matched by file and name. A renamed function shows as a new
-row, so judge a `new-over` row against the diff before calling it new.
+`measurement.md` says how a function is matched. A renamed function shows as a new row, so
+judge a `new-over` row against the diff before calling it new.
 
-If the code-shape verdict violates the rules above, the task is not done. Split the function,
+If the code-shape verdict breaks the bullets above, the task is not done. Split the function,
 extract the helper, flatten the nesting, then measure again. Not worse is
 the floor; the Boy Scout Rule asks for a little cleaner. It applies to each
 function you edited: you changed its body or its signature, not only code
@@ -225,7 +196,7 @@ runtime, data, and operational analysis in `architecture-fundamentals`:
    The script counts the edges; the phases say which edge is the fix and
    which is the accident.
 3. Two lists that stay separate in the report: **shape** (from
-   `measure.py`: functions over a threshold, files over 500 lines,
+   `measure.py`: functions over a threshold, files over the file limit,
    suppressions) and **boundaries** (from `boundaries.py`: upward imports,
    cycles with their closing edges, core reaching out, framework in the
    domain, SQL in handlers, HTTP in services). A backlog built in audit
@@ -242,50 +213,19 @@ by the project, not a rule added to this skill.
 
 ## Rules that do not depend on the language
 
-- **Names say what, not how.** `remainingBudget`, not `calc`. A name that
-  needs a comment is the wrong name.
-- **One job per function.** A function is a paragraph. If it has sections
-  with comments as headings, each section is a function.
-- **Small.** Under 20 lines, complexity under 10, at most 3 parameters,
-  nesting at most 2. These are the script's defaults; the project may
-  change them in its `CLAUDE.md`. The 20 counts raw lines, blanks and
-  docstrings included: this skill's reading of "functions should hardly
-  ever be 20 lines long", not a limit Uncle Bob set. A test function may
-  have 50 lines (`--max-test-lines`): a test builds its data and states its
-  expectations in line. A test is a function in a test file: a file named `test_*.py`, `*_test.py`, `conftest.py`, `*.test.ts(x)`, `*.spec.ts(x)`, `*Test.java`, `*Tests.java` or `*IT.java`, or under `__tests__/` or `src/test/`.
-- **No flag arguments.** A boolean parameter that picks a path means two
-  functions.
-- **No hidden side effects.** A function named like a query does not write.
-- **No duplication.** The second copy is the moment to extract, not the
-  third, within a shared responsibility and change boundary. Across
-  independently evolving domain contexts, similar code or data shapes do
-  not automatically justify sharing. Compare duplication with volatility,
-  ownership, and release/runtime coupling; preserve separate models when
-  sharing would couple independent policies. Extract a stable common
-  mechanism only when the shared dependency is justified. See
-  `architecture.md` Phase 4.
-- **Errors are types.** A domain error is a class in the domain, not a
-  string, not a status code, not `None` with a comment.
-- **Comments explain why.** Intent, a warning, a consequence the reader
-  would not expect. Not what: the code says what, so a comment that
-  restates the next line is deleted and the reason it was written goes
-  into a better name. Code you cannot rename (a regex, an obscure argument
-  to a library call) is the one place a comment may say what it means.
-- **Dead code is deleted.** Not commented out, not kept "in case".
-- **Tests are code.** Same rules: one behaviour per test, not one
-  assertion, a name that reads as a sentence, no logic in the test that
-  needs its own test.
+`rules.md` in this folder holds them, numbered 1 to 13, with the limits of the measurement in
+rule 3. A finding cites `Rule <n>`.
 
 ## Reading the numbers
 
 | Measure | Threshold | What crossing it usually means |
 |---|---|---|
-| lines | 20 | sections (declarations, setup, loop, output) are several jobs; each section is a function of its own |
-| lines in a test | 50 | the test checks several behaviours, or builds data a fixture or a builder should give; split it, or extract the setup |
-| cc | 10 | an `if` chain or `switch` doing N things; bury it once behind polymorphism, or extract each branch |
-| params | 3 | arguments that travel together are a missing object; a flag argument is two functions |
-| depth | 2 | nested blocks hide the normal flow; extract each block into a one-line call, or return early with a guard clause |
-| file lines | 500 | more than one job in one file; split by responsibility, not by line count |
+| lines | rule 3 | sections (declarations, setup, loop, output) are several jobs; each section is a function of its own |
+| lines in a test | rule 3 | the test checks several behaviours, or builds data a fixture or a builder should give; split it, or extract the setup |
+| cc | rule 3 | an `if` chain or `switch` doing N things; bury it once behind polymorphism, or extract each branch |
+| params | rule 3 | arguments that travel together are a missing object; a flag argument is two functions |
+| depth | rule 3 | nested blocks hide the normal flow; extract each block into a one-line call, or return early with a guard clause |
+| file lines | rule 3 | more than one job in one file; split by responsibility, not by line count |
 | suppressions | counted | each is a safety the code overrode on purpose; each needs a reason on the line |
 | upward | 0 | a service, model or domain file imports `api`; the inner layer knows the handler, so the rule cannot be tested without HTTP; invert with a function the inner layer owns |
 | cycles | 0 | two modules import each other; the printed closing edges are the rarer direction, the fix list; move the shared thing to a module both may import, or pass it in |

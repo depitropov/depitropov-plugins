@@ -228,7 +228,7 @@ Give this back to `curate` and let it go on.
 
 <HARD-GATE>
 **Constraints only. Never a design, never code.** You write `docs/curator/DIRECTION.md` and
-`docs/curator/QUESTIONS.md`, and nothing else. **Never write `TECH.md`**: give back a `known:` line, or a `Qn` and a nudge. No product code, no brief or plan of a run. **Never edit `docs/curator/BACKLOG.md`**:
+`docs/curator/QUESTIONS.md`, and nothing else. **Never write `TECH.md`**: give back a `known:` line, or a `Qn` and a nudge. No product code, no spec or plan of a run. **Never edit `docs/curator/BACKLOG.md`**:
 the backlog is your input. `backlog` makes each change to the arrangement. A row that you think
 should move is a flag in your relay, never an edit.
 

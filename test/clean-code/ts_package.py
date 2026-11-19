@@ -1,8 +1,8 @@
 """Find the `typescript` package the clean-code TypeScript tests run against.
 
 Order: the CLEAN_CODE_TS_PACKAGE variable, then the repo's own
-`node_modules/typescript` (installed from the root package.json; run-tests.sh
-runs `npm ci` when it is missing). The first candidate that exists wins, as
+`node_modules/typescript` (installed from the root package.json; run `npm ci`
+at the repository root when it is missing). The first candidate that exists wins, as
 an absolute path, because the tests symlink it into temporary projects. When
 none exists the TypeScript tests skip with SKIP_REASON.
 """

@@ -16,13 +16,14 @@ these rules. This skill does not authorize commit, push, deploy or account chang
 
 ## Message contract
 
-Use short, plain words and a fixed main message with no values in it:
+Use short, plain words and a fixed main message with no values in it. The message starts with a
+capital letter and has no full stop at the end:
 
 ```text
 <fixed message>, <field>: <value>, <field>: <value>
-http request, method: GET, path: /api/search, status: 200, duration_ms: 67.3
-search executed, scope: customer, q_len: 8, hits: 12
-upload failed, file_id: 42, error: 'File is missing'
+HTTP request, method: GET, path: /api/search, status: 200, duration_ms: 67.3
+Search executed, scope: customer, q: 'red cars', hits: 12
+Upload failed, file_id: 42, error: 'File is missing'
 ```
 
 All variable values go after the fixed message. Use named fields. Keep stable
@@ -40,7 +41,7 @@ often last. A starting order is:
 | Earlier → later | Examples |
 |---|---|
 | Operation and stable selectors | `method`, `path`, `scope`, `kind`, `model`, `prompt_version` |
-| Variable inputs | `q_len`, input options; length only for sensitive searches |
+| Variable inputs | `q`, input options; only a length for sensitive data (see "Data and errors") |
 | Target object | `invoice_id`, `row_id`, source and target IDs |
 | Actor and per-call context | `actor_id`, client, session id when approved for logging |
 | Outcome | `status`, `ok`, `access_denied`, changed fields |
@@ -73,8 +74,13 @@ bigint/custom types and circular data; normalize unsupported JSON values safely.
 ### Severity and logging cost
 
 Choose severity by impact, not by the presence of an exception: DEBUG for
-useful diagnostics, INFO for normal events, WARNING for a recoverable problem,
-ERROR for a failed operation, CRITICAL for a failure that stops the service.
+useful diagnostics, INFO for normal events, ERROR for a failed operation,
+CRITICAL for a failure that stops the service. WARNING only for a condition that
+the system does not expect: an internal anomaly, an inconsistent state, something
+an operator may act on. An expected outcome of a user or API call is INFO, also
+when work is skipped: an entity not found for a stale id, a duplicate event
+ignored. Before WARNING, ask: can normal user or API behaviour cause this? Then
+it is INFO.
 Keep the project's consistent HTTP summary policy: an INFO completion record
 may include status 500 when a separate ERROR record describes the failure.
 Expected validation responses and client cancellations are not automatically
@@ -106,11 +112,13 @@ point. For GCP size constraints, read [references/gcp.md](references/gcp.md).
 
 ### Data and errors
 
-Do not expose passwords, credentials, auth/session tokens, raw search queries,
-names, personal IDs or other protected data. Preserve existing
-redaction and logging guards at every level, including exceptions. Prefer
-safe IDs and lengths. Remove query values from request paths. Do not log the
-raw trace header or whole request/body to gain context.
+Log every value that helps to investigate, user input included: primary keys
+and the input of the call. Never log sensitive data in plain text: passwords,
+secrets, auth and session tokens, API keys, social security and tax numbers,
+card and bank data, and a full email address or phone number in production.
+For such a value, log a mask or its length. Preserve existing redaction and
+logging guards at every level, including exceptions. Do not log the raw trace
+header or the whole request or body to gain context.
 
 Redact before building both the readable message and structured output.
 Cover nested values, exception messages and custom serialization results.
@@ -181,7 +189,7 @@ entry, not separate unstructured lines.
 
 ```python
 logger.info("http.request", method="GET", path="/api/search", status=200, duration_ms=67.3)
-logger.info("search.executed", scope="customer", q_len=8, hits=12)
+logger.info("search.executed", scope="customer", q="red cars", hits=12)
 logger.error("upload.failed", file_id=42, error="File is missing")
 ```
 

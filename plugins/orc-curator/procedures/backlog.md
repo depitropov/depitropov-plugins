@@ -69,7 +69,7 @@ safe.
 
 The ids, the next-id rule and the destinations are in `<plugin>/references/recording-rules.md`. Read
 the file for the next `Bn`. The item text is one line about the thing itself. In the `why / refs`
-cell, write the why. The brief of a run links the row with its `Serves: Bn` line, and `curate` writes
+cell, write the why. The spec of a run links the row with its `Serves: Bn` line, and `curate` writes
 the shipped-as cell.
 
 **Pick the horizon by confidence, and say which one you picked, so that the user can correct it.**
@@ -146,7 +146,7 @@ When the user wants to build a row now, suggest that they start a run with `orch
 you just made: `docs/curator/DIRECTION.md` (delete orphan rows and retire their `## Evaluated` rows,
 nothing more), `docs/curator/DECISIONS.md` (add a reversal, nothing more), `docs/curator/QUESTIONS.md`
 (open a question that the user asked as a question, or close an entry that a change made moot).
-Nothing else. No product code, no brief, no plan, no `PRODUCT.md`, no `TECH.md`.
+Nothing else. No product code, no spec, no plan, no `PRODUCT.md`, no `TECH.md`.
 
 **You invoke no skill and no other procedure.** A purpose change or a changed dimension is a verdict
 for `direction` to give, not for you to route.

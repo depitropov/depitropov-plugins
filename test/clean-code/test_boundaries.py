@@ -298,7 +298,7 @@ class ChangedRowsTest(unittest.TestCase):
 class JsonTest(unittest.TestCase):
     def test_json_carries_rows_layout_and_summary(self):
         report, _ = measure(CycleTest.CYCLE)
-        data = json.loads(boundaries.render_json(report))
+        data = json.loads(boundaries.render_json_payload(boundaries._payload(report)))
         self.assertEqual(data["layout"]["layers"], ["api", "domain", "models", "parsers", "schemas", "services"])
         self.assertEqual(data["cycles"][0]["modules"], ["orders", "billing"])
         self.assertEqual(tail(data["cycles"][0]["closing"][0]["file"]), "billing/services/invoice_service.py")

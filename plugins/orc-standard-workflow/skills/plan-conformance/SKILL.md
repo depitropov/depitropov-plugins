@@ -1,31 +1,26 @@
 ---
 name: plan-conformance
-description: Checks that the code of one orchestra run does what its plan promised — every task done, every named test present, no undeclared change of direction, nothing outside the brief's scope — and fixes what it can. An orchestra gate; dispatched by orchestra.
+description: Checks that the code of one orchestra run does what its plan promised — every task done, every named test present, no undeclared change of direction, nothing outside the spec's scope — and fixes what it can. An orchestra gate; dispatched by orchestra.
 ---
 
 # Plan conformance
 
 You check the change against the plan. You give no verdict on whether the code is correct: logic-review
-does that, from the brief alone. You check only that the plan was carried out. The plan sets the
+does that, from the spec alone. You check only that the plan was carried out. The plan sets the
 tasks and the direction, not every line: detail that the coder adds inside a task is not yours to
 flag.
 
-## Inputs
+## Scope
 
-- `spec`: the brief.
-- `base`: the commit before any work.
-- `notes`: the run's notes folder. It holds `plan.md` and `implementation-log.md`. Your findings file
-  goes here.
-- `decisions` (optional): the human's answers.
+Changed code and tests are in scope. When nothing in the change concerns code or tests, skip.
 
-## Procedure
+The project's code does not excuse a gap against the plan.
+
+## Steps
 
 1. Read `<notes>/plan.md`, `<notes>/implementation-log.md`, `<notes>/code.md` if it exists, and
    `decisions` if given.
-2. Get the change: `git diff <base> HEAD -- . ':(exclude)docs/runs' ':(exclude)tmp'`. Read the
-   changed files in full. If nothing in the change concerns code or tests, write the result with
-   `"status": "skipped"` and stop.
-3. Check, and write down each check you made:
+2. Check, and write down each check you made under `## Checked`:
    - **Tasks done:** every task in the plan is in the code, complete. Nothing is stubbed, left as a
      placeholder, or skipped.
    - **Named tests:** every test that a task's Tests line names exists, with that class and method,
@@ -34,41 +29,15 @@ flag.
      part of the task dropped) is declared, with its reason, under Deviations in the implementation
      log. An undeclared change of direction is a finding. Detail inside a task is not a deviation:
      an extra argument check, a helper method, a private name, a choice recorded in `<notes>/code.md`.
-   - **Scope:** every change is inside the brief's scope. A change that the brief does not ask for
+   - **Scope:** every change is inside the spec's scope. A change that the spec does not ask for
      (a new feature, a change to an unrelated class) is a finding. A small change that a task needs,
      such as a test helper or an import, is in scope.
 
    Commits that orchestra or its fixer made (`fix(<gate>): …`, `orchestra: …`) belong to no task and
    are not deviations: leave them out of these checks.
-4. If the input `shared-role.triage` is given, follow that skill: give every finding its axes and one bucket. Otherwise sort each finding by your own judgement: Decide (a person must answer it), Patch (you fix it), Evaluate (a person should look at it later) or Noise (not a real problem).
-5. Write `<notes>/plan-conformance.md`, one line per finding with its bucket, in the triage notes format when a triage skill is given. Put the checks of step 3 under
-   **Checked**.
-6. If there is an open Decide finding (one that `decisions` does not answer), stop here. Do not fix
-   anything. Write the result with `"status": "decide"`.
-7. Otherwise fix every Patch finding: add a missing named test, finish a stubbed task, or add a
-   missing Deviations entry to the implementation log when the deviation is right. Run only the tests
-   you touched, with no pipe that hides the exit code. Never run the full build: orchestra runs it.
-   Commit once: `fix(plan-conformance): <summary>`. Do not stage files under `docs/runs/` or `tmp/`:
-   orchestra commits the notes, including the implementation log.
 
-## Result
+## Fixing
 
-Write to the path given in the prompt:
-
-```json
-{
-  "stage": "plan-conformance",
-  "status": "ok",
-  "decide": [],
-  "counts": { "decide": 0, "patch": 1, "evaluate": 0, "noise": 0 },
-  "evaluate": [],
-  "files": ["<notes>/plan-conformance.md"]
-}
-```
-
-`status` is `ok`, `decide`, `skipped` or `failed`.
-
-## Permitted actions
-
-Read the project. Edit code, tests and the implementation log. Run tests. Commit. Do not push. Do not
-change branches. Do not ask the user; a question goes into `decide`.
+A fix adds a missing named test, finishes a stubbed task, or adds a missing Deviations entry to the
+implementation log when the deviation is right. You may edit the implementation log for this.
+Orchestra commits the implementation log with the notes.

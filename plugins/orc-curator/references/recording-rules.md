@@ -8,7 +8,7 @@
 
 `Bn` (backlog), `Cn` (constraint), `Dn` (decision) and `Qn` (question) are **numbered independently**.
 `ACn` (acceptance criteria) and `Tn` (tasks) are **scoped to one run**: they are the criteria of the
-brief and the tasks of the plan of that run, and they mean nothing outside it. Another run can also
+spec and the tasks of the plan of that run, and they mean nothing outside it. Another run can also
 have an `AC1`.
 
 **The next id is the highest existing id plus one, never a count of rows.** Read the file before you

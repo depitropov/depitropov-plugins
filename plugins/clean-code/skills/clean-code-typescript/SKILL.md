@@ -10,10 +10,8 @@ skill, or the clean-code gate of orchestra, owns the process; whichever
 loaded this skill keeps it. A finding cites `TS rule <n>` and `file:line`.
 A rule that `tsc --strict`, typescript-eslint `recommended` or
 `eslint-plugin-react-hooks` checks is not repeated here. Where one of them
-borders a rule, the rule names the tool. "Gate rule 11", "12" and "13" are the orchestra gate's rules for a core
-that works without the UI and the IO, dependencies that point inward, and a
-simple typed value at a boundary. In the standalone `clean-code` skill they
-are Phases 1, 2 and 3 of `architecture.md`.
+borders a rule, the rule names the tool. Cite a rule of `rules.md` in the `clean-code`
+skill as "rule <n> of `rules.md`".
 
 The project's `CLAUDE.md` or `AGENTS.md` (root, `frontend/`) outranks every
 default here.
@@ -46,8 +44,14 @@ default here.
    object inside the effect, read the primitive out of the object, and only then use `useMemo` or
    `useCallback`.
 7. **A component does one job.** It is a function, so the line limit applies to it, JSX and inline
-   callbacks included. A file over 500 lines holds several modules. Extract first the piece that
-   owns its own state: its handlers go with it.
+   callbacks included. A file over the file limit of rule 3 of `rules.md` holds several modules.
+   Extract first the piece that
+   owns its own state: its handlers go with it. One exception: a component whose length is its
+   props destructuring and one flat JSX element with its props, with no branches, can be over the
+   limit. Judge only its logic: hooks, handlers, derived values and branches. Never move a few lines
+   of state, a handler or a props object into a hook or a helper that has one caller, only to meet
+   the limit: the reader then jumps between places and gains nothing. Extract a hook or a helper
+   when it is reused, when it is complex enough to test alone, or when it owns a separate job.
 8. **Loading, error and empty are explicit branches.** `data?.map(...)`, `?? []` and `data!` all
    pass `tsc --strict`. The first two render the same blank list for a pending query, a failed query
    and zero rows; `data!` crashes. Only `no-non-null-assertion` catches the `!`, and it is in
@@ -84,19 +88,19 @@ utils/        pure functions that a second caller needs, one job per file, named
 
 The direction: `pages` import `hooks` and `components`; `hooks` import `api` and `types`;
 `components` import `types` and `utils`; `api` imports nothing above it; nothing imports `pages`. A
-component that imports the HTTP client is an adapter in the wrong folder (gate rule 11). A component
-that reads a backend field name breaks gate rule 13: the translation belongs in the hook. When the
+component that imports the HTTP client is an adapter in the wrong folder (rule 11 of `rules.md`). A component
+that reads a backend field name breaks rule 13 of `rules.md`: the translation belongs in the hook. When the
 project groups by feature, the same arrows hold inside each feature. Across features the direction
 is shared → features → pages, and features do not import each other. When the project has
 `import/no-restricted-paths` zones or another dependency checker, its result wins over this list.
 
 | Layer | Smell | What it shows |
 |---|---|---|
-| `pages/` | a business rule in the page (`if (row.status === ...)` decides a permission) | gate rule 11: the page only composes; the rule belongs in a hook or a domain helper |
-| `pages/` | 500 lines or more | several pages, or a page that carries a component |
-| `components/` | `axios`, `fetch` or a `useEffect` request | gate rule 11: the component cannot be tested without IO |
+| `pages/` | a business rule in the page (`if (row.status === ...)` decides a permission) | rule 11 of `rules.md`: the page only composes; the rule belongs in a hook or a domain helper |
+| `pages/` | over the file limit of rule 3 of `rules.md` | several pages, or a page that carries a component |
+| `components/` | `axios`, `fetch` or a `useEffect` request | rule 11 of `rules.md`: the component cannot be tested without IO |
 | `components/` | an inline props type, or a `Props` that is the API response type | the wire shape leaks across the boundary; name the `Props` |
-| `components/` | reads a backend field name (`row.created_at` from the DTO) | gate rule 13: translate in the hook's `select` |
+| `components/` | reads a backend field name (`row.created_at` from the DTO) | rule 13 of `rules.md`: translate in the hook's `select` |
 | `hooks/` | an inline query key (`['users']`) instead of the hook's key constant | a rename or a typo in one copy, and `invalidateQueries` no longer matches |
 | `hooks/` | a mutation that neither invalidates nor updates the cache (no `invalidateQueries` in `onSuccess` or `onSettled`, no `setQueryData`) | mounted lists keep the old rows until a refocus, a reconnect or a remount |
 | anywhere | a memo or effect dependency held in a variable that is new on each render (`const rows = data ?? []`, `.filter()`, an inline object) | TS rule 6: the memo misses on every render; `exhaustive-deps` catches only the expression written inline in the array |
@@ -110,7 +114,7 @@ command grep -ln "axios\.\|fetch(" <changed files>           # fetching outside 
 command grep -n "queryKey: \[['\"]" <changed files>          # inline query keys outside hooks: TS rule 5
 ```
 
-A hit in a changed file is a finding. A hit in a file the task did not change is not in scope.
+A hit in a changed file is a candidate: read it before you call it a finding. A hit in a file the task did not change is not in scope.
 
 ## Reading the measurement
 
@@ -128,7 +132,7 @@ one large function: that is the honest reading.
 In a test file, `describe` (and `suite`, `context`) is a container like the file: its callback is
 not measured. Each `it`, `test` and hook is measured alone. A callback with no name takes the name of
 its call and its title, cut at 60 characters: `it("adds numbers")`, `vi.mock("./api")`,
-`beforeEach()`. A test over 50 lines (the test limit) is a finding like any function; a long `describe` is not.
+`beforeEach()`. A test over the test limit of rule 3 of `rules.md` is a finding like any function; a long `describe` is not.
 
 
 ## Measuring

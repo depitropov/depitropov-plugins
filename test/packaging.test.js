@@ -32,20 +32,6 @@ test('shipped skills carry no ship.cars names', () => {
   for (const s of skills) assert.doesNotMatch(fs.readFileSync(s.file, 'utf8'), /cars\.ship|SC[A-Z]\w*Utils|scValue|LITE-/, s.file);
 });
 
-test('every judging skill uses the triage shared role only when it is given', () => {
-  const judging = [
-    ...['plan-check', 'plan-conformance', 'logic-review'].map(n => ['orc-standard-workflow', n]),
-    ['orc-core', 'clean-code'],
-    ...skills.filter(s => s.plugin === 'orc-java-stack' && s.name.startsWith('review-')).map(s => [s.plugin, s.name]),
-  ];
-  for (const [plugin, name] of judging) {
-    const text = fs.readFileSync(path.join(PLUGINS, plugin, 'skills', name, 'SKILL.md'), 'utf8');
-    assert.match(text, /If the input `shared-role\.triage` is given, follow that skill/, name);
-    assert.doesNotMatch(text, /orchestra:triage|orc-core:triage|\(triage, B1\)/, name);
-    assert.doesNotMatch(text, /\*\*Noise\*\*: not a real problem/, `${name} still has its own bucket list`);
-  }
-});
-
 test('writing-plugins tells a workflow author to end with a PR step that uses the shared roles', () => {
   const text = fs.readFileSync(path.join(PLUGINS, 'orchestra', 'skills', 'writing-plugins', 'SKILL.md'), 'utf8');
   assert.match(text, /ends with a PR/);
@@ -74,7 +60,7 @@ test('the skill writing-plugins explains every word of the contract that check.j
   for (const w of words) assert.match(quoted, new RegExp(`(^|[^\\w-])${w}([^\\w-]|$)`, 'm'), `writing-plugins does not explain \`${w}\``);
 });
 
-test('the clean-code gate measures with the clean-code plugin it depends on, and warns without it', () => {
+test('the clean-code gate measures with the clean-code plugin it depends on, and fails without it', () => {
   const wf = JSON.parse(fs.readFileSync(path.join(PLUGINS, 'orc-standard-workflow', 'orchestra.json'), 'utf8'));
   assert.equal(wf.gates.find(g => g.name === 'clean-code'), undefined);
   const d = JSON.parse(fs.readFileSync(path.join(PLUGINS, 'orc-core', 'orchestra.json'), 'utf8'));
@@ -86,7 +72,8 @@ test('the clean-code gate measures with the clean-code plugin it depends on, and
   }
   const text = fs.readFileSync(path.join(PLUGINS, 'orc-core', 'skills', 'clean-code', 'SKILL.md'), 'utf8');
   assert.match(text, /clean-code:manifest/);
-  assert.match(text, /No shape measurement: the clean-code plugin is not installed/);
+  assert.match(text, /`failed` with the reason "the clean-code plugin is not installed"/);
+  for (const re of [/rules\.md/, /measurement\.md/, /--at HEAD/]) assert.match(text, re);
   for (const skill of ['manifest', 'clean-code-python', 'clean-code-typescript', 'clean-code-java']) {
     assert.ok(text.includes(`clean-code:${skill}`), skill);
     assert.ok(fs.existsSync(path.join(PLUGINS, 'clean-code', 'skills', skill, 'SKILL.md')), skill);

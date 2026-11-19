@@ -84,9 +84,9 @@ test('select applies files and grep, and records why a gate is skipped', () => {
 });
 
 test('select takes a list of globs in files', () => {
-  const gates = [{ name: 'ops', files: ['**/*.java', '**/*.sql'] }, { name: 'none', files: ['**/*.kt'] }];
+  const gates = [{ name: 'errors', files: ['**/*.java', '**/*.sql'] }, { name: 'none', files: ['**/*.kt'] }];
   const v = select(gates, ['db/migration/V2__idx.sql'], () => null);
-  assert.deepEqual(v.map(x => [x.name, x.selected]), [['ops', true], ['none', false]]);
+  assert.deepEqual(v.map(x => [x.name, x.selected]), [['errors', true], ['none', false]]);
   assert.match(v[1].why, /no changed file matches \*\*\/\*\.kt/);
 });
 
@@ -142,4 +142,14 @@ test('buildStep merges the build override, and a project guide is a path', () =>
   assert.equal(own.run, 'make all');
   assert.equal(own.guide, '.agents/skills/fix-all/SKILL.md');
   assert.equal(own.max_rounds, 3);
+});
+
+test('inside one plugin, plan keeps the order of the gates list', () => {
+  const r = { slots: { 'stack-skills': { plugin: 'st', dir: '/p/st', declaration: { build: { run: 'b' }, gates: [
+    { name: 'z', phase: 'conventions-check', kind: 'agent', skill: 'z', always: true },
+    { name: 'a', phase: 'conventions-check', kind: 'agent', skill: 'a', always: true },
+    { name: 'm', phase: 'conventions-check', kind: 'agent', skill: 'm', always: true },
+  ] } } } };
+  const steps = plan('conventions-check', collect(r, {}, 'conventions-check'), buildStep(r, {}));
+  assert.deepEqual(steps.map(s => s.name), ['z', 'a', 'm']);
 });

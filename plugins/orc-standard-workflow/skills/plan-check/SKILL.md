@@ -1,73 +1,51 @@
 ---
 name: plan-check
-description: Checks the brief and the plan of one orc-standard-workflow run against the real code, fixes them in place, and stops for a human on a real fork or a missing business fact. Dispatched by orchestra; not for direct use.
+description: Checks the spec and the plan of one orc-standard-workflow run against the real code, fixes them in place, and stops for a human on a real fork or a missing business fact. Dispatched by orchestra; not for direct use.
 ---
 
 # Plan check
 
-You did not write the brief or the plan. You check both, with the focus on the plan, while
+You did not write the spec or the plan. You check both, with the focus on the plan, while
 problems are still cheap. You fix what you can in the two files. You do not write code.
+
+Your findings, your notes file and your result follow `judging.md`, which your prompt gives you.
 
 ## Inputs
 
-- `spec`: the brief.
+- `spec`: the spec document.
 - `plan`: the plan.
-- `notes`: the run's notes folder. Your findings file goes here.
+- `notes`: the run's notes folder. Your notes file goes here.
+- `spec-format`, `plan-format`: the formats of the spec document and of the plan.
 - `decisions` (optional): the human's answers. They settle the questions they answer; do not raise
   those again.
 
 ## Procedure
 
-1. Read `spec` and `plan`. If `decisions` is given, read it first. Use the rules of every guide that your dispatch prompt lists as the reference.
-2. If `decisions` has `## plan-check` sections, write each of their answers into the documents first
-   (the `## business-facts` answers are already in the brief: the plan stage wrote them). Put the
-   value into the
-   acceptance criterion it belongs to in the brief, remove its `business fact:` line, and change
-   the plan where the answer needs it. The coder reads the brief, not `decisions`.
+1. Read `spec` and `plan`. If `decisions` is given, read it first.
+2. If `decisions` has `## plan-check` sections, write each of their answers into the documents first.
+   Write an answered business fact into the spec as the `spec-format` file says. Change the plan
+   where an answer needs it. The coder reads the spec, not `decisions`.
 3. Check against the real code. Read the code; do not trust the plan.
-   - **Coverage**: every acceptance criterion, and every assumption in the brief that sets behaviour
-     (null handling, where rounding happens, which limit is checked first), is in at least one
-     task's Tests line, with a named test.
+   - **Coverage**: every acceptance criterion, and every assumption that sets behaviour (see
+     `spec-format`), is in at least one task's Tests line, with a named test.
    - **Code facts**: every file, signature and pattern the plan names exists as it says.
-   - **Scope**: no task goes beyond the brief's scope, or edits a repo other than this one.
-   - **Size**: a task with more than about four files or two jobs is split.
-   - **No code**: Notes hold at most a signature or ten lines of pseudo-code.
+   - **Scope**: no task goes beyond the spec's scope, or edits a repo other than this one.
+   - **Plan format**: each task keeps the limits of the `plan-format` file. Fix a task that does
+     not; split one that is too big.
    - **Over-building**: no abstraction, layer or new library the goal does not need.
-   - **Business facts**: every `business fact:` line in the brief, and every rate, price, limit
+   - **Business facts**: every `business fact:` line in the spec, and every rate, price, limit
      value or rule of who qualifies that the plan uses with no source.
    - **External facts**: every line under Integration points has a source, or is an assumption with the cost of being wrong. Every claim in the plan about another service, library or contract has a line there.
    - **Other repos**: a change that another repo must make, in a repo the task does not name.
-4. If the input `shared-role.triage` is given, follow that skill: give every finding its axes and one bucket. Otherwise sort each finding by your own judgement: Decide (a person must answer it), Patch (you fix it), Evaluate (a person should look at it later) or Noise (not a real problem).
-   A business fact that neither the brief nor `decisions` gives is Decide.
-   A change in a repo the task does not name is Decide: the call is not ours (S69).
-5. Write `<notes>/plan-check.md`, one line per finding with its bucket, in the triage notes format when a triage skill is given. Put the checks of step 3 and their
-   outcome under **Checked**.
-6. If there is a Decide finding, stop here. Do not fix any finding in the brief or the plan. Write
-   the result with `"status": "decide"`.
-7. Otherwise fix every Patch finding in the brief and the plan. When you split a task, number the
-   tasks again. Keep the `AC` numbers.
-8. Write the result JSON.
+4. Sort the findings:
+   - A business fact that neither the spec nor `decisions` gives is Decide.
+   - A change in a repo the task does not name is Decide: the call is not ours (S69).
+5. Fix every Fix finding in the spec and the plan. When you split a task, number the tasks again.
+   Keep the `AC` numbers.
 
-## Result
-
-Write to the path given in the prompt:
-
-```json
-{
-  "stage": "plan-check",
-  "status": "ok",
-  "decide": [],
-  "counts": { "decide": 0, "patch": 2, "evaluate": 1, "noise": 0 },
-  "evaluate": ["plan.md T2 — the plan keeps the old null check; the brief does not say"],
-  "files": ["<notes>/plan-check.md"]
-}
-```
-
-When you finish, the tasks in `plan.md` must be headed `### T1`, `### T2`, … in order, with no
-gap. orchestra counts them to start the coders. `status` is `ok`, `decide` or `failed`. `decide`
-lists each question as one line with its options.
+When you finish, `plan.md` follows the `plan-format` file, also its task headings: orchestra reads
+them to start the coders.
 
 ## Permitted actions
 
-Read the project. Edit `<notes>/brief.md`, `<notes>/plan.md` and `<notes>/plan-check.md`. Do not
-change code. Do not commit. Do not ask the user; a question goes into `decide`.
+Read the project. Edit `<notes>/spec.md`, `<notes>/plan.md` and `<notes>/plan-check.md`. Do not change code. Do not commit.

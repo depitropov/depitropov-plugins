@@ -31,7 +31,7 @@ test('every guide reads the docs only and never talks to the user', () => {
   }
 });
 
-test('the spec guide asks for the Direction section of the brief', () => {
+test('the spec guide asks for the Direction section of the spec', () => {
   const text = read('spec');
   assert.match(text, /^## Direction$/m);
   assert.match(text, /- Serves: B<n> \| new/);
@@ -39,7 +39,8 @@ test('the spec guide asks for the Direction section of the brief', () => {
   assert.match(text, /- Question:/);
   assert.match(text, /never Later/i);
   assert.match(text, /never stops the run/);
-  assert.match(text, /business fact: <what is missing> — options:/);
+  assert.match(text, /only a person can answer/);
+  assert.doesNotMatch(text, /business fact|\bbrief\b/);
 });
 
 test('the plan guide makes DIRECTION binding and keeps the plan to this task', () => {

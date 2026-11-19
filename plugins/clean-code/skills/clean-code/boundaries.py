@@ -149,10 +149,6 @@ def render_json_payload(payload: dict[str, object]) -> str:
     return json.dumps(payload, indent=2) + "\n"
 
 
-def render_json(report: Report) -> str:
-    return render_json_payload(_payload(report))
-
-
 # --- CLI ----------------------------------------------------------------------
 
 def names(value: str) -> frozenset[str]:

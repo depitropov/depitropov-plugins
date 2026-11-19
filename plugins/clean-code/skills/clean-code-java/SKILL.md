@@ -10,12 +10,10 @@ or the clean-code gate of orchestra, owns the process; whichever loaded this
 skill keeps it. A finding cites `Java rule <n>` and `file:line`. A rule that
 `javac`, Checkstyle, PMD, SpotBugs or Error Prone checks is not repeated
 here. Where one of them borders a rule, the rule names the tool. In an
-orchestra run, exceptions and argument checks are the ops gate's job, tests
+orchestra run, exceptions and argument checks are the general gate's job, tests
 the testing gate's, comments the comments gate's, and static helper classes
-the layout gate's. "Gate rule 11", "12" and "13" are the orchestra gate's rules for a core
-that works without the UI and the IO, dependencies that point inward, and a
-simple typed value at a boundary. In the standalone `clean-code` skill they
-are Phases 1, 2 and 3 of `architecture.md`.
+the layout gate's. Cite a rule of `rules.md` in the `clean-code` skill as "rule <n> of
+`rules.md`".
 
 The project's `CLAUDE.md` or `AGENTS.md` outranks every default here.
 
@@ -29,7 +27,7 @@ The project's `CLAUDE.md` or `AGENTS.md` outranks every default here.
    `StripePaymentGateway`. When there is only one implementation, `Default<Interface>`. `Impl` only
    when the project already uses it. An interface with one implementation and no second one in
    sight is not needed: use the class.
-3. **Arguments that travel together are a `record`.** The clean-code rules allow at most three parameters.
+3. **Arguments that travel together are a `record`.** Rule 3 of `rules.md` limits the parameters.
    A `record` is the parameter object; a builder only when most of its fields are optional. Never
    a `Map<String, Object>` of arguments.
 4. **No flag arguments.** A `boolean` that picks a path is two methods. When the choice is part of
@@ -45,7 +43,7 @@ The project's `CLAUDE.md` or `AGENTS.md` outranks every default here.
    on a field, and no `new` of a collaborator inside a service: the test cannot replace it.
 8. **A JPA entity stays behind the service.** A controller takes and returns a DTO (a `record`),
    never an `@Entity`. A domain function takes a `record` or values, not an entity, unless the
-   project's entities are its domain model. This is gate rule 13 in Java.
+   project's entities are its domain model. This is rule 13 of `rules.md` in Java.
 9. **A lambda is one line.** A lambda with a branch, or longer than three lines, is a named private
    method and a method reference. Its branches count toward the method around it. `map` and
    `filter` have no side effects. A `forEach` that adds to a list outside it is a `collect` or
@@ -74,11 +72,11 @@ The direction: `web` imports `service`; `service` imports `domain`, `persistence
 
 | Layer | Smell | What it shows |
 |---|---|---|
-| `web/` | a repository, an `EntityManager` or a query in a controller | gate rule 11: the controller does the service's job |
-| `web/` | an `if` on a status or a role that decides what happens | gate rule 11: the rule belongs in the service or the domain |
+| `web/` | a repository, an `EntityManager` or a query in a controller | rule 11 of `rules.md`: the controller does the service's job |
+| `web/` | an `if` on a status or a role that decides what happens | rule 11 of `rules.md`: the rule belongs in the service or the domain |
 | `web/` | an `@Entity` as a parameter or a return type | Java rule 8: the table shape is the API; a column rename breaks the clients |
-| `service/` | `ResponseEntity`, `HttpStatus` or `HttpServletRequest` | gate rule 13: the service knows the transport; throw a domain error, translate it in `web/` |
-| `domain/` | `jakarta.persistence`, `org.springframework` or a client import | gate rule 12: the rule cannot be tested without the framework |
+| `service/` | `ResponseEntity`, `HttpStatus` or `HttpServletRequest` | rule 13 of `rules.md`: the service knows the transport; throw a domain error, translate it in `web/` |
+| `domain/` | `jakarta.persistence`, `org.springframework` or a client import | rule 12 of `rules.md`: the rule cannot be tested without the framework |
 | anywhere | `@Autowired` on a field | Java rule 7: the dependency is hidden from the constructor and from the test |
 
 ## Two searches
@@ -87,7 +85,7 @@ Run these on the changed files:
 
 ```bash
 command grep -n "@Autowired" <changed files>                                   # field injection: Java rule 7
-command grep -ln "Repository\b\|EntityManager" <changed files under web/>    # data access in a controller: gate rule 11
+command grep -ln "Repository\b\|EntityManager" <changed files under web/>    # data access in a controller: rule 11 of `rules.md`
 ```
 
 A hit in a changed file is a candidate: read it before you call it a finding. A hit in a file the
@@ -104,7 +102,7 @@ value of a field. A constructor is `<Class>.<init>`. A lambda inside a method be
 method, and its branches count toward that method's complexity. A method of an anonymous class is
 measured alone, as `<Class>.<anonymous>.<method>`. Annotations do not count toward the length, and
 neither does the Javadoc above the method. A test (a file under `src/test/`, or named `*Test`, `*Tests`
-or `*IT`) may have 50 lines. Lombok's generated code is not measured. `default` is not
+or `*IT`) has the test limit of rule 3 of `rules.md`. Lombok's generated code is not measured. `default` is not
 a case; `case A, B ->` is one case.
 
 Suppressions are counted by text: `@SuppressWarnings`, `@SuppressFBWarnings`, `NOPMD`,

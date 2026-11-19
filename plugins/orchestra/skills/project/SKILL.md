@@ -15,7 +15,7 @@ project root.
 
 Read `.orchestra/config.json`. If it does not exist, tell the user to run orchestra init, and stop.
 
-Resolve the slots as the skill `orchestra:run` does in its step 2: invoke `<plugin>:manifest` for
+Resolve the slots as the skill `orchestra:run` does when it resolves the plugins: invoke `<plugin>:manifest` for
 each section, then run `node <orchestra>/bin/resolve.js <slot>=<folder> …`. If it fails, show the
 error and stop.
 

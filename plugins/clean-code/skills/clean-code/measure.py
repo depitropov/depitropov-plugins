@@ -55,7 +55,6 @@ from languages import (
     MeasureError,
     _display,
     collect_files,
-    find_typescript_package,
     language_of,
     measure_java_files,
     measure_python_file,

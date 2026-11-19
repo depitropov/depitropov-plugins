@@ -6,43 +6,16 @@ const { execFileSync } = require('node:child_process');
 
 const PHASES = ['implementation-check', 'conventions-check', 'finish'];
 
+// The formats of the two documents this workflow writes. Every step that writes or checks one gets its path.
+const SPEC_FORMAT = path.join(__dirname, '..', 'formats', 'spec.md');
+const PLAN_FORMAT = path.join(__dirname, '..', 'formats', 'plan.md');
+
 function git(cwd, ...args) {
   return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 }
 
 function readJson(file) {
   return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
-}
-
-// A result file is written by a subagent, so it can be malformed. Treat that as a failed step.
-function readResult(file) {
-  if (!fs.existsSync(file)) return null;
-  try {
-    return JSON.parse(fs.readFileSync(file, 'utf8'));
-  } catch (e) {
-    return { status: 'failed', reason: `Invalid result JSON in ${file}: ${e.message}` };
-  }
-}
-
-// A failed step stops the call once. When the run is called again, the step runs again (S32).
-function reportOnce(file, res) {
-  if (res.reported) return false;
-  writeJson(file, { ...res, reported: true });
-  return true;
-}
-
-// A subagent that writes no result is dispatched once more. Then the step fails (S69).
-function noResult(file, name) {
-  const sent = `${file}.sent`;
-  const count = fs.existsSync(sent) ? Number(fs.readFileSync(sent, 'utf8')) : 0;
-  if (count < 2) {
-    fs.writeFileSync(sent, String(count + 1));
-    return null;
-  }
-  fs.rmSync(sent);
-  const res = { status: 'failed', reason: `${name} wrote no result after 2 dispatches.`, reported: true };
-  fs.writeFileSync(file, JSON.stringify(res, null, 2) + '\n');
-  return res;
 }
 
 function slugify(text) {
@@ -75,32 +48,24 @@ function prepare(project, taskText) {
   fs.mkdirSync(path.join(project, runDir), { recursive: true });
   fs.mkdirSync(path.join(project, docs), { recursive: true });
   fs.writeFileSync(path.join(project, docs, 'task.md'), taskText.endsWith('\n') ? taskText : `${taskText}\n`);
-  const run = { base, branch, spec: `${docs}/brief.md`, docs };
+  const run = { base, branch, spec: `${docs}/spec.md`, docs };
   fs.writeFileSync(path.join(project, runDir, 'run.json'), JSON.stringify(run, null, 2) + '\n');
 }
 
+// The engine module, loaded from the folder the engine passes as --orchestra.
+let wf;
+
 function settings(project) {
-  const resolved = readJson(path.join(project, '.orchestra', 'resolved.json'));
-  const config = readJson(path.join(project, '.orchestra', 'config.json')) || {};
-  const stack = resolved && resolved.slots['stack-skills'];
-  if (!stack) throw new Error('No resolved stack-skills slot. orchestra run resolves the slots first.');
-  const declared = resolved.slots.workflow.declaration.config['tasks-per-coder'].default;
-  const perCoder = (config.workflow || {})['tasks-per-coder'] ?? declared;
+  const { build, config } = wf.settings(project);
+  const perCoder = config['tasks-per-coder'];
   if (!Number.isInteger(perCoder) || perCoder < 1) {
     throw new Error(`workflow.tasks-per-coder in .orchestra/config.json must be a whole number of 1 or more, not ${JSON.stringify(perCoder)}.`);
   }
-  return { build: stack.declaration.build.run.replace(/\{plugin\}/g, stack.dir), perCoder };
+  return { build, perCoder };
 }
 
 function writeJson(file, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
-}
-
-// Same rule as the gate runner: an answer is a `## <step>` section in decisions.md.
-function countAnswers(docsAbs, name) {
-  const file = path.join(docsAbs, 'decisions.md');
-  if (!fs.existsSync(file)) return 0;
-  return fs.readFileSync(file, 'utf8').split('\n').filter(line => line.trim() === `## ${name}`).length;
 }
 
 // The answer lines (`- <question> → <answer>`) in every `## <name>` section of decisions.md.
@@ -115,13 +80,12 @@ function answerLines(docsAbs, name) {
 }
 
 // One step of the workflow: dispatch it, or stop on its result. Returns null when the step is done.
-// A Decide result records how many answers existed when it stopped (`seen`). Only a new answer starts the step again.
-function stage(ctx, name, inputs, { skill = name, stage } = {}) {
+// A Decide result starts the step again only on a new `## <step>` section in decisions.md.
+function step(ctx, name, inputs, { skill = name, stage, judging } = {}) {
   const result = `${ctx.runDir}/${name}.result.json`;
   const file = path.join(ctx.project, result);
-  const answers = countAnswers(path.join(ctx.project, ctx.run.docs), name);
-  let res = readResult(file);
-  const retry = res && ((res.status === 'failed' && !reportOnce(file, res)) || (res.status === 'decide' && res.seen !== undefined && answers > res.seen));
+  let res = wf.readResult(file);
+  const retry = res && ((res.status === 'failed' && !wf.reportOnce(file, res)) || (res.status === 'decide' && wf.newAnswer(file, res, path.join(ctx.project, ctx.run.docs), name)));
   if (retry) {
     // A coder that runs again reads its last failure from the log (the code skill reads this file).
     if (res.status === 'failed' && name.startsWith('code-')) {
@@ -134,17 +98,14 @@ function stage(ctx, name, inputs, { skill = name, stage } = {}) {
     res = null;
   }
   if (!res) {
-    const lost = noResult(file, `Stage ${name}`);
+    const lost = wf.noResult(file, `Step ${name}`);
     if (lost) return { action: 'failed', reason: lost.reason, runDir: ctx.runDir };
     const decisionsFile = `${ctx.run.docs}/decisions.md`;
     const decisions = fs.existsSync(path.join(ctx.project, decisionsFile)) ? { decisions: decisionsFile } : {};
-    return { action: 'dispatch', skill: `orc-standard-workflow:${skill}`, ...(stage ? { stage } : {}), inputs: { ...inputs, ...decisions }, result, runDir: ctx.runDir };
+    return { action: 'dispatch', skill: `orc-standard-workflow:${skill}`, ...(stage ? { stage } : {}), ...(judging ? { judging: true } : {}), inputs: { ...inputs, ...decisions }, result, runDir: ctx.runDir };
   }
-  if (res.status === 'failed') return { action: 'failed', reason: res.reason || `Stage ${name} failed. See ${result}.`, runDir: ctx.runDir };
-  if (res.status === 'decide') {
-    if (res.seen === undefined) writeJson(file, { ...res, seen: answers });
-    return { action: 'decide', gate: name, questions: res.decide || [], runDir: ctx.runDir };
-  }
+  if (res.status === 'failed') return { action: 'failed', reason: res.reason || `Step ${name} failed. See ${result}.`, runDir: ctx.runDir };
+  if (res.status === 'decide') return { action: 'decide', step: name, questions: res.decide || [], runDir: ctx.runDir };
   return null;
 }
 
@@ -161,7 +122,7 @@ function planTasks(file) {
   return numbers.length && numbers.every((n, i) => n === i + 1) ? numbers.length : 0;
 }
 
-function next(project, taskFile) {
+function route(project, taskFile) {
   const s = settings(project);
   if (taskFile !== undefined) {
     prepare(project, fs.readFileSync(path.resolve(project, taskFile), 'utf8'));
@@ -173,7 +134,7 @@ function next(project, taskFile) {
   const ctx = { project, runDir, run };
   const notes = run.docs;
   const plan = `${notes}/plan.md`;
-  const specStep = stage(ctx, 'spec', { task: `${notes}/task.md`, notes }, { stage: 'spec' });
+  const specStep = step(ctx, 'spec', { task: `${notes}/task.md`, notes, 'spec-format': SPEC_FORMAT }, { stage: 'spec' });
   if (specStep) return specStep;
   const facts = openFacts(path.join(project, run.spec));
   if (facts.length) {
@@ -181,15 +142,15 @@ function next(project, taskFile) {
     const result = `${runDir}/business-facts.result.json`;
     // Every question needs its own answer line; a partial answer stops the run again.
     const answered = answerLines(path.join(project, notes), 'business-facts') >= facts.length;
-    writeJson(path.join(project, result), { stage: 'business-facts', status: answered ? 'ok' : 'decide', decide: facts });
-    if (!answered) return { action: 'decide', gate: 'business-facts', questions: facts, result, runDir };
+    writeJson(path.join(project, result), { status: answered ? 'ok' : 'decide', decide: facts });
+    if (!answered) return { action: 'decide', step: 'business-facts', questions: facts, result, runDir };
   }
   const steps = [
-    ['plan', { spec: run.spec, notes }],
-    ['plan-check', { spec: run.spec, plan, notes }],
+    ['plan', { spec: run.spec, notes, 'spec-format': SPEC_FORMAT, 'plan-format': PLAN_FORMAT }],
+    ['plan-check', { spec: run.spec, plan, notes, 'spec-format': SPEC_FORMAT, 'plan-format': PLAN_FORMAT }, { judging: true }],
   ];
-  for (const [name, inputs] of steps) {
-    const a = stage(ctx, name, inputs, { stage: 'plan' });
+  for (const [name, inputs, opts] of steps) {
+    const a = step(ctx, name, inputs, { stage: 'plan', ...opts });
     if (a) return a;
   }
   const total = planTasks(path.join(project, plan));
@@ -202,14 +163,66 @@ function next(project, taskFile) {
   }
   for (let from = 1; from <= total; from += s.perCoder) {
     const to = Math.min(from + s.perCoder - 1, total);
-    const a = stage(ctx, `code-${from}`, { spec: run.spec, plan, from, to, base: run.base, build: s.build, notes }, { skill: 'code', stage: 'code' });
+    const a = step(ctx, `code-${from}`, { spec: run.spec, plan, from, to, base: run.base, build: s.build, notes, 'spec-format': SPEC_FORMAT }, { skill: 'code', stage: 'code' });
     if (a) return a;
   }
   for (const phase of PHASES) {
-    const res = readJson(path.join(project, runDir, `phase-${phase}.result.json`));
-    if (!res || res.status !== 'ok') return { action: 'phase', name: phase, runDir };
+    if (!wf.phaseDone(project, runDir, phase)) return { action: 'phase', name: phase, runDir };
   }
   return { action: 'done', runDir };
+}
+
+// The `- Deviations:` lines of the coders' log that say something, each with its `## T<n>` heading.
+function deviations(file) {
+  if (!fs.existsSync(file)) return [];
+  let task = '';
+  return fs.readFileSync(file, 'utf8').split('\n').flatMap(line => {
+    const h = line.match(/^## (T\d+)/);
+    if (h) task = h[1];
+    const d = line.match(/^- Deviations:\s*(.*)$/);
+    return d && d[1].trim() && !/^none\b/i.test(d[1].trim()) ? [`${task}: ${d[1].trim()}`] : [];
+  });
+}
+
+// The `- ` lines under the spec's `## Integration points`: what other repos must change.
+function integrationPoints(file) {
+  if (!fs.existsSync(file)) return [];
+  let inside = false;
+  return fs.readFileSync(file, 'utf8').split('\n').flatMap(line => {
+    if (line.startsWith('## ')) inside = line.trim() === '## Integration points';
+    return inside && line.startsWith('- ') ? [line.slice(2).trim()] : [];
+  });
+}
+
+// The technical choices the steps recorded, in run order, each with its step.
+function assumptions(project, runDir) {
+  const order = name => ({ spec: 0, plan: 1, 'plan-check': 2 })[name] ?? 3 + Number(name.slice('code-'.length));
+  return fs.readdirSync(path.join(project, runDir))
+    .map(f => f.match(/^(spec|plan|plan-check|code-\d+)\.result\.json$/))
+    .filter(Boolean)
+    .map(m => m[1])
+    .sort((a, b) => order(a) - order(b))
+    .flatMap(name => {
+      const res = wf.readResult(path.join(project, runDir, `${name}.result.json`));
+      return res && Array.isArray(res.assumptions) ? res.assumptions.map(a => `${name}: ${a}`) : [];
+    });
+}
+
+// Every action carries the report sections, because the engine writes the report on a failed phase too.
+function next(project, taskFile, orchestraDir) {
+  if (!orchestraDir) throw new Error('next.js needs --orchestra <dir>: the folder of the orchestra engine.');
+  wf = require(path.resolve(orchestraDir, 'lib', 'workflow.js'));
+  const a = route(project, taskFile);
+  const run = a.runDir ? readJson(path.join(project, a.runDir, 'run.json')) : null;
+  if (!run) return a;
+  return {
+    ...a,
+    sections: {
+      Assumptions: assumptions(project, a.runDir),
+      Deviations: deviations(path.join(project, run.docs, 'implementation-log.md')),
+      'Integration points': integrationPoints(path.join(project, run.spec)),
+    },
+  };
 }
 
 if (require.main === module) {
@@ -219,7 +232,7 @@ if (require.main === module) {
     return i >= 0 ? argv[i + 1] : undefined;
   };
   try {
-    console.log(JSON.stringify(next(opt('--project') || process.cwd(), opt('--task-file'))));
+    console.log(JSON.stringify(next(opt('--project') || process.cwd(), opt('--task-file'), opt('--orchestra'))));
   } catch (e) {
     console.log(JSON.stringify({ action: 'failed', reason: e.message }));
   }

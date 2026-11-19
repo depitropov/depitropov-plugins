@@ -5,62 +5,62 @@ description: Use when editing .py files or when Python, FastAPI, SQLAlchemy, Pyd
 
 # Clean Code — Python
 
-Companion to the `clean-code` skill, and read by the clean-code gate of
-orchestra. Whichever loaded this skill owns the process; the `clean-code`
+Companion to the `clean-code` skill. Whichever loaded this skill owns the process; the `clean-code`
 skill's is measure before, write, measure after, verify, three review
 passes, report, with `architecture.md` and its four architecture phases.
 This one says what the
 rules look like in Python and which smell lives in which layer of a FastAPI
 service. Rules that ruff or mypy enforce are not repeated here; a rule that
-borders one names the tool and stops.
+borders one names the tool and stops. A finding cites `Python rule <n>` and `file:line`.
 
 The project's `CLAUDE.md` (root, `backend/CLAUDE.md`) outranks every default
 here.
 
-## Rules, Python shape
+## Rules
 
-- **Data crosses a layer boundary as a simple typed structure.** A
-  `dataclass`, a `NamedTuple`, or a Pydantic model, in the shape the inner
-  layer wants. An ORM row or a request schema does not cross inward into
-  the domain, and neither does a `dict`: Clean Code ch. 8 says keep a map
-  inside the class that uses it. A `TypedDict` is tolerated inside a
-  module, not at a boundary. `Any` or `dict[str, Any]` at a boundary is a
-  missing type; inside a function `Any` carries a comment that says why the
-  checker cannot know. The hints themselves are the tools' job: ruff `ANN`,
-  or mypy `--strict`.
-- **Domain errors are exception classes in the domain module.** Not
-  strings, not `None` plus a comment, not `(ok, value)` tuples. Framework
-  errors (`HTTPException`) exist only in the adapter that speaks HTTP.
-- **`async def` never touches a sync database driver.** Ruff catches
-  `time.sleep` and `requests` inside `async def` (`ASYNC251`, `ASYNC210`);
-  nothing catches `psycopg2`, `sqlite3`, or a sync `Session` there. Use
-  `AsyncSession`, or a plain `def` handler so FastAPI runs it in the
-  threadpool.
-- **Module level is definitions only.** No work at import time: no
-  connections, no reads, no environment lookups outside a settings object.
-- **One job per module, not one public name.** Related classes and
-  functions live together; a module with two reasons to change is split by
-  job, not by "helpers". Over 500 lines is the signal to look, not the
-  verdict.
-- **`# noqa: F401` and `# type: ignore[code]` say why on the same line**
-  (`import x  # noqa: F401  # re-exported`). Where line length forces it,
-  the reason sits on the line above. No tool checks the reason; a
-  suppression whose code does not already explain itself is a finding. The
-  missing code is ruff's job: select `PGH003` and `PGH004`.
-- **Comprehensions are for building a value.** A comprehension whose body
-  has a side effect is a `for`, even when its result is assigned. So is one
-  with more than two control subexpressions: a second `for` plus an `if`,
-  or two `if`s plus a `for`. Google's style guide is stricter, allowing no
-  second `for` and no second filter at all.
-- **Early return.** Guard clauses first, the happy path unindented. A depth
-  finding is an inverted condition or a block that should be a one-line
-  call. Ruff's `SIM102` flattens `if a: if b:`; select `RET505`-`RET508` to
-  drop the `else` after a return.
-- **Tests: one behaviour, a sentence for a name, real dependencies where
-  the project has them.** `test_search_ignores_punctuation_only_query`, not
-  `test_search_2`.
+1. **Data crosses a layer boundary as a simple typed structure.** A
+   `dataclass`, a `NamedTuple`, or a Pydantic model, in the shape the inner
+   layer wants. An ORM row or a request schema does not cross inward into
+   the domain, and neither does a `dict`: Clean Code ch. 8 says keep a map
+   inside the class that uses it. A `TypedDict` is tolerated inside a
+   module, not at a boundary. `Any` or `dict[str, Any]` at a boundary is a
+   missing type; inside a function `Any` carries a comment that says why the
+   checker cannot know. The hints themselves are the tools' job: ruff `ANN`,
+   or mypy `--strict`.
+2. **Domain errors are exception classes in the domain module.** Not
+   strings, not `None` plus a comment, not `(ok, value)` tuples. Framework
+   errors (`HTTPException`) exist only in the adapter that speaks HTTP.
+3. **`async def` never touches a sync database driver.** Ruff catches
+   `time.sleep` and `requests` inside `async def` (`ASYNC251`, `ASYNC210`);
+   nothing catches `psycopg2`, `sqlite3`, or a sync `Session` there. Use
+   `AsyncSession`, or a plain `def` handler so FastAPI runs it in the
+   threadpool.
+4. **Module level is definitions only.** No work at import time: no
+   connections, no reads, no environment lookups outside a settings object.
+5. **One job per module, not one public name.** Related classes and
+   functions live together; a module with two reasons to change is split by
+   job, not by "helpers". Over the file limit of rule 3 of `rules.md` is the signal to look,
+   not the
+   verdict.
+6. **`# noqa: F401` and `# type: ignore[code]` say why on the same line**
+   (`import x  # noqa: F401  # re-exported`). Where line length forces it,
+   the reason sits on the line above. No tool checks the reason; a
+   suppression whose code does not already explain itself is a finding. The
+   missing code is ruff's job: select `PGH003` and `PGH004`.
+7. **Comprehensions are for building a value.** A comprehension whose body
+   has a side effect is a `for`, even when its result is assigned. So is one
+   with more than two control subexpressions: a second `for` plus an `if`,
+   or two `if`s plus a `for`. Google's style guide is stricter, allowing no
+   second `for` and no second filter at all.
+8. **Early return.** Guard clauses first, the happy path unindented. A depth
+   finding is an inverted condition or a block that should be a one-line
+   call. Ruff's `SIM102` flattens `if a: if b:`; select `RET505`-`RET508` to
+   drop the `else` after a return.
+9. **Tests: one behaviour, a sentence for a name, real dependencies where
+   the project has them.** `test_search_ignores_punctuation_only_query`, not
+   `test_search_2`.
 
-## Layer defaults for a FastAPI service
+## Layers of a FastAPI service
 
 The project's `CLAUDE.md` overrides these names and may group by domain
 package (`posts/router.py`, `posts/service.py`) instead of by type; the
@@ -81,10 +81,10 @@ nothing imports `api`.
 The layout is the FastAPI community's (the SQL tutorial's `crud.py`,
 `full-stack-fastapi-template`, `fastapi-best-practices`), not Clean
 Architecture ch. 22: a `services/` function that takes `AsyncSession` is
-an adapter under `architecture.md` Phase 2, so the "domain module importing
+an adapter under rule 12 of `rules.md`, so the "domain module importing
 the ORM" smell applies to `domain/`, not to `services/`. A `services/` file
 that imports `fastapi` is an adapter in the wrong folder. A rule with no IO
-written inside a session-taking function is the Phase 1 smell: lift it into
+written inside a session-taking function breaks rule 11 of `rules.md`: lift it into
 `domain/`. With import-linter, declare the direction as a `layers` contract
 and forbid `fastapi` outside `api/`.
 
@@ -117,7 +117,7 @@ features, top to bottom, and a `forbidden` contract for `core` and
 | `api/` | business rule in the handler | an `if` on domain state that no service function owns |
 | `services/` | `raise HTTPException` | the service knows a status code |
 | `services/` | a function that takes `Request` or `Response` | framework type across the boundary |
-| `services/` | one function over 20 lines with commented sections | several jobs; each section is a function |
+| `services/` | one function over the line limit of rule 3 of `rules.md` with commented sections | several jobs; each section is a function |
 | `services/` | ORM object returned from a service | representation crosses the boundary; return the schema |
 | `schemas/` | `dict[str, Any]` field that carries structure | a missing nested model |
 | anywhere | `os.environ` or `os.getenv` outside settings | configuration read in two places |
@@ -158,8 +158,8 @@ and `app/<feature>/services/` alike. The other rows are `upward`, `cycles`,
 `core_outward` and `framework_in_domain`; the `clean-code` skill's "Reading
 the numbers" says what each one means.
 
-A hit in a file the task touched is a review candidate: `architecture.md`
-Phase 2 for a framework type inside a service, Phase 1 for a handler that
+A hit in a file the task touched is a review candidate: rule 12 of `rules.md` for a
+framework type inside a service, rule 11 of `rules.md` for a handler that
 redoes the data-access job. Revalidate it against the source and the
 documented dependency policy, using clean-code's default policy when none
 exists. An introduced policy violation blocks completion; a permitted hit

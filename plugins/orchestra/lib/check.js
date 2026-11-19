@@ -16,8 +16,6 @@ const KINDS = ['tool', 'agent'];
 const FIXES = ['self', 'fixer', 'none'];
 const CONFIG_TYPES = ['string', 'number', 'boolean'];
 // The slot project has no plugin and no config section: a project fills it with .orchestra/project/ (S86).
-// Keys that were renamed (S87): the fix names the new key.
-const RENAMED = { roles: 'stages' };
 const DECLARATION_KEYS = { workflow: ['slot', 'config', 'stages', 'gates'], 'stack-skills': ['slot', 'config', 'build', 'guides', 'gates'], curator: ['slot', 'config', 'curate', 'setup', 'guides'], core: ['slot', 'config', 'gates', 'shared-roles'], project: ['slot', 'gates', 'guides', 'shared-roles'] };
 const GATE_KEYS = ['name', 'phase', 'kind', 'skill', 'run', 'fix', 'guide', 'max_rounds', 'files', 'grep', 'when', 'always'];
 const BUILD_KEYS = ['run', 'guide', 'max_rounds'];
@@ -54,13 +52,12 @@ function checkDeclaration(d, dir, where, skillsDir = path.join(dir, 'skills')) {
     return out;
   }
   if (!Object.hasOwn(DECLARATION_KEYS, d.slot)) {
-    if (d.slot === 'global-gates') fail('"slot" is "global-gates"', 'rename it to "core"');
-    else fail(`"slot" is ${JSON.stringify(d.slot)}`, `set it to one of ${SLOTS.join(', ')}`);
+    fail(`"slot" is ${JSON.stringify(d.slot)}`, `set it to one of ${SLOTS.join(', ')}`);
     return out;
   }
   const allowed = DECLARATION_KEYS[d.slot];
   for (const key of Object.keys(d)) {
-    if (!allowed.includes(key)) fail(`unknown key "${key}" for slot ${d.slot}`, RENAMED[key] ? `rename it to "${RENAMED[key]}"` : `remove it; the allowed keys are ${allowed.join(', ')}`);
+    if (!allowed.includes(key)) fail(`unknown key "${key}" for slot ${d.slot}`, `remove it; the allowed keys are ${allowed.join(', ')}`);
   }
   const config = isObject(d.config) ? d.config : {};
   for (const [key, spec] of Object.entries(config)) {
@@ -148,7 +145,11 @@ function checkDeclaration(d, dir, where, skillsDir = path.join(dir, 'skills')) {
     }
     if (!PHASES.includes(g.phase)) fail(`${at} has phase ${JSON.stringify(g.phase)}`, `use one of ${PHASES.join(', ')}`);
     if (!KINDS.includes(g.kind)) fail(`${at} has kind ${JSON.stringify(g.kind)}`, `use one of ${KINDS.join(', ')}`);
-    if (g.kind === 'agent') skill(g.skill, at);
+    if (g.kind === 'agent') {
+      skill(g.skill, at);
+      const file = typeof g.skill === 'string' && path.join(skillsDir, g.skill, 'SKILL.md');
+      if (file && fs.existsSync(file)) out.push(...checkGateSkill(file, `${skillsLabel === PROJECT_SKILLS ? PROJECT_SKILLS : `${where}/skills`}/${g.skill}/SKILL.md`));
+    }
     if (g.kind === 'tool' && typeof g.run !== 'string') fail(`${at} is a tool gate with no "run" command`, 'add "run"');
     if (g.fix !== undefined && !FIXES.includes(g.fix)) fail(`${at} has fix ${JSON.stringify(g.fix)}`, `use one of ${FIXES.join(', ')}`);
     if (g.fix === 'fixer') {
@@ -310,10 +311,6 @@ function checkProject(project) {
   const slots = resolved.slots || {};
   for (const [slot, section] of Object.entries(config)) {
     const fail = (problem, fix) => out.push(`${CONFIG}: ${problem}. Fix: ${fix}.`);
-    if (slot === 'global-gates') {
-      fail('section "global-gates" is now "core"', 'rename the section to "core" and choose orc-core');
-      continue;
-    }
     if (!SLOTS.includes(slot)) {
       fail(`unknown section "${slot}"`, `use the slots ${SLOTS.join(', ')}`);
       continue;
@@ -333,7 +330,7 @@ function checkProject(project) {
     }
     checkSection(project, slot, section, s, out);
   }
-  // A guide is given by stage. A guide for a stage the workflow lacks never reaches a stage (S76).
+  // A guide is given by stage. A guide for a stage the workflow lacks never reaches a dispatch (S76).
   const wf = slots.workflow;
   if (wf && isObject(wf.declaration) && wf.declaration.slot === 'workflow' && isObject(config.workflow) && config.workflow.plugin === wf.plugin) {
     const stages = Array.isArray(wf.declaration.stages) ? wf.declaration.stages : [];
@@ -436,6 +433,25 @@ function checkSkills(dir, label) {
 }
 
 // The frontmatter and harness-word rules for one SKILL.md, of a plugin or of a project.
+// A gate skill keeps only Scope, Steps, Rules and Fixing; orchestra gives the procedure.
+function checkGateSkill(file, where) {
+  const out = [];
+  const names = [];
+  let fence = null;
+  for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
+    const f = /^\s*(```|~~~)/.exec(line);
+    if (f && (!fence || fence === f[1])) fence = fence ? null : f[1];
+    const m = !fence && /^## (.+?)\s*$/.exec(line);
+    if (m) names.push(m[1]);
+  }
+  for (const n of names) {
+    if (!['Scope', 'Steps', 'Rules', 'Fixing'].includes(n)) out.push(`${where}: the section "## ${n}" is not part of a gate skill. Fix: keep only Scope, Steps, Rules and Fixing; orchestra gives the procedure.`);
+  }
+  if (!names.includes('Scope')) out.push(`${where}: it has no "## Scope". Fix: add ## Scope with what is in scope and when to skip.`);
+  if (!names.includes('Steps') && !names.includes('Rules')) out.push(`${where}: it has neither "## Steps" nor "## Rules". Fix: add the checks as ## Steps or as numbered ## Rules.`);
+  return out;
+}
+
 function checkSkillFile(file, name, where) {
   const out = [];
   const text = fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
@@ -479,7 +495,7 @@ function dryRun(dir, label, declaration) {
       return [`${where}: the dry run could not build its scratch repo: ${e.message.split('\n')[0]}. Fix: check that git is installed and can commit in a new repo.`];
     }
     try {
-      const printed = execFileSync(process.execPath, [nextJs, '--project', project, '--task-file', task], { encoding: 'utf8', env, stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 });
+      const printed = execFileSync(process.execPath, [nextJs, '--project', project, '--orchestra', path.join(__dirname, '..'), '--task-file', task], { encoding: 'utf8', env, stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 });
       const action = validateAction(JSON.parse(printed.trim().split('\n').pop()));
       if (action.action === 'failed') return [`${where}: the dry run ended with failed: ${action.reason}. Fix: make the first call of a new run work.`];
       return [];
@@ -517,5 +533,5 @@ function checkPlugin(dir) {
 
 module.exports = {
   SLOTS, REQUIRED_SLOTS, CONFIG, PROJECT_DIR, PROJECT_SKILLS, PROJECT_FILE, SETUP_KEYS, GATE_OVERRIDE_KEYS, KINDS, FIXES, CONFIG_TYPES, DECLARATION_KEYS, GATE_KEYS, BUILD_KEYS, STAGES, SHARED_ROLES, SECTION_KEYS, PHASES, ACTIONS,
-  parseJson, skillExists, checkDeclaration, checkSkillFile, checkProject, checkPlugin,
+  parseJson, skillExists, checkDeclaration, checkSkillFile, checkGateSkill, checkProject, checkPlugin,
 };

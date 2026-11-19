@@ -153,7 +153,7 @@ spec ──→ plan ──→ code ──→ gates ──→ curate (the diff) �
 (guides/spec.md) (guides/plan.md) (guides/code.md)            (sweep)
 ```
 
-The guides **read** the docs and never write them. The brief says which backlog row it serves
+The guides **read** the docs and never write them. The spec says which backlog row it serves
 (`Serves: Bn`). At the end, `curate` moves the row to Shipped, records the answers of the run,
 removes what the diff made false, and runs the sweep. It asks you each judgement call in the session.
 

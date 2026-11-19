@@ -18,12 +18,12 @@ All plugins live in this repo (S30).
 
 | Plugin | Role | Holds |
 |---|---|---|
-| `orchestra` | Orchestrator | `orchestra:init`, `orchestra:project`, `orchestra:run` (resolution and driver), the gate runner, the fixer, the select step, `orchestra check`, the authoring skill `writing-plugins` |
-| `orc-standard-workflow` | Workflow | `next.js`, one skill per stage, its own gates, its `manifest` skill |
-| `orc-java-stack` | Stack Skills | `build`, its gates, fix guides, its code guide as a file, its `manifest` skill |
+| `orchestra` | Orchestrator | `orchestra:init`, `orchestra:project`, `orchestra:run` (resolution and driver), the gate runner, the fixer, the select step, `orchestra check`, the authoring skill `writing-plugins`, the contract files `contract/dispatch.md`, `judging.md` and `agent-gate.md` (S90, S92), the engine module `lib/workflow.js` that `next.js` loads (S91) |
+| `orc-standard-workflow` | Workflow | `next.js`, one skill per step, the format files `formats/spec.md` and `formats/plan.md` (S92), its own gates, its `manifest` skill |
+| `orc-java-stack` | Stack Skills | `build`, its gates, fix guides, its code guide as a file, `references/stack-reference.md` (S93), its `manifest` skill |
 | `orc-ts-stack` | Stack Skills | build, its fix guide, its manifest skill |
-| `orc-core` | Core | The gates every workflow gets, such as `clean-code`, the shared roles (S87), the skill `triage` and its `manifest` skill (S80). The slot is optional |
-| `clean-code` | Standalone, and a dependency of `orc-core` | Based on mentorano's clean-code (S75). The only copy of `measure.py` and the rules skills for Python, TypeScript and Java; the clean-code gate uses them (S85). Not a slot plugin |
+| `orc-core` | Core | The gates every workflow gets, such as `clean-code`, the shared roles (S87), the skill `triage` (the sorting method only, S90) and its `manifest` skill (S80). The slot is optional |
+| `clean-code` | Standalone, and a dependency of `orc-core` | Based on mentorano's clean-code (S75). The only copy of `measure.py`, of the clean-code rules (`skills/clean-code/rules.md`), of how to measure (`skills/clean-code/measurement.md`) and of the rules skills for Python, TypeScript and Java. The clean-code gate reads them by path, and fails when the plugin is not installed (S85, S92). Not a slot plugin |
 | `orc-curator` | Curator | `curate` (takes a diff, a map or a change in words), `setup` (records the present), the `spec`, `plan` and `code` guides as files in `guides/`, the procedures `direction`, `backlog` and `landing`, its templates and references, its `manifest` skill. It depends on `mattpocock-skills` (S79) |
 
 `orc-java-stack` here is the personal, generic rewrite. The ship.cars version lives in a second repo. The `orc-` prefix marks every plugin made to work with orchestra and keeps it apart from plugins with the same base name, such as the ship.cars `java-stack` (S56).
@@ -42,7 +42,8 @@ user → orchestra:run "<task or file path>"
          resolves each slot (section 5.2) → .orchestra/resolved.json
          runs orchestra check on the config and resolved.json (inside resolve.js)
          driver loop:
-           node <workflow>/next.js                → prints the next action as JSON
+           node <workflow>/next.js --orchestra <orchestra dir>
+                                                  → prints the next action as JSON, with the report sections
              "dispatch"  → start a subagent that loads the named skill
              "phase"     → run the gate runner for that phase (section 6)
                              node <orchestra>/gates.js --phase <name> → prints its own actions
@@ -50,7 +51,9 @@ user → orchestra:run "<task or file path>"
              "done" | "decide" | "failed" → write report.md, return the status
 ```
 
-`next.js` decides every workflow step from files on disk (S5, S10). The gate runner decides every
+`next.js` decides every workflow step from files on disk (S5, S10). It loads the engine module
+`lib/workflow.js` from the folder that `--orchestra` names: the build with the project's override,
+the workflow's config values, the reading of result files and the rule for a new answer (S91). The gate runner decides every
 step inside a phase from files on disk. The skills never decide the order.
 
 ## 4. The config and the declarations
@@ -255,6 +258,7 @@ config rules and the declaration rules of each resolved plugin. The rules are pl
 | Declaration | Only the keys of its slot; the gate keys and values of 6.1; every `{config.<key>}` declared; every config key typed with a default. `slot` matches the slot it is used in. Every skill it names exists in the plugin. Every `phase` is one of the three standard phases. |
 | Workflow plugin | Has `next.js` and a `manifest` skill. The dry run: `next.js` with a task, in a throwaway git repo with a bare remote, prints a valid action that is not `failed`. |
 | Stack Skills plugin | Has a `build` with `run` and `guide`, and a `manifest` skill. Every tool gate with `fix: fixer` names a `guide`. |
+| Gate skill | The skill of every `agent` gate has only the sections `## Scope`, `## Steps`, `## Rules` and `## Fixing`. `## Scope` is required, and `## Steps` or `## Rules`. The procedure is orchestra's contract files (S90). |
 | Every plugin | Pillar 4 greps: `SKILL.md` frontmatter has only `name` and `description`; no harness-specific words in shipped files; every manifest parses as JSON; the versions in both manifests match (S33). |
 
 It has two uses. An author runs it on a plugin folder. `resolve.js` runs the `--project` rules at
@@ -262,8 +266,8 @@ the start of each run and in init.
 
 ### 5.4 Authoring skills
 
-`orchestra:writing-plugins` is a short reference card: the slots, the `manifest` skill, the
-declaration and gate keys, the phases, the `next.js` actions. It ends with "run `orchestra check` on
+`orchestra:writing-plugins` is a short reference card: the words, each with one meaning (S89), the slots, the `manifest` skill, the
+declaration and gate keys, the phases, the shape of a gate skill (S90), the `next.js` actions. It ends with "run `orchestra check` on
 the plugin". The skill is the guide. The check is the guarantee. A test fails when a word of the key
 lists in `check.js` is missing from the skill (S70).
 
@@ -285,8 +289,13 @@ and the round limit (S47).
 | `max_rounds` | a number | Fixer rounds for a tool gate. Default 2 |
 | `guide` | a skill name | The fix guide for `fix: fixer` |
 
-An agent gate always fixes its own Patch findings, in one round, and never re-reviews its own fixes
-(S14). A tool gate passes or fails by its exit code.
+An agent gate always fixes its own Fix findings, in one round, and never re-reviews its own fixes
+(S14, S90). A tool gate passes or fails by its exit code.
+
+orchestra gives every agent gate three contract files: `contract/dispatch.md` (the rules of every
+dispatch), `contract/judging.md` (the buckets, the Decide stop, the notes and the result) and
+`contract/agent-gate.md` (how to read the change, fix and commit). The gate skill holds only its
+scope, its steps or rules, and its own fix limits (S90).
 
 ### 6.2 The phases
 
@@ -337,8 +346,8 @@ When a tool gate with `fix: fixer` fails:
    fix guide. The procedure is generic: fix only what the output reports, stay inside the diff,
    never delete a test to pass, one commit per round. The guide holds the stack rules for this tool.
 3. The runner runs the tool again, up to `max_rounds`. The declarer sets it, the default is 2, and
-   the project can override it (4.1). Violations left after the last round go to `report.md` as
-   Evaluate. The run goes on.
+   the project can override it (4.1). Violations left after the last round give the gate the status `report`,
+   and they go to the Report section of `report.md` (S90). The run goes on.
 
 `fix: self` means the tool fixes by itself (a formatter). The runner commits its changes.
 `fix: none` means report only.
@@ -352,8 +361,9 @@ again (S46). A stopped run keeps its worktree; a call without a task finds it wi
 The runner returns one phase result to `next.js`: `ok`, `decide` or `failed`.
 
 An agent gate that has a Decide finding writes its findings and stops **before** it fixes. The
-runner returns `decide`, and the run stops. An answer is a section `## <gate name>` in
-`decisions.md`. On resume the runner starts that gate again only when a new section for it exists.
+runner returns `decide`, and the run stops. The `decide` action names who asks in the key `step` (S89). An answer
+is a section `## <gate name>` in `decisions.md`. The first read of a `decide` result records in that
+result file how many answers exist (`seen`); only a later section is new (S91). On resume the runner starts that gate again only when a new section for it exists.
 The gate reads `decisions.md` and then fixes. So a gate never re-reviews its own fixes (S55).
 Every agent gate gets `decisions` once the file exists; only a new section for that gate restarts
 it (S66).
@@ -365,12 +375,13 @@ it (S66).
 | Entry | None of its own. `orchestra:run` runs its `next.js` through the driver loop (S51, S52). |
 | Declaration | `orchestra.json` with `slot: workflow`, its config keys, its `stages` and its own gates. |
 | Resolution | A `manifest` skill (5.2). |
-| Order | `next.js` in Node, standard library only (S10, S11). It prints actions of the orchestra protocol, including `phase`. |
+| Order | `next.js` in Node, standard library only (S10, S11). It prints actions of the orchestra protocol, including `phase`. orchestra calls it with `--orchestra <engine dir>`, and it loads `lib/workflow.js` from there. Every action carries `sections` (Assumptions, Deviations, Integration points), which orchestra writes into the report (S91). |
+| Contract files | Every dispatch reads `contract/dispatch.md`. A dispatch with `judging: true` also reads `contract/judging.md`. An agent gate also reads `contract/agent-gate.md` (S90, S92). |
 | Output | One status, `done`, `decide` or `failed`. orchestra writes `report.md` into the notes folder from the result files in the run folder, so no workflow repeats that logic (S55). |
-| State | Two folders, both derived from the branch, never passed (S15, S22). The **run folder** `tmp/runs/<branch>/` holds everything the orchestration uses: results, checkpoints, logs, `run.json`, `stages.json` (the order of the stage dispatches, for the report). Git ignores it. The **notes folder** `docs/runs/<branch>/` holds what a human reads: `task.md`, `brief.md`, `plan.md`, `decisions.md`, review notes (`plan-check.md`, `code.md`, `implementation-log.md`, `logic-review.md`) and `report.md`. It is committed and goes to the default branch with the PR (S54, S58). The workflow writes `run.json` with `base`, `branch`, `spec` (`<notes>/brief.md`, the file that holds the acceptance criteria) and `docs` (the notes folder). The gate runner reads it (S55). A resume works on the same machine only, because the run folder is not committed. Both folders are inside the run's worktree (S74). At `done`, before the worktree is removed, orchestra copies the run folder to `tmp/runs/<branch>/` in the checkout, so the logs stay for local debugging. |
+| State | Two folders, both derived from the branch, never passed (S15, S22). The **run folder** `tmp/runs/<branch>/` holds everything the orchestration uses: results, checkpoints, logs, `run.json`, `stages.json` (the order of the stage dispatches, for the report). Git ignores it. The **notes folder** `docs/runs/<branch>/` holds what a human reads: `task.md`, `spec.md`, `plan.md`, `decisions.md`, review notes (`plan-check.md`, `code.md`, `implementation-log.md`, `logic-review.md`) and `report.md`. It is committed and goes to the default branch with the PR (S54, S58). The workflow writes `run.json` with `base`, `branch`, `spec` (`<notes>/spec.md`, the file that holds the acceptance criteria, S89) and `docs` (the notes folder). The gate runner reads it (S55). A resume works on the same machine only, because the run folder is not committed. Both folders are inside the run's worktree (S74). At `done`, before the worktree is removed, orchestra copies the run folder to `tmp/runs/<branch>/` in the checkout, so the logs stay for local debugging. |
 | Worktree | orchestra starts every run in `.orchestra/worktrees/<branch>`, detached at the base. The workflow creates its branch there and never checks out, pulls or switches (S74). |
 | Mode | Headless or interactive is fixed by the workflow's author when the workflow is built. It is not a runtime setting (S12). |
-| Stages | `stages` in `orchestra.json`; each dispatch of a stage carries `stage`. orchestra adds the guides of that stage to the prompt, in the order Curator, Stack Skills, project, and fails a stage the workflow did not declare (S76, S86, S87). |
+| Stages | `stages` in `orchestra.json`; a dispatched step carries the tag `stage` (S89). orchestra adds the guides of that stage to the prompt, in the order Curator, Stack Skills, project, and fails a stage the workflow did not declare (S76, S86, S87). |
 
 ## 8. `orc-standard-workflow`
 
@@ -381,17 +392,21 @@ The rewrite of be-coding-agent (S19). It is stack-agnostic (S27) and headless (S
 | # | Stage | Runs as | Reads | Writes | Notes |
 |---|---|---|---|---|---|
 | 0 | prepare | code in `next.js` | — | branch, run folder | Git policy, see 8.3 (S23) |
-| 1 | spec | subagent | `task.md` | `brief.md` | Given-when-then acceptance criteria. An open business fact is a `business fact:` line. Stage `spec` |
-| 2 | plan | subagent | `brief.md`, `decisions.md` | `plan.md`; answered business facts into `brief.md` | No code. Stage `plan`: gets the plan guides |
-| 3 | plan-check | subagent | `brief.md`, `plan.md` | both patched, `plan-check.md` | Fresh agent (S26). Checks the brief and the plan together. Stage `plan`: gets the plan guides. Writes answers from `decisions` into the brief and the plan. Raises a business fact only when neither the brief nor `decisions` gives it (S63). `next.js` counts the plan's tasks `### T1`…`### Tn`; a plan with no tasks in order runs plan-check again |
-| 4 | code | subagent per chunk of `tasks-per-coder` tasks | `brief.md`, `plan.md` | commits, `implementation-log.md`, `code.md` | One commit per task. Stage `code`: gets the code guides |
+| 1 | spec | subagent | `task.md` | `spec.md` | Given-when-then acceptance criteria. An open business fact is a `business fact:` line. Stage `spec` |
+| 2 | plan | subagent | `spec.md`, `decisions.md` | `plan.md`; answered business facts into `spec.md` | No code. Stage `plan`: gets the plan guides |
+| 3 | plan-check | subagent | `spec.md`, `plan.md` | both fixed, `plan-check.md` | Fresh agent (S26). Checks the spec and the plan together. Stage `plan`: gets the plan guides. Writes answers from `decisions` into the spec and the plan. Raises a business fact only when neither the spec nor `decisions` gives it (S63). `next.js` counts the plan's tasks `### T1`…`### Tn`; a plan with no tasks in order runs plan-check again |
+| 4 | code | subagent per chunk of `tasks-per-coder` tasks | `spec.md`, `plan.md` | commits, `implementation-log.md`, `code.md` | One commit per task. Stage `code`: gets the code guides |
 | 5 | implementation-check | gate runner | — | commits, results | Phase, section 6 |
 | 6 | conventions-check | gate runner | — | commits, results | Phase, section 6 |
 | 7 | finish | gate runner | — | commits, results | Phase, section 6 |
 
-`brief.md`, `plan.md` and the review notes are in the notes folder. The workflow declares the config key `tasks-per-coder` (default 2).
+`spec.md`, `plan.md` and the review notes are in the notes folder. The workflow declares the config key `tasks-per-coder` (default 2).
 
-After the spec, `next.js` reads the brief. Each `business fact:` line stops the run with `decide` until `decisions.md` has a `## business-facts` section (S63).
+A dispatched unit is a step. `stage` is only its tag `spec`, `plan` or `code` (S89). Each step that
+writes or checks the spec or the plan gets the inputs `spec-format` and `plan-format`: the files in
+`formats/` hold the template and the rules of each document (S92).
+
+After the spec step, `next.js` reads the spec. Each `business fact:` line stops the run with `decide` until `decisions.md` has a `## business-facts` section (S63).
 
 A guide is on when a slot plugin declares it for the stage, unless `disable` lists it (S53, S40, S76).
 
@@ -399,14 +414,14 @@ The workflow's own gates, in phase 1:
 
 | Gate | Phase | Kind | Job |
 |---|---|---|---|
-| `plan-conformance` | `implementation-check` | agent | Every plan task done, every named test present, no undeclared change of direction, nothing outside the brief's scope; detail inside a task is not a deviation (S67). Reads the plan and the implementation log. No correctness verdict (S66) |
-| `logic-review` | `implementation-check` | agent | Correctness, and a test for every criterion and behavioural assumption that fails on a wrong version (S25, S66). Reads the brief and `decisions` only, never the plan |
+| `plan-conformance` | `implementation-check` | agent | Every plan task done, every named test present, no undeclared change of direction, nothing outside the spec's scope; detail inside a task is not a deviation (S67). Reads the plan and the implementation log. No correctness verdict (S66) |
+| `logic-review` | `implementation-check` | agent | Correctness, and a test for every criterion and behavioural assumption that fails on a wrong version (S25, S66). Reads the spec and `decisions` only, never the plan |
 
 The `orc-core` plugin declares `clean-code`, not the workflow (S80, S87):
 
 | Gate | Phase | Kind | Job |
 |---|---|---|---|
-| `clean-code` | `implementation-check` | agent | The shape of the changed code (`measure.py` of the `clean-code` plugin), the clean-code rules 1–13 and the language rules of `clean-code`; warns when `clean-code` is not installed (S75, S85) |
+| `clean-code` | `implementation-check` | agent | The shape of the changed code (`measure.py` of the `clean-code` plugin), the clean-code rules 1–13 (`rules.md`) and the language rules of `clean-code`. It reads `rules.md` and `measurement.md` of the `clean-code` plugin by path, measures with `--at HEAD`, and fails when `clean-code` is not installed (S75, S85, S92) |
 
 A generic bug hunter is a candidate for later.
 
@@ -417,7 +432,7 @@ A shared role is a company rule that orchestra passes to every dispatch and inli
 - Only the `core` slot and the project declare `shared-roles`, as `{ "<role>": "<skill>" }`. `orc-core` fills `triage` with its own skill. A workflow or a Stack Skills plugin that declares `shared-roles` fails the check.
 - Every dispatch and inline action gets the input `shared-role.<role>`: a `<plugin>:<skill>`, or `.agents/skills/<name>/SKILL.md` for a project skill. When a project guide exists (`guides.<role>` in the project), it also gets `shared-role.<role>.guide`.
 - The project overrides a shared role by declaring a skill for it. It amends one with a guide, which the stage reads after the skill.
-- A judging skill follows `shared-role.triage` when it is given; otherwise it sorts by its own judgement. The prompt states the result rule.
+- A judging step sorts with `shared-role.triage` when it is given; otherwise the bucket lines of `contract/judging.md` are the rule (S90).
 
 ### 8.2 Results
 
@@ -426,17 +441,19 @@ read only these files.
 
 ```json
 {
-  "stage": "logic-review",
   "status": "ok",
   "decide": [],
-  "counts": { "decide": 0, "patch": 3, "evaluate": 1, "noise": 2 },
-  "evaluate": ["PriceCalculator.java:9 — a null amount now throws"],
-  "files": ["logic-review.md"]
+  "fix": ["PriceCalculator.java:12 — rounds with HALF_EVEN"],
+  "report": ["PriceCalculator.java:9 — a null amount now throws"],
+  "noise": [],
+  "notes": "<notes>/logic-review.md"
 }
 ```
 
-`status` is `ok`, `decide`, `failed` or `skipped`. `decide` lists each question as one line with
-its options. `evaluate` lists each Evaluate finding as one line with `file:line` (S57).
+`status` is `ok`, `decide`, `failed` or `skipped`; a red tool gate gets `report`. `decide` lists each
+question as one line with its options. `fix`, `report` and `noise` list one line per finding, with
+`file:line` when it has one (S57). `contract/judging.md` defines the format (S90). There is no
+`counts`: the report counts the lines.
 
 ### 8.3 Git policy (`prepare`)
 
@@ -451,25 +468,27 @@ pushes and never opens a PR.
 
 ### 8.4 Triage
 
-Judgement stages (plan-check) and every agent gate put each finding into one bucket. The bucket
-sets the action. The full contract (the five axes, the bucket rules, the Decide test, the finding
-format, the notes format) is one skill, `orc-core:triage` (optional, S87), ported in full from be-coding-agent's
-`triage.md` (S64). A judging skill invokes it when `shared-role.triage` is given; otherwise it sorts by its own judgement. This table is the short form:
+Judging steps (plan-check) and every agent gate put each finding into one bucket. The bucket sets
+the action. orchestra owns the buckets, the Decide stop, the notes format and the result, in
+`contract/judging.md` (S90). The optional skill `orc-core:triage` is the sorting method only: the
+five axes, the bucket rules, the Decide test and the finding format, ported from be-coding-agent's
+`triage.md` (S64, S87). A judging step uses it when `shared-role.triage` is given; otherwise the
+bucket lines of `judging.md` are the rule. This table is the short form:
 
 | Bucket | Action |
 |---|---|
 | Decide | Stop for a human. Needs a real fork and a choice the agent cannot make. |
-| Patch | Fix it now, in place, and commit (S14). |
-| Evaluate | Do not fix. Record it in the report for a human. |
+| Fix | Fix it now, in place, and commit (S14, S90). |
+| Report | Do not fix. Record it in the report for a human (S90). |
 | Noise | Drop it. |
 
-When a stage or a phase returns `decide`, `next.js` returns `decide`. The run writes `report.md`
-and stops. The human writes the answers in `decisions.md` in the notes folder. On resume, the stage
-or gate that raised the question runs again and reads `decisions.md`. Among the stages only plan-check returns `decide`; `next.js` itself stops after the spec on open business facts (S63). An answer is always a new section.
+When a step or a phase returns `decide`, `next.js` returns `decide`. The run writes `report.md`
+and stops. The human writes the answers in `decisions.md` in the notes folder. On resume, the step
+or gate that raised the question runs again and reads `decisions.md`. Among the steps only plan-check returns `decide`; `next.js` itself stops after the spec on open business facts (S63). An answer is always a new section.
 
 ### 8.5 `report.md`
 
-orchestra writes it (S55). Steps are in run order. An empty phase shows "ok (no gates)" (S57). Status, plugin versions, commits made, assumptions made, counts per bucket per stage and gate, Evaluate findings
+orchestra writes it (S55). Steps are in run order. An empty phase shows "ok (no gates)" (S57). Status, plugin versions, commits made, the number of findings per bucket per step and gate, the workflow's `sections` (Assumptions, Deviations, Integration points, S91), Report findings
 (including tool violations left after the last round), skipped gates and why, skipped phases, the contents of
 `decisions.md`, and the open Decide questions if any.
 
@@ -479,7 +498,8 @@ orchestra writes it (S55). Steps are in run order. An empty phase shows "ok (no 
 |---|---|---|
 | `build` | yes | The full build and tests, with coverage. Its fix guide and round limit (6.3). |
 | `gates` | no | The stack's gates (6.1). |
-| `guides` | no | `{ "<stage>": "<path>" }`, a file in the plugin, for example `guides/code.md`: short rules for the stage it is keyed by, 5–15 per area (R3, S76, S79). |
+| `guides` | no | `{ "<stage>": "<path>" }`, a file in the plugin, for example `guides/code.md`: short rules for the stage it is keyed by, 5–15 per area (R3, S76, S79). A guide says what it needs in its own words, never the workflow's words; the workflow's skill knows how to write it (S92). A guide holds no short forms of gate rules (S7, S68). |
+| `references/stack-reference.md` | no | One file that a gate with a `references/` folder reads first. It says which `references/<stack>.md` of the gate to read (S92, S93). |
 | `manifest` skill | yes | Resolution (5.2). |
 
 The stack plugin declares what and where. It never declares an order or a loop. Every gate skill
@@ -490,7 +510,7 @@ can also be invoked by hand on any branch. Each finding cites `file:line` and th
 
 | Part | Required | Meaning |
 |---|---|---|
-| `curate` | yes | The skill that updates the direction docs when the workflow is done. Runs inline in the main session; inputs `base`, `brief`, `notes`; it commits its edits. |
+| `curate` | yes | The skill that updates the direction docs when the workflow is done. Runs inline in the main session; inputs `base`, `spec`, `notes` (S89); it commits its edits. |
 | `setup` | yes | `{ skill, done }`. A run start with no `done` file on the default branch offers the skill, apart from the run: by hand on the default branch, or inline on its own branch (S77). It writes `done` last. |
 | `guides` | no | As for Stack Skills; listed before the Stack Skills guides. |
 | `manifest` skill | yes | Resolution (5.2). |
@@ -514,9 +534,13 @@ Gates, one skill each (S68):
 
 | Phase | Gates |
 |---|---|
-| `implementation-check` | ops (exceptions, argument checks, migrations) |
+| `implementation-check` | persistence (migrations, locking DDL, transactions), general (exceptions, argument checks, money) (S93) |
 | `conventions-check` | testing (test style) |
 | `finish` | comments, logging, layout (agents); Spotless (tool, skipped when the pom has no plugin) |
+
+Every project is Quarkus. `references/stack-reference.md` says so, with no stack detection, and a
+gate with a `references/quarkus.md` always reads it (S93). There is no security gate: its tenancy
+rules are not generic (S93).
 
 crap4java and mutate4java come in phase 2 as tool gates in `implementation-check`. They are data
 only and need no change in the workflow.
@@ -545,10 +569,12 @@ plugins/
   orchestra/
     skills/{init,project,run,fixer,select,writing-plugins}/SKILL.md
     bin/{check.js,resolve.js,drive.js}
-    lib/{check.js,resolved.js,gates.js,runner.js,protocol.js,report.js,git.js}
+    lib/{check.js,resolved.js,gates.js,runner.js,protocol.js,report.js,git.js,workflow.js}
+    contract/{dispatch.md,judging.md,agent-gate.md}
   orc-standard-workflow/
     orchestra.json
-    skills/{manifest,spec,plan,plan-check,code,logic-review}/SKILL.md
+    skills/{manifest,spec,plan,plan-check,plan-conformance,code,logic-review}/SKILL.md
+    formats/{spec.md,plan.md}
     bin/next.js
   orc-core/
     orchestra.json            (plugin.json: dependencies clean-code)
@@ -556,12 +582,13 @@ plugins/
   orc-java-stack/
     orchestra.json
     guides/code.md
+    references/stack-reference.md
     skills/{manifest,fix-build,<one per gate>,<one fix guide per tool gate>}/SKILL.md
   orc-ts-stack/
     orchestra.json
     skills/{manifest,fix-build}/SKILL.md
   clean-code/            the measure and the clean-code rules; standalone, and used by orc-core (S85)
-    skills/clean-code/{SKILL.md,measure.py,measure-ts.mjs,measure-java.java,…}
+    skills/clean-code/{SKILL.md,rules.md,measurement.md,measure.py,measure-ts.mjs,measure-java.java,…}
     skills/{manifest,clean-code-python,clean-code-typescript,clean-code-java,…}/SKILL.md
 scripts/gen-manifests.js
 .claude-plugin/marketplace.json

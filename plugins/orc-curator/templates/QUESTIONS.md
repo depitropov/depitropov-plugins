@@ -11,7 +11,7 @@
 > **Non-blocking by design.** Nothing in the Curator gates on this file, waits for it, or refuses to
 > go on because an entry is open. To close entries is good, but never required.
 >
-> Written by `orc-curator:curate` (and the sweep and the landing it runs), which opens a new `Qn` for each `Question` line of a run's brief. The curator also proposes to close an entry
+> Written by `orc-curator:curate` (and the sweep and the landing it runs), which opens a new `Qn` for each `Question` line of a run's spec. The curator also proposes to close an entry
 > when a shipped run settled it in code.
 >
 > **Delete the commented example block below when your first real entry lands.** Its `· open` text

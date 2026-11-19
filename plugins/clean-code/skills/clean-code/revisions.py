@@ -18,7 +18,7 @@ from contextlib import chdir, contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
-from languages import MeasureError, _git, find_typescript_package, language_of
+from languages import MeasureError, _git, find_typescript_package, language_of, merge_base
 
 
 def repository_of(path: Path) -> Path:
@@ -34,15 +34,6 @@ def verify_ref(repo: Path, ref: str, flag: str) -> str:
         return _git(["rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"], cwd=repo)
     except MeasureError as exc:
         raise MeasureError(f"{flag} {ref!r} does not resolve in {repo}. Pass a ref that exists here.") from exc
-
-
-def merge_base(repo: Path, base: str, ref: str) -> str:
-    try:
-        return _git(["merge-base", base, ref], cwd=repo)
-    except MeasureError as exc:
-        raise MeasureError(
-            f"base {base!r} does not resolve in {repo}.\nPass --base <ref> that exists here, e.g. --base main"
-        ) from exc
 
 
 def relative_to_repo(repo: Path, paths: list[Path]) -> list[str]:

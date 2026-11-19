@@ -1,10 +1,10 @@
 # Plan guide
 
-Rules for the plan stage and the plan-check stage when the project has `docs/curator/`. When that folder does not exist, do nothing. The plan-check stage checks each point below.
+Rules for the plan stage and the plan-check step when the project has `docs/curator/`. When that folder does not exist, do nothing. The plan-check step checks each point below.
 
 1. Read `docs/curator/DIRECTION.md`. It is binding where it applies. Each `Cn` is a constraint that an earlier decision put on this code, so it is a requirement, not context.
 2. For each `Cn` that the task touches, the plan says which task satisfies it and how. List these rows under the approach, each with its task.
-3. A `Cn` that the plan cannot satisfy is a `Warning:` line under `## Approach` that names the `Cn` and says why. Never skip it without a word. In the plan-check stage: an applicable `Cn` with neither a task that satisfies it nor a `Warning:` line is a Patch finding.
+3. A `Cn` that the plan cannot satisfy is a `Warning:` line under `## Approach` that names the `Cn` and says why. Never skip it without a word. In the plan-check step: an applicable `Cn` with neither a task that satisfies it nor a `Warning:` line is a Fix finding.
 4. For a row marked `satisfied by <path>`, read that file. Do not derive the shape again.
 5. Read BACKLOG (Vision, Now, Next): context, never scope. A later row may make you choose a shape that will not need undoing. It never adds a task. Never read Later.
 6. Read `docs/curator/PRODUCT.md` and `docs/curator/TECH.md`.

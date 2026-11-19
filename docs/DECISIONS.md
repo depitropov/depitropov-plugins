@@ -693,3 +693,98 @@ wording change needs no entry.
 - **Where it lives:** `plugins/orchestra/skills/log-feedback/SKILL.md`,
   `plugins/orchestra/skills/process-feedback/SKILL.md`, `test/orchestra/feedback.test.js`,
   `evals/pending/` of each changed plugin or project.
+
+## S89: One word for each thing
+
+- **Date:** 2026-11-19
+- **Status:** decided
+- **Question:** The run document was "brief" in the file name and the Curator input, but "spec" in
+  `run.json` and the gate inputs. "Stage" meant both the dispatch tag and any dispatched unit. Which
+  word means what?
+- **Options:**
+  1. Keep both words. Rejected: a skill author cannot tell if they name one thing or two.
+  2. One word each: spec, stage (the tag), step (the unit). Chosen.
+- **Evidence:** A design review of the orchestra contract, 2026-11-16 to 2026-11-18. DE already used
+  `spec` in `run.json` (S55) and in the gate inputs (S80).
+- **Decision:** See the S89 row. The hints for the old S87 names are removed (user decision).
+- **Cost and risk:** A run that is open during the change still has `brief.md`. Finish open runs
+  first. An old config with `roles` or `global-gates` fails with no hint to the new name.
+- **Where it lives:** `plugins/orchestra/lib/{protocol,check,curator,runner,report}.js`,
+  `plugins/orc-standard-workflow/bin/next.js`, the workflow skills, `plugins/orc-curator`.
+
+## S90: Orchestra owns the judging contract
+
+- **Date:** 2026-11-19
+- **Status:** decided
+- **Question:** Every gate skill repeated its procedure: the triage sentence, the bucket list, the
+  notes format, the fix and commit rules and the result JSON. S87(5) put the buckets in
+  `orc-core:triage`. Where does the shared procedure live?
+- **Options:**
+  1. Keep it in every gate. Rejected: copies drift.
+  2. Put it in `orc-core:triage`. Rejected: without a core plugin, a gate has no contract.
+  3. Put it in orchestra's `contract/` files, which every agent gate gets. Chosen.
+- **Evidence:** The design review of 2026-11-16 to 2026-11-18.
+- **Decision:** See the S90 row.
+- **Cost and risk:** Every gate skill changes shape. The bucket name Fix sits next to the gate key
+  `fix` and the Fixer. Old result files with `evaluate` and `counts` do not report.
+- **Where it lives:** `plugins/orchestra/contract/{judging,agent-gate}.md`, `lib/check.js`,
+  `lib/runner.js`, `lib/report.js`, every gate skill, `plugins/orc-core/skills/triage/SKILL.md`.
+
+## S91: An engine module for a workflow
+
+- **Date:** 2026-11-19
+- **Status:** decided
+- **Question:** `next.js` read `.orchestra/` itself and ignored the project's build override, so the
+  coder got the stack's default build. `lib/runner.js`, `next.js` and `lib/curator.js` each had a
+  copy of the result helpers. How does a workflow get the engine's rules?
+- **Options:**
+  1. Copy the helpers into each workflow. Rejected: the override bug came from such a copy.
+  2. The engine passes its folder, and `next.js` loads one module from it. Chosen. It is not the
+     stage-aware engine that S10 forbids: the module holds no stage order.
+- **Evidence:** The design review of 2026-11-16 to 2026-11-18.
+- **Decision:** See the S91 row.
+- **Cost and risk:** `next.js` needs the engine of the same version. A run stopped on a gate
+  `decide` during the change has no `seen` in its result file; its next read records the answer that
+  is already written. Finish open runs first.
+- **Where it lives:** `plugins/orchestra/lib/workflow.js`, `bin/drive.js`,
+  `plugins/orc-standard-workflow/bin/next.js`.
+
+## S92: One home for each rule
+
+- **Date:** 2026-11-19
+- **Status:** decided
+- **Question:** The dispatch rules, the spec and plan shapes and the clean-code rules each had
+  several copies. Where does each live?
+- **Options:**
+  1. One file for each rule, read by path. Chosen.
+  2. Also let a guide hold short forms of gate rules. Rejected (user decision): S7 and S68(1) keep
+     stack rules out of the coder's context.
+- **Evidence:** The design review of 2026-11-16 to 2026-11-18.
+- **Decision:** See the S92 row. The clean-code gate now fails without the clean-code plugin,
+  because its rules live there (this changes S85(4)).
+- **Cost and risk:** The paths `skills/clean-code/rules.md` and `skills/clean-code/measurement.md`
+  are an interface between two plugins. A project without the clean-code plugin gets a failed gate,
+  not a warning.
+- **Where it lives:** `plugins/orchestra/contract/dispatch.md`,
+  `plugins/orc-standard-workflow/formats/`, `plugins/clean-code/skills/clean-code/{rules,measurement}.md`,
+  `plugins/orc-core/skills/clean-code/SKILL.md`, `docs/harness-exceptions.md` H2.
+
+## S93: The Java gates
+
+- **Date:** 2026-11-19
+- **Status:** decided
+- **Question:** `review-ops` mixed exceptions, arguments and database migrations. How do we split
+  the Java gates, and which stacks do they know?
+- **Options:**
+  1. Keep `review-ops`. Rejected: one gate with unrelated subjects.
+  2. `review-general` and `review-persistence`, plus a tenancy security gate. The security gate is
+     rejected (user decision): it holds a company's tenancy model.
+  3. `review-general` and `review-persistence`, with per-stack reference files. Chosen. Every
+     project is Quarkus (user decision), so there is no stack detection.
+- **Evidence:** The design review of 2026-11-16 to 2026-11-18.
+- **Decision:** See the S93 row. New rules: money is never binary floating point, backward
+  compatible migrations, no locking DDL, one `@Transactional` around several writes.
+- **Cost and risk:** One more agent gate in `implementation-check`. A Spring project gets the
+  Quarkus reference rules.
+- **Where it lives:** `plugins/orc-java-stack/orchestra.json`, `references/stack-reference.md`,
+  `skills/review-general/`, `skills/review-persistence/`.

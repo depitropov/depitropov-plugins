@@ -31,9 +31,11 @@ function writePlugin(dir, name, declaration) {
       }
     }
   }
+  const gateSkills = ((declaration && declaration.gates) || []).filter(g => g.kind === 'agent').map(g => g.skill);
   for (const s of skills) {
     fs.mkdirSync(path.join(dir, 'skills', s), { recursive: true });
-    fs.writeFileSync(path.join(dir, 'skills', s, 'SKILL.md'), `---\nname: ${s}\ndescription: Test skill.\n---\n`);
+    const body = gateSkills.includes(s) ? '\n## Scope\n\nChanged files.\n\n## Rules\n\n1. A rule.\n' : '';
+    fs.writeFileSync(path.join(dir, 'skills', s, 'SKILL.md'), `---\nname: ${s}\ndescription: Test skill.\n---\n${body}`);
   }
   return dir;
 }

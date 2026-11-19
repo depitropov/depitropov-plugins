@@ -5,56 +5,9 @@ description: Reviews the style of the changed Java tests against the testing con
 
 # Testing conventions review
 
-## Inputs
+## Scope
 
-- `spec`: the brief. Read it only for the scope of the task.
-- `base`: the commit before any work.
-- `notes`: the run's notes folder. Your findings file goes here.
-- `decisions` (optional): the human's answers.
-
-## Procedure
-
-1. Get the change: `git diff <base> HEAD -- '*src/test/*.java'`. Read each changed file in full. If the change
-   has nothing in scope, write the result with `"status": "skipped"` and stop.
-2. Check the lines this change adds or edits against each rule below. Code the change does not touch
-   is not in scope.
-3. The project's code wins. When the untouched code of the same kind in this project does it another
-   way, follow the project: that rule is not a finding.
-4. The title of each finding starts with its rule number, as in `▸ Rule 3: <title>`, and its "In the
-   code" line gives `file:line`.
-5. If the input `shared-role.triage` is given, follow that skill: give every finding its axes and one bucket. Otherwise sort each finding by your own judgement: Decide (a person must answer it), Patch (you fix it), Evaluate (a person should look at it later) or Noise (not a real problem).
-6. Write `<notes>/testing.md`, one line per finding with its bucket, in the triage notes format when a triage skill is given.
-7. If there is an open Decide finding (one that `decisions` does not answer), stop here. Do not fix
-   anything. Write the result with `"status": "decide"`.
-8. Otherwise fix every Patch finding and every answered Decide. Run only the tests of the files you
-   changed. Never pipe a test command: the pipe hides the exit code. Commit once:
-   `fix(testing): <summary>`. orchestra commits `notes` itself: do not stage files under
-   `docs/runs/` or `tmp/`. Do not review your own fixes again.
-
-Not yours: whether a test exists and can fail (logic-review owns that), static imports of enum constants (the layout gate), comments.
-
-## Result
-
-Write to the path given in the prompt:
-
-```json
-{
-  "stage": "testing",
-  "status": "ok",
-  "decide": [],
-  "counts": { "decide": 0, "patch": 2, "evaluate": 0, "noise": 1 },
-  "evaluate": [],
-  "files": ["<notes>/testing.md"]
-}
-```
-
-`status` is `ok`, `decide`, `skipped` or `failed`. `evaluate` lists every Evaluate finding as one
-line with `file:line`.
-
-## Permitted actions
-
-Edit code and tests. Run tests. Commit. Do not push. Do not change branches. Do not ask the user; a
-question goes into `decide`.
+Changed `.java` files under `src/test` are in scope. When the change has none, skip.
 
 ## Rules
 

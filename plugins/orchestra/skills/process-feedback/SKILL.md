@@ -21,10 +21,10 @@ For each note, decide its level. The note's proposed level is a hint; check it a
 | Level | Target |
 |---|---|
 | `project` | The Project Customization of the project at the note's path: `.orchestra/project/`, `.agents/skills/`, `.orchestra/config.json`, written as the skill `orchestra:project` writes them. |
-| `stack` | The Stack Skills plugin of this repo for the note's stack. |
-| `workflow` | The workflow plugin of this repo. |
-| `core` | The core plugin of this repo. |
-| `process` | orchestra itself. |
+| `stack` | The Stack Skills plugin of this repo for the note's stack: its gates, guides and `references/` files. |
+| `workflow` | The workflow plugin of this repo: its skills, and its `formats/` files for the spec and the plan. |
+| `core` | The core plugin of this repo. A clean-code rule goes to `rules.md` of the `clean-code` plugin: the core gate has no rules of its own. |
+| `process` | orchestra itself: a rule for every agent gate or every dispatch goes to its `contract/` files. |
 
 The plugin names in the note are a hint, not a requirement. When the note names no plugin, take the
 stack from the code in the evidence, or from the project's `.orchestra/config.json`. Skip a note
@@ -38,7 +38,7 @@ When the note needs the project (a `project` note, or the stack from its config)
 
 ## 3. Find the home
 
-For each note, find the gate, guide or skill that should have caught the problem: first the one the
+For each note, find the gate, guide, skill or rule file that should have caught the problem: first the one the
 note's origin names, then the others of the target. Read it. When the rule is already there, say so
 and propose nothing new, or only a sharper wording when the existing rule is unclear. The note is
 then "already covered": it still goes to `evals/pending/` (step 6), with the line

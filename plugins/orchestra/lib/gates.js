@@ -126,4 +126,4 @@ function plan(phase, gates, build) {
   return order.flatMap(kind => (kind === 'build' ? [build] : gates.filter(g => g.kind === kind)));
 }
 
-module.exports = { PHASE_ORDER, skillRef, globToRegExp, collect, select, buildStep, plan };
+module.exports = { PHASE_ORDER, skillRef, globToRegExp, slotValues, collect, select, buildStep, plan };

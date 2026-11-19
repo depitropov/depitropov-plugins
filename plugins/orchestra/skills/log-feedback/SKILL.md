@@ -52,7 +52,7 @@ the system temp folder. Name it `<YYYY-MM-DD>-<slug>.md`. Use this template:
 ## The origin
 
 <a manual review, a normal session, or an orchestra run. For a run: the branch, the notes folder
-`docs/runs/<branch>/`, and the stage or gate that let the problem through, when known. The plugins
+`docs/runs/<branch>/`, and the step or gate that let the problem through, when known. The plugins
 from `.orchestra/resolved.json`, with versions, or "no orchestra plugins".>
 
 ## Proposed level
@@ -61,7 +61,7 @@ from `.orchestra/resolved.json`, with versions, or "no orchestra plugins".>
 ````
 
 The levels: `project` is a rule of this project only; `stack` is a rule of one language or framework;
-`workflow` is how a stage works; `core` is a rule for every workflow and stack; `process` is about
+`workflow` is how a step works; `core` is a rule for every workflow and stack; `process` is about
 orchestra itself. The level is a proposal; `process-feedback` decides.
 
 ## 3. Report

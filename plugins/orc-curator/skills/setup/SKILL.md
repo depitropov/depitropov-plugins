@@ -6,7 +6,7 @@ description: Use when a project has no docs/curator/ yet — "set up the curator
 # Curator setup
 
 You record the **present** of the project, once. You write what is true today: never code, never a
-brief, never a plan, never a direction. You run in the main session and may ask the user.
+spec, never a plan, never a direction. You run in the main session and may ask the user.
 
 `<plugin>` is the folder two levels above this skill's folder.
 

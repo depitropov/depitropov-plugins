@@ -88,16 +88,21 @@ def _walk(root: Path):
             yield Path(dirpath) / name
 
 
-def changed_files(roots: list[Path], base: str) -> list[Path]:
-    anchor = roots[0] if roots[0].is_dir() else roots[0].parent
-    repo = Path(_git(["rev-parse", "--show-toplevel"], cwd=anchor))
+def merge_base(repo: Path, base: str, ref: str) -> str:
+    """The merge-base of base and ref, or a broken run that says how to fix --base."""
     try:
-        merge_base = _git(["merge-base", base, "HEAD"], cwd=repo)
+        return _git(["merge-base", base, ref], cwd=repo)
     except MeasureError as exc:
         raise MeasureError(
             f"base {base!r} does not resolve in {repo}.\nPass --base <ref> that exists here, e.g. --base main"
         ) from exc
-    modified = _git(["diff", "--name-only", merge_base], cwd=repo).splitlines()
+
+
+def changed_files(roots: list[Path], base: str) -> list[Path]:
+    anchor = roots[0] if roots[0].is_dir() else roots[0].parent
+    repo = Path(_git(["rev-parse", "--show-toplevel"], cwd=anchor))
+    since = merge_base(repo, base, "HEAD")
+    modified = _git(["diff", "--name-only", since], cwd=repo).splitlines()
     untracked = _git(["ls-files", "--others", "--exclude-standard"], cwd=repo).splitlines()
     candidates = [repo / rel for rel in modified + untracked]
     return [p for p in candidates if p.is_file() and any(_is_under(p, r) for r in roots)]

@@ -19,7 +19,7 @@ visible, and makes each drop a decision.
 | java-stack | `~/Projects/claude-code-plugins/plugins/java-stack` | Stack knowledge (orc-java-stack) |
 | minions | `~/Projects-other/claude-minions` | Project rails (the Curator, later phase) |
 | sc-agent-plugins | `~/Projects/sc-agent-plugins` | Multi-harness delivery (packaging rules) |
-| ai-marketplace-mentorano | `~/Projects-other/ai-marketplace-mentorano/plugins/clean-code` (MIT) | Clean code (the standalone `clean-code`, which the global gate in `orc-global-gates` uses (S80, S85)) |
+| ai-marketplace-mentorano | `~/Projects-other/ai-marketplace-mentorano/plugins/clean-code` (MIT) | Clean code (the standalone `clean-code`, which the clean-code gate in `orc-core` uses (S85, S87, S92)) |
 
 ## Steps for every port
 
@@ -57,8 +57,10 @@ General notes:
 - CJ is `clean-code/skills/clean-code-java` (S83, moved there by S85); the number is the Java
   rule number.
 - Plan 4 is `docs/superpowers/plans/2026-10-09-java-stack-port.md`, decided by S68. Rows that say
-  RL, RO, RT, RC, RY or CG point at its skills (`review-logging`, `review-ops`, `review-testing`,
-  `review-comments`, `review-layout`, `guides/code.md`); the number is the rule number.
+  RL, RT, RC, RY or CG point at its skills (`review-logging`, `review-testing`,
+  `review-comments`, `review-layout`, `guides/code.md`); the number is the rule number. Plan 4's
+  `review-ops` is gone (S93): its rules 1–8 are RG 1–8 (`review-general`), its rule 9 is RP 2
+  (`review-persistence`).
 - Plan 5a is `docs/superpowers/plans/2026-10-12-lost-rows.md`, decided by S69. It carries the rows
   that were `lost`.
 - DESIGN §8.4 says every agent gate triages. be-coding-agent let its mechanical passes (structure,
@@ -255,14 +257,14 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
 | Fresh eyes, once, fixes in its own session | logic-review gate (S14, S25, S55) | ported | yes |
-| Loads review, testing, ops and build skills | stack-agnostic; ops and testing are stack gates: RO, RT | ported (S68) | yes |
+| Loads review, testing, ops and build skills | stack-agnostic; general, persistence and testing are stack gates: RG, RP, RT | ported (S68, S93) | yes |
 | Read brief, plan, implementation log, diff, changed files in full | split (S66): `plan-conformance` reads the plan and the log; logic-review reads the brief, `decisions` and the diff | ported (S66, split on purpose) | yes |
 | Criterion-to-test mapping | logic-review step 3 | ported | yes |
 | Test quality: empty asserts, disabled tests, mocked unit under test, tests that pass without the change | logic-review step 3, plus "fails on a wrong version" (S66) | ported (S66) | yes |
 | Completeness: every plan task done, nothing stubbed | `plan-conformance` "Tasks done" | ported (S66) | yes |
 | Undeclared deviations from the plan | `plan-conformance` "Deviations", "Scope" | ported (S66) | yes |
 | Correctness: bugs, edges, races, transaction and error boundaries | logic-review step 4 | ported | yes |
-| Error handling and security | logic-review step 4 names security holes (partial); RO carries the error rules; the security list is dropped (S68) | partial | yes |
+| Error handling and security | logic-review step 4 names security holes (partial); RG carries the error rules; the security list is dropped (S68) | partial | yes |
 | Not yours: naming, structure, comments, logs, layout | logic-review "Not yours" | ported | yes |
 | Patch: check it first, fix minimally | `orchestra:triage` action table | ported (S64) | yes |
 | Evaluate / Noise / Decide actions | steps 5, 7 | ported | yes |
@@ -277,7 +279,7 @@ Source: `~/Projects/claude-code-plugins/plugins/be-coding-agent`.
 | Structure reviewer | — | dropped (S68: no structure gate; clean-code comes later at workflow level) | no |
 | Runs before the build that verifies, because it may rewrite code | — | dropped (S68: no structure gate; clean-code comes later at workflow level) | no |
 | Scope = the diff | — | dropped (S68: no structure gate; clean-code comes later at workflow level) | no |
-| Checklist: layering, SOLID, records, DI, immutability, DTO annotations, naming, null checks, member order | null checks RO 7, 8; `@UtilityClass` RY 8; member order, SOLID, DTO annotations, naming dropped (S68) | partial | yes (stack) |
+| Checklist: layering, SOLID, records, DI, immutability, DTO annotations, naming, null checks, member order | null checks RG 7, 8; `@UtilityClass` RY 8; member order, SOLID, DTO annotations, naming dropped (S68) | partial | yes (stack) |
 | Leave cross-file moves and new or deleted classes | — | dropped (S68: no structure gate) | no |
 | Notes: Fixed / Left | triage notes format | dropped (S68: each gate writes the triage notes format) | no |
 
@@ -363,8 +365,8 @@ Source: `~/Projects/claude-code-plugins/plugins/java-stack`. Target: `plugins/or
 plan 4 (S68). ship.cars-only content (`cars.ship.commons`, internal BOMs, JIRA hooks) is `dropped` by
 S3 and DESIGN §2. The personal repo names depitropov-commons helpers where java-stack named
 ship.cars ones (S68); `PORT-TO-SC.md` (git-ignored) says how to swap them back.
-Short names: CG = `orc-java-stack/guides/code.md`, FB = `fix-build`, OJ = `orc-java-stack/orchestra.json`, RO =
-`review-ops`, RT = `review-testing`, RC = `review-comments`, RL = `review-logging`, RY =
+Short names: CG = `orc-java-stack/guides/code.md`, FB = `fix-build`, OJ = `orc-java-stack/orchestra.json`, RG =
+`review-general`, RP = `review-persistence` (both replace `review-ops`, S93), RT = `review-testing`, RC = `review-comments`, RL = `review-logging`, RY =
 `review-layout`, FS = `fix-spotless`. Numbers are rule numbers in that skill.
 
 #### README.md
@@ -436,7 +438,7 @@ Short names: CG = `orc-java-stack/guides/code.md`, FB = `fix-build`, OJ = `orc-j
 |---|---|---|---|
 | Descriptive names, nouns and verbs | CJ 1 | ported (S83) | yes |
 | Case conventions, `DefaultX` names | CJ 1 (case: Checkstyle), CJ 2 (`Default<Interface>`; `Impl` only when the project uses it) | ported (S83) | yes |
-| Commons Lang `isBlank` / `isEmpty` | RO 8 | ported | yes |
+| Commons Lang `isBlank` / `isEmpty` | RG 8 | ported | yes |
 | Member order | — | dropped (S68) | no |
 | Methods under 30 lines, parameter objects | gate rule 3 (20 lines, the measure's default), CJ 3 (a `record`) | partial (S83: 20 lines, not 30) | yes |
 
@@ -447,13 +449,13 @@ Short names: CG = `orc-java-stack/guides/code.md`, FB = `fix-build`, OJ = `orc-j
 | Reviewer principles | — | dropped (S68) | no |
 | Follows project patterns, reuse utilities | each gate "The project's code wins"; spec "Patterns to reuse" | ported | yes |
 | Comment contract | RC 1–8 | ported | yes |
-| Error handling, `isNotBlank` + trim | RO 1–8 | ported | yes |
+| Error handling, `isNotBlank` + trim | RG 1–8 | ported | yes |
 | Security | — | dropped (S68: the security list) | no |
 | Test coverage | logic-review | ported | yes |
 | SOLID | — | dropped (S68) | no |
 | WARN vs INFO | RL 7 | ported | yes |
 | Assertion helpers | RT 2, 3, 6 | ported | yes |
-| One `CREATE INDEX CONCURRENTLY` per file | RO 9 | ported | yes |
+| One `CREATE INDEX CONCURRENTLY` per file | RP 2 | ported | yes |
 | No magic numbers | — | dropped (S68) | no |
 | Static-import enums | RY 6 | ported | yes |
 | Performance, scalability, smells, tech debt | — | dropped (S68) | no |
@@ -536,10 +538,10 @@ only.
 
 | Part | Where now | Status | Applicable? |
 |---|---|---|---|
-| Error handling | RO 2–6 | ported | yes |
-| Wrap exceptions with the cause | RO 1 | ported | yes |
-| Strings: one trimming strategy | RO 7 | ported | yes |
-| Flyway: one `CONCURRENTLY` per file, `IF NOT EXISTS` | RO 9 | ported (at review time, S68) | yes |
+| Error handling | RG 2–6 | ported | yes |
+| Wrap exceptions with the cause | RG 1 | ported | yes |
+| Strings: one trimming strategy | RG 7 | ported | yes |
+| Flyway: one `CONCURRENTLY` per file, `IF NOT EXISTS` | RP 2 | ported (at review time, S68) | yes |
 | Custom exception hierarchies | — | dropped (S68) | no |
 | Security | — | dropped (S68: the security list) | no |
 | Concurrency | — | dropped (S68: the concurrency list) | no |
@@ -586,7 +588,7 @@ only.
    other gates have none.
 2. **Multi-module test-selection gotchas.** Closed by S68: CG 2–4.
 3. **The build lacks the settings file and JaCoCo.** A repo with private settings fails; the CRAP gate will have no data.
-4. **Flyway migration rules** are at review time by S68 (RO 9); R3 puts migrations at write time.
+4. **Flyway migration rules** are at review time by S68 (RP 2); R3 puts migrations at write time.
 5. **The DTO shape rule.** Closed by S68: the DTO rule is dropped.
 6. **The comments grep.** Closed by S68: RC "Sweeps".
 7. **Spotless set-up and fix guide.** Closed by S68: the gate skips a pom with no plugin, and FS holds the fix guide.

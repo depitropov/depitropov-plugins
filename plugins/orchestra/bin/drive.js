@@ -4,23 +4,26 @@ const fs = require('node:fs');
 const { isDeepStrictEqual } = require('node:util');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
-const { validateAction, withPrompt, inlinePrompt, guidesFor, sharedRoles, stageError } = require('../lib/protocol');
+const { validateAction, withPrompt, inlinePrompt, guidesFor, contractsFor, sharedRoles, stageError } = require('../lib/protocol');
 const { load, readJson } = require('../lib/resolved');
 const { CONFIG, PROJECT_DIR, PROJECT_SKILLS, PROJECT_FILE } = require('../lib/check');
 const runner = require('../lib/runner');
 const { writeReport } = require('../lib/report');
 const worktree = require('../lib/worktree');
 const curator = require('../lib/curator');
+const { writePhaseResult } = require('../lib/workflow');
 const { git, dirtyFiles, commitAll, commitRunDir } = require('../lib/git');
 
+// next.js loads the engine module lib/workflow.js from the folder it gets as --orchestra.
 function callNext(nextJs, project, args) {
-  const out = execFileSync(process.execPath, [nextJs, '--project', project, ...args], { encoding: 'utf8' });
+  const out = execFileSync(process.execPath, [nextJs, '--project', project, '--orchestra', path.join(__dirname, '..'), ...args], { encoding: 'utf8' });
   return JSON.parse(out.trim().split('\n').pop());
 }
 
-function finish(project, action, resolved) {
+// The report gets the sections of the workflow's last action.
+function finish(project, action, resolved, sections) {
   if (!action.runDir) return action;
-  const report = writeReport(project, action.runDir, action, resolved);
+  const report = writeReport(project, action.runDir, action, resolved, sections);
   commitRunDir(project, path.dirname(report), `orchestra: run notes (${action.action})`);
   return { ...action, report };
 }
@@ -150,7 +153,7 @@ function keepRunFolder(project, root, branch) {
 // The model is told the branch and the worktree on every action, so it never guesses where the commits went.
 function answer(project, root, action) {
   const prompts = {
-    dispatch: a => withPrompt(a, root, guidesFor(a.stage, load(root), readJson(path.join(root, CONFIG)))),
+    dispatch: a => withPrompt(a, root, [...contractsFor(a), ...guidesFor(a.stage, load(root), readJson(path.join(root, CONFIG)))]),
     inline: a => ({ ...a, prompt: inlinePrompt(a, root) }),
   };
   const build = prompts[action.action];
@@ -190,11 +193,11 @@ function step(project, extraArgs, resume) {
   const nextJs = path.join(resolved.slots.workflow.dir, 'bin', 'next.js');
   let args = extraArgs;
   for (;;) {
-    const a = validateAction(callNext(nextJs, project, args));
+    const { sections, ...a } = validateAction(callNext(nextJs, project, args));
     args = [];
     if (a.action === 'dispatch') {
       const bad = stageError(a, resolved.slots.workflow.declaration);
-      if (bad) return finish(project, { action: 'failed', reason: bad, runDir: a.runDir }, resolved);
+      if (bad) return finish(project, { action: 'failed', reason: bad, runDir: a.runDir }, resolved, sections);
       remember(project, a);
       return a;
     }
@@ -202,16 +205,15 @@ function step(project, extraArgs, resume) {
     if (a.action === 'done' && curator.setUp(project, resolved) === false) a.note = 'curate skipped: the Curator is not set up';
     else if (a.action === 'done') {
       const c = curator.curate(project, a.runDir, resolved);
-      if (c) return c.action === 'failed' ? finish(project, c, resolved) : c;
+      if (c) return c.action === 'failed' ? finish(project, c, resolved, sections) : c;
     }
     if (a.action === 'decide' && a.result) remember(project, a);
-    if (a.action !== 'phase') return finish(project, a, resolved);
+    if (a.action !== 'phase') return finish(project, a, resolved, sections);
     const r = runner.step({ project, runDir: a.runDir, phase: a.name, resolved, config });
     if (r.action === 'dispatch') return r;
-    const phaseResult = path.join(project, a.runDir, `phase-${a.name}.result.json`);
-    fs.writeFileSync(phaseResult, JSON.stringify({ stage: `phase-${a.name}`, ...r }, null, 2) + '\n');
+    writePhaseResult(project, a.runDir, a.name, r);
     if (r.status !== 'ok') {
-      return finish(project, { action: r.status, runDir: a.runDir, reason: r.reason, gate: r.gate, questions: r.questions }, resolved);
+      return finish(project, { action: r.status, runDir: a.runDir, reason: r.reason, step: r.step, questions: r.questions }, resolved, sections);
     }
   }
 }

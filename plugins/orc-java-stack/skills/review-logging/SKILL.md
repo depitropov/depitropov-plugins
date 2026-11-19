@@ -5,57 +5,15 @@ description: Reviews the log statements of the changed Java code against the log
 
 # Logging review
 
-## Inputs
+## Scope
 
-- `spec`: the brief. Read it only for the scope of the task.
-- `base`: the commit before any work.
-- `notes`: the run's notes folder. Your findings file goes here.
-- `decisions` (optional): the human's answers.
+Changed `.java` files are in scope. When the change has no `.java` file, skip.
 
-## Procedure
+## Steps
 
-1. Get the change: `git diff <base> HEAD -- '*.java'`. Read each changed file in full. If the change
-   has nothing in scope, write the result with `"status": "skipped"` and stop.
-2. Check the lines this change adds or edits against each rule below. Code the change does not touch
-   is not in scope.
-3. The project's code wins. When the untouched code of the same kind in this project does it another
-   way, follow the project: that rule is not a finding.
-4. The title of each finding starts with its rule number, as in `▸ Rule 3: <title>`, and its "In the
-   code" line gives `file:line`.
-5. If the input `shared-role.triage` is given, follow that skill: give every finding its axes and one bucket. Otherwise sort each finding by your own judgement: Decide (a person must answer it), Patch (you fix it), Evaluate (a person should look at it later) or Noise (not a real problem).
-6. Write `<notes>/logging.md`, one line per finding with its bucket, in the triage notes format when a triage skill is given.
-7. If there is an open Decide finding (one that `decisions` does not answer), stop here. Do not fix
-   anything. Write the result with `"status": "decide"`.
-8. Otherwise fix every Patch finding and every answered Decide. Your fixes must not change
-   behaviour. Run only the tests of the files you changed. Never pipe a test command: the pipe hides
-   the exit code. Commit once: `fix(logging): <summary>`. orchestra commits `notes` itself: do not
-   stage files under `docs/runs/` or `tmp/`. Do not review your own fixes again.
-
-Not yours: empty lines around log statements (the layout gate), exception handling other than
-rule 6 (the ops gate), comments.
-
-## Result
-
-Write to the path given in the prompt:
-
-```json
-{
-  "stage": "logging",
-  "status": "ok",
-  "decide": [],
-  "counts": { "decide": 0, "patch": 2, "evaluate": 0, "noise": 1 },
-  "evaluate": [],
-  "files": ["<notes>/logging.md"]
-}
-```
-
-`status` is `ok`, `decide`, `skipped` or `failed`. `evaluate` lists every Evaluate finding as one
-line with `file:line`.
-
-## Permitted actions
-
-Edit code and tests. Run tests. Commit. Do not push. Do not change branches. Do not ask the user; a
-question goes into `decide`.
+1. Read `references/stack-reference.md` in the plugin folder, two folders above this skill's folder,
+   not in the `references/` folder of this skill, and do what it says. Do this step before you read
+   the change.
 
 ## Rules
 
@@ -112,14 +70,3 @@ question goes into `decide`.
    `<first n>...<length>...<last n>`. Use it only when it is needed.
 9. **Cost.** An expensive argument at DEBUG or TRACE, or a log inside a tight loop, sits inside
    `if (log.isDebugEnabled())`.
-10. **Large objects in Quarkus.** When `pom.xml` has `io.quarkus` dependencies, a large object (a
-    request or response body, a top-level DTO) goes in as `kv("name", object)`
-    (`import static io.quarkiverse.loggingjson.providers.KeyValueStructuredArgument.kv;`). It needs
-    no `{}`, and the line above the call is
-    `//noinspection LoggingPlaceholderCountMatchesArgumentCount`. Never use `kv()` for a simple value
-    such as an id. Never serialize the object yourself: `kv()` does it.
-
-    ```java
-    //noinspection LoggingPlaceholderCountMatchesArgumentCount
-    log.info("Processing transaction, transactionId: {}", transactionId, kv("transaction", transactionDto));
-    ```

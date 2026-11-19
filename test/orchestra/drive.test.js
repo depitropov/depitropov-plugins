@@ -67,7 +67,7 @@ function toCode(dir, tasks = 1, seen = () => {}) {
   assert.equal(a.skill, 'orc-standard-workflow:plan-check');
   const tasks_ = Array.from({ length: tasks }, (_, i) => `### T${i + 1} — a task\n`).join('\n');
   fs.writeFileSync(path.join(wt(dir, a), a.inputs.plan), `# Plan\n\n${tasks_}`);
-  writeJson(path.join(wt(dir, a), a.result), { stage: 'plan-check', status: 'ok', counts: { patch: 1 } });
+  writeJson(path.join(wt(dir, a), a.result), { stage: 'plan-check', status: 'ok', counts: { patch: 1 }, evaluate: ['x'] });
   return drive(dir);
 }
 
@@ -84,7 +84,7 @@ test('a run goes from task to done: code, logic-review, report, committed run fi
 
   const review = toReview(dir);
   assert.equal(review.skill, 'orc-standard-workflow:logic-review');
-  writeJson(path.join(wt(dir, review), review.result), { stage: 'logic-review', status: 'ok', counts: { patch: 1, evaluate: 1 }, evaluate: ['PriceCalculator.java:9 — null now throws; before it returned null'] });
+  writeJson(path.join(wt(dir, review), review.result), { stage: 'logic-review', status: 'ok', fix: ['A.java:3 — x'], report: ['PriceCalculator.java:9 — null now throws; before it returned null'], notes: 'docs/runs/task/add-a-discount/logic-review.md' });
 
   const done = afterReview(dir);
   assert.equal(done.action, 'done');
@@ -100,14 +100,29 @@ test('a run goes from task to done: code, logic-review, report, committed run fi
   assert.match(report, /feat: discount/);
   const { version } = JSON.parse(fs.readFileSync(path.join(__dirname, '../../plugins/orc-standard-workflow/plugin.json'), 'utf8'));
   assert.ok(report.includes(`orc-standard-workflow ${version}`), report);
-  assert.match(report, /\| implementation-check\.logic-review \| ok \| patch 1, evaluate 1 \|/);
+  assert.match(report, /\| Step \| Status \| Found \| Notes \|/);
+  assert.ok(report.includes('| implementation-check.logic-review | ok | decide 0, fix 1, report 1, noise 0 | docs/runs/task/add-a-discount/logic-review.md |'), report);
+  assert.match(report, /## Report\n\n- implementation-check\.logic-review: PriceCalculator\.java:9 — null now throws/);
+  // plan-check wrote a result in the old shape: it does not break the report.
+  assert.match(report, /\| plan-check \| ok \|  \|  \|/);
   assert.equal(git(dir, 'log', '-1', '--format=%s', done.branch), 'orchestra: run notes (done)');
-  assert.match(report, /- implementation-check\.logic-review: PriceCalculator\.java:9 — null now throws/);
   assert.match(report, /## Assumptions\n\n- code-1: The limit applies before rounding\./);
   assert.match(report, /\| phase-conventions-check \| ok \(no gates\) \|/);
   const order = ['| spec |', '| plan |', '| plan-check |', '| code-1 |', '| implementation-check.build |', '| implementation-check.plan-conformance |', '| implementation-check.logic-review |',
     '| phase-implementation-check |', '| phase-conventions-check |', '| finish.build |', '| phase-finish |'].map(row => report.indexOf(row));
   assert.ok(order.every((pos, i) => pos >= 0 && (i === 0 || pos > order[i - 1])), `rows out of run order: ${order}`);
+});
+
+test('a step with status report and a reason is listed under Report', () => {
+  const dir = project();
+  const code = toCode(dir);
+  writeJson(path.join(wt(dir, code), code.result), { stage: 'code', status: 'ok' });
+  const pc = drive(dir);
+  writeJson(path.join(wt(dir, pc), pc.result), { stage: 'plan-conformance', status: 'report', reason: 'a task has no test' });
+  const review = drive(dir);
+  writeJson(path.join(wt(dir, review), review.result), { stage: 'logic-review', status: 'ok' });
+  const report = doneReport(dir, afterReview(dir));
+  assert.match(report, /## Report\n\n- implementation-check\.plan-conformance: a task has no test\n/);
 });
 
 test('a gate that skips itself is listed under Skipped gates', () => {
@@ -131,7 +146,10 @@ test('a Decide ends the call with the questions and a report that says how to an
   const stop = drive(dir);
   assert.equal(stop.action, 'decide');
   assert.deepEqual(stop.questions, ['Half up or half even? — options: up | even']);
-  assert.match(fs.readFileSync(path.join(wt(dir, stop), stop.report), 'utf8'), /Add a new section `## logic-review`/);
+  const report = fs.readFileSync(path.join(wt(dir, stop), stop.report), 'utf8');
+  assert.match(report, /Add a new section `## logic-review`/);
+  assert.match(report, /## Assumptions[\s\S]*## Deviations[\s\S]*## Integration points/);
+  assert.equal('sections' in stop, false);
 });
 
 test('drive throws when resolved.json is missing; the CLI prints that as failed', () => {
@@ -221,13 +239,14 @@ test('a resume with only notes changed goes on', () => {
 test('the business-facts stop has a row between spec and plan', () => {
   const dir = project();
   const spec = drive(dir, ['--task-file', '.orchestra/task.txt']);
-  fs.writeFileSync(path.join(wt(dir, spec), 'docs/runs/task/add-a-discount/brief.md'), '- business fact: the rate — options: 5% | 10%\n');
+  fs.writeFileSync(path.join(wt(dir, spec), 'docs/runs/task/add-a-discount/spec.md'), '- business fact: the rate — options: 5% | 10%\n');
   writeJson(path.join(wt(dir, spec), spec.result), { stage: 'spec', status: 'ok' });
   const stop = drive(dir);
   assert.equal(stop.action, 'decide');
   const report = fs.readFileSync(path.join(wt(dir, stop), stop.report), 'utf8');
   assert.match(report, /\| business-facts \| decide \|/);
   assert.ok(report.indexOf('| spec |') < report.indexOf('| business-facts |'));
+  assert.match(report, /Add a new section `## business-facts`/);
   assert.match(report, /- <question> → <your answer>/);
   fs.writeFileSync(path.join(wt(dir, stop), 'docs/runs/task/add-a-discount/decisions.md'), '## business-facts\n\n- business fact: the rate — options: 5% | 10% → 10%\n');
   const plan = drive(dir, [], { resume: true });
@@ -242,7 +261,7 @@ test('a plan-conformance Decide stops the phase before logic-review', () => {
   writeJson(path.join(wt(dir, pc), pc.result), { stage: 'plan-conformance', status: 'decide', decide: ['Task 2 changed the API — options: keep | revert'] });
   const stop = drive(dir);
   assert.equal(stop.action, 'decide');
-  assert.equal(stop.gate, 'plan-conformance');
+  assert.equal(stop.step, 'plan-conformance');
 });
 
 test('the report lists real deviations, not "none", and the files changed', () => {
@@ -262,16 +281,16 @@ test('the report lists real deviations, not "none", and the files changed', () =
   assert.match(report, /## Commits\n(?:(?!## Results)[\s\S])*```\n Price\.java \|/);
 });
 
-test('the report copies the brief\'s Integration points, or says none', () => {
+test('the report copies the spec\'s Integration points, or says none', () => {
   const dir = project();
   const code = toCode(dir);
-  fs.writeFileSync(path.join(wt(dir, code), 'docs/runs/task/add-a-discount/brief.md'),
-    '# Brief\n\n## Integration points\n- pricing API — needs a discount field — assumption\n\n## Assumptions\n- x\n');
+  fs.writeFileSync(path.join(wt(dir, code), 'docs/runs/task/add-a-discount/spec.md'),
+    '# Spec\n\n## Integration points\n- pricing API — needs a discount field — assumption\n\n## Assumptions\n- x\n');
   writeJson(path.join(wt(dir, code), code.result), { stage: 'code', status: 'ok' });
   const review = toReview(dir);
   writeJson(path.join(wt(dir, review), review.result), { stage: 'logic-review', status: 'ok' });
   const report = doneReport(dir, afterReview(dir));
-  assert.match(report, /## Deviations\n\n- none\n\n## Integration points\n\n- pricing API — needs a discount field — assumption\n\n## Evaluate/);
+  assert.match(report, /## Deviations\n\n- none\n\n## Integration points\n\n- pricing API — needs a discount field — assumption\n\n## Report/);
 });
 
 test('a run works in its worktree and leaves the checkout, its branch and its edits alone', () => {
@@ -455,6 +474,37 @@ test('a run that goes on without setup skips curate and says so in the report', 
   assert.match(doneReport(dir, done), /^- Note: curate skipped: the Curator is not set up$/m);
 });
 
+test('the dispatch prompt lists the contracts of its kind before the guides', () => {
+  const dir = project({ curator: true });
+  setUpOnMain(dir);
+  const seen = [];
+  const code = toCode(dir, 1, a => seen.push(a));
+  assert.equal(seen[0].skill, 'orc-standard-workflow:spec');
+  assert.match(seen[0].prompt, /contract\/dispatch\.md`/);
+  assert.doesNotMatch(seen[0].prompt, /judging\.md/);
+  writeJson(path.join(wt(dir, code), code.result), { stage: 'code', status: 'ok' });
+  const gate = toReview(dir);
+  assert.match(gate.prompt, /contract\/dispatch\.md`/);
+  assert.match(gate.prompt, /contract\/judging\.md`/);
+  assert.match(gate.prompt, /contract\/agent-gate\.md`/);
+});
+
+test('the plan-check prompt lists dispatch.md and judging.md, not agent-gate.md, before its guides', () => {
+  const dir = project({ curator: true });
+  setUpOnMain(dir);
+  let a = drive(dir, ['--task-file', '.orchestra/task.txt']);
+  for (const stage of ['spec', 'plan']) {
+    writeJson(path.join(wt(dir, a), a.result), { stage, status: 'ok' });
+    a = drive(dir);
+  }
+  assert.equal(a.skill, 'orc-standard-workflow:plan-check');
+  assert.match(a.prompt, /contract\/dispatch\.md`/);
+  assert.match(a.prompt, /contract\/judging\.md`/);
+  assert.ok(a.prompt.indexOf('dispatch.md') < a.prompt.indexOf('judging.md'));
+  assert.doesNotMatch(a.prompt, /agent-gate\.md/);
+  assert.ok(a.prompt.indexOf('judging.md') < a.prompt.indexOf('guides/plan.md'));
+});
+
 test('with a curator set up: plan gets the curator guide, curate runs on done and is last in the report', () => {
   const dir = project({ curator: true });
   setUpOnMain(dir);
@@ -464,7 +514,7 @@ test('with a curator set up: plan gets the curator guide, curate runs on done an
   writeJson(path.join(wt(dir, a), a.result), { stage: 'spec', status: 'ok' });
   a = drive(dir);
   assert.equal(a.skill, 'orc-standard-workflow:plan');
-  assert.match(a.prompt, /read each guide below and follow it:\n- `.*\/guides\/plan\.md`/);
+  assert.match(a.prompt, /read each guide below and follow it:\n- `.*\/contract\/dispatch\.md`\n- `.*\/guides\/plan\.md`/);
   assert.doesNotMatch(a.prompt, /orc-curator:plan-guide|cur:plan-guide/);
   assert.ok(a.prompt.includes(`- \`${path.join(JSON.parse(fs.readFileSync(path.join(dir, '.orchestra/resolved.json'), 'utf8')).slots.curator.dir, 'guides/plan.md')}\``));
   writeJson(path.join(wt(dir, a), a.result), { stage: 'plan', status: 'ok' });
@@ -479,7 +529,7 @@ test('with a curator set up: plan gets the curator guide, curate runs on done an
   const curate = afterReview(dir);
   assert.equal(curate.action, 'inline');
   assert.equal(curate.skill, 'cur:curate');
-  assert.equal(curate.inputs.brief, 'docs/runs/task/add-a-discount/brief.md');
+  assert.equal(curate.inputs.spec, 'docs/runs/task/add-a-discount/spec.md');
   fs.writeFileSync(path.join(wt(dir, curate), 'docs/curator/BACKLOG.md'), '# half done\n');
   const dirty = drive(dir, [], { resume: true });
   assert.match(dirty.reason, /If a stopped curate left them, discard them; it runs again\./);
@@ -517,7 +567,7 @@ test('a start fails when a project skill the declaration names is not on origin'
   git(dir, 'commit', '-m', 'project');
   git(dir, 'push');
   fs.mkdirSync(path.join(dir, '.agents/skills/check-money'), { recursive: true });
-  fs.writeFileSync(path.join(dir, '.agents/skills/check-money/SKILL.md'), '---\nname: check-money\ndescription: x\n---\n');
+  fs.writeFileSync(path.join(dir, '.agents/skills/check-money/SKILL.md'), '---\nname: check-money\ndescription: x\n---\n\n## Scope\n\nChanged files.\n\n## Rules\n\n1. A rule.\n');
   const a = drive(dir, ['--task-file', '.orchestra/task.txt']);
   assert.equal(a.action, 'failed');
   assert.match(a.reason, /\.agents\/skills\/check-money\/SKILL\.md is not on origin\/main\. Commit and push it/);
@@ -531,6 +581,8 @@ test('the core plugin fills shared-role.triage on the spec and logic-review disp
   const code = toCode(dir, 1, a => { spec = spec || a; });
   assert.equal(spec.inputs['shared-role.triage'], 'orc-core:triage');
   assert.match(spec.prompt, /A `shared-role\.<role>` input names a skill/);
+  assert.match(spec.prompt, /when your skill or a guide asks for that role/);
+  assert.match(spec.prompt, /that the skill or its guides describe to/);
   fs.writeFileSync(path.join(wt(dir, code), 'Discount.java'), 'class Discount {}\n');
   git(wt(dir, code), 'add', 'Discount.java');
   git(wt(dir, code), 'commit', '-m', 'feat: discount');

@@ -244,7 +244,8 @@ class TypeScriptMeasurementTest(unittest.TestCase):
         self.assertIn("broken.ts", str(ctx.exception))
 
     def test_find_typescript_package_walks_up(self):
-        found = measure.find_typescript_package(self.project / "sample.ts")
+        import languages
+        found = languages.find_typescript_package(self.project / "sample.ts")
         self.assertEqual(found, self.project.resolve() / "node_modules" / "typescript")
 
 
@@ -498,3 +499,17 @@ class CliTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(argv=[sys.argv[0]] + sys.argv[1:])
+
+
+class MergeBaseTest(unittest.TestCase):
+    def test_one_merge_base_rule_for_changed_files_and_revisions(self):
+        import languages
+        import revisions
+        self.assertIs(revisions.merge_base, languages.merge_base)
+
+    def test_a_base_that_does_not_resolve_names_the_fix(self):
+        import languages
+        with self.assertRaises(languages.MeasureError) as caught:
+            languages.changed_files([ROOT], "no-such-ref-for-this-test")
+        self.assertIn("does not resolve", str(caught.exception))
+        self.assertIn("--base main", str(caught.exception))

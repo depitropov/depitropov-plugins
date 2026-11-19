@@ -4,19 +4,28 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { makeRepo, writeJson, git } = require('../helpers');
-const { next, slugify } = require('../../plugins/orc-standard-workflow/bin/next');
+const wf = require('../../plugins/orc-standard-workflow/bin/next');
+const { slugify } = wf;
+const ORCHESTRA = path.join(__dirname, '../../plugins/orchestra');
+// The report sections are checked in their own test; the other tests compare the action without them.
+const raw = (dir, task) => wf.next(dir, task, ORCHESTRA);
+const next = (dir, task) => {
+  const { sections, ...a } = raw(dir, task);
+  return a;
+};
+const FORMATS = path.join(__dirname, '../../plugins/orc-standard-workflow/formats');
 
-function project({ guides, disable, workflow = {} } = {}) {
+function project({ guides, disable, workflow = {}, stack = {} } = {}) {
   const dir = makeRepo();
-  writeJson(path.join(dir, '.orchestra/config.json'), { workflow: { plugin: 'orc-standard-workflow', ...workflow }, 'stack-skills': { plugin: 'st', ...(disable ? { disable } : {}) } });
+  writeJson(path.join(dir, '.orchestra/config.json'), { workflow: { plugin: 'orc-standard-workflow', ...workflow }, 'stack-skills': { plugin: 'st', ...(disable ? { disable } : {}), ...stack } });
   git(dir, 'add', '-A');
   git(dir, 'commit', '-m', 'config');
   git(dir, 'push');
   writeJson(path.join(dir, '.orchestra/resolved.json'), {
     orchestra: { dir: '/orc' },
     slots: {
-      workflow: { plugin: 'orc-standard-workflow', dir: '/p/wf', declaration: { config: { 'tasks-per-coder': { type: 'number', default: 2 } } } },
-      'stack-skills': { plugin: 'st', dir: '/p/st', declaration: { build: { run: '{plugin}/mvnw -B verify' }, ...(guides ? { guides } : {}) } },
+      workflow: { plugin: 'orc-standard-workflow', dir: '/p/wf', declaration: { slot: 'workflow', config: { 'tasks-per-coder': { type: 'number', default: 2 } } } },
+      'stack-skills': { plugin: 'st', dir: '/p/st', declaration: { slot: 'stack-skills', build: { run: '{plugin}/mvnw -B verify', guide: 'fix-build' }, ...(guides ? { guides } : {}) } },
     },
   });
   fs.writeFileSync(path.join(dir, '.orchestra/task.txt'), 'Add a discount\n\nOrders over 100 get 10%.\n');
@@ -68,13 +77,13 @@ test('prepare makes the task branch and the run folder, then dispatches spec', (
   const runDir = 'tmp/runs/task/add-a-discount';
   const docs = 'docs/runs/task/add-a-discount';
   assert.equal(git(dir, 'branch', '--show-current'), 'task/add-a-discount');
-  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, runDir, 'run.json'), 'utf8')), { base, branch: 'task/add-a-discount', spec: `${docs}/brief.md`, docs });
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, runDir, 'run.json'), 'utf8')), { base, branch: 'task/add-a-discount', spec: `${docs}/spec.md`, docs });
   assert.match(fs.readFileSync(path.join(dir, docs, 'task.md'), 'utf8'), /Orders over 100/);
   assert.deepEqual(a, {
     action: 'dispatch',
     skill: 'orc-standard-workflow:spec',
     stage: 'spec',
-    inputs: { task: `${docs}/task.md`, notes: docs },
+    inputs: { task: `${docs}/task.md`, notes: docs, 'spec-format': `${FORMATS}/spec.md` },
     result: `${runDir}/spec.result.json`,
     runDir,
   });
@@ -85,11 +94,14 @@ test('spec, plan and plan-check run in order with their inputs', () => {
   const docs = 'docs/runs/task/add-a-discount';
   const plan = pass(dir, next(dir, '.orchestra/task.txt'));
   assert.equal(plan.skill, 'orc-standard-workflow:plan');
-  assert.deepEqual(plan.inputs, { spec: `${docs}/brief.md`, notes: docs });
+  assert.deepEqual(plan.inputs, { spec: `${docs}/spec.md`, notes: docs, 'spec-format': `${FORMATS}/spec.md`, 'plan-format': `${FORMATS}/plan.md` });
   const check = pass(dir, plan);
   assert.equal(check.skill, 'orc-standard-workflow:plan-check');
-  assert.deepEqual(check.inputs, { spec: `${docs}/brief.md`, plan: `${docs}/plan.md`, notes: docs });
-  assert.equal(checked(dir, check, 1).skill, 'orc-standard-workflow:code');
+  assert.deepEqual(check.inputs, { spec: `${docs}/spec.md`, plan: `${docs}/plan.md`, notes: docs, 'spec-format': `${FORMATS}/spec.md`, 'plan-format': `${FORMATS}/plan.md` });
+  const code = checked(dir, check, 1);
+  assert.equal(code.skill, 'orc-standard-workflow:code');
+  assert.equal(code.inputs['spec-format'], `${FORMATS}/spec.md`);
+  assert.equal(code.inputs['plan-format'], undefined);
 });
 
 test('spec, plan, plan-check and code carry their stage, and no guide input', () => {
@@ -104,6 +116,14 @@ test('spec, plan, plan-check and code carry their stage, and no guide input', ()
   const code = checked(dir, check, 1);
   assert.equal(code.stage, 'code');
   assert.equal(code.inputs.guide, undefined);
+});
+
+test('plan-check is dispatched as a judging step, plan is not', () => {
+  const dir = project();
+  const planAction = pass(dir, next(dir, '.orchestra/task.txt'));
+  const checkAction = pass(dir, planAction);
+  assert.equal(planAction.judging, undefined);
+  assert.equal(checkAction.judging, true);
 });
 
 test('a second run of the same task gets its own branch', () => {
@@ -169,7 +189,7 @@ test('a plan-check Decide stops the run until decisions.md answers plan-check', 
   const check = toPlanCheck(dir);
   const q = 'business fact: the VIP rate? — options: 5% | 10%';
   writeJson(path.join(dir, check.result), { stage: 'plan-check', status: 'decide', decide: [q] });
-  assert.deepEqual(next(dir), { action: 'decide', gate: 'plan-check', questions: [q], runDir: check.runDir });
+  assert.deepEqual(next(dir), { action: 'decide', step: 'plan-check', questions: [q], runDir: check.runDir });
   assert.equal(next(dir).action, 'decide');
 
   answer(dir, 'logic-review', 'not for plan-check');
@@ -195,18 +215,18 @@ test('a used answer does not start plan-check again after a second Decide', () =
   assert.equal(next(dir).action, 'dispatch');
 });
 
-function writeBrief(dir, text) {
-  fs.writeFileSync(path.join(dir, DOCS, 'brief.md'), text);
+function writeSpec(dir, text) {
+  fs.writeFileSync(path.join(dir, DOCS, 'spec.md'), text);
 }
 
-test('business facts in the brief stop the run after the spec', () => {
+test('business facts in the spec stop the run after the spec', () => {
   const dir = project();
   const spec = next(dir, '.orchestra/task.txt');
-  writeBrief(dir, '# Brief\n\n## Assumptions\n- Rounding is half up.\n- business fact: the VIP rate — options: 5% | 10%\n  - business fact: the fee — options: 4.99 | 5.99\n');
+  writeSpec(dir, '# Spec\n\n## Assumptions\n- Rounding is half up.\n- business fact: the VIP rate — options: 5% | 10%\n  - business fact: the fee — options: 4.99 | 5.99\n');
   writeJson(path.join(dir, spec.result), { stage: 'spec', status: 'ok' });
   assert.deepEqual(next(dir), {
     action: 'decide',
-    gate: 'business-facts',
+    step: 'business-facts',
     questions: ['business fact: the VIP rate — options: 5% | 10%', 'business fact: the fee — options: 4.99 | 5.99'],
     result: `${spec.runDir}/business-facts.result.json`,
     runDir: spec.runDir,
@@ -224,15 +244,15 @@ test('business facts in the brief stop the run after the spec', () => {
   assert.equal(JSON.parse(fs.readFileSync(factsFile, 'utf8')).status, 'ok');
 });
 
-test('a brief that only mentions business facts in prose does not stop the run', () => {
+test('a spec that only mentions business facts in prose does not stop the run', () => {
   const dir = project();
   const spec = next(dir, '.orchestra/task.txt');
-  writeBrief(dir, '# Brief\n\nNo business fact: is open here.\n- Rounding is half up.\n');
+  writeSpec(dir, '# Spec\n\nNo business fact: is open here.\n- Rounding is half up.\n');
   assert.equal(pass(dir, spec).skill, 'orc-standard-workflow:plan');
   assert.equal(fs.existsSync(path.join(dir, spec.runDir, 'business-facts.result.json')), false);
 });
 
-test('a stage gets no decisions input while decisions.md does not exist', () => {
+test('a step gets no decisions input while decisions.md does not exist', () => {
   const dir = project();
   const plan = pass(dir, next(dir, '.orchestra/task.txt'));
   assert.equal(plan.inputs.decisions, undefined);
@@ -287,14 +307,14 @@ test('a new run on a reused branch name ignores the old run folder', () => {
   assert.equal(fs.existsSync(path.join(dir, 'tmp/runs/task/add-a-discount/spec.result.json')), false);
 });
 
-test('a stage with no result is dispatched twice, then fails; a resume dispatches again', () => {
+test('a step with no result is dispatched twice, then fails; a resume dispatches again', () => {
   const dir = project();
   const first = next(dir, '.orchestra/task.txt');
   assert.equal(first.action, 'dispatch');
   assert.equal(next(dir).action, 'dispatch');
   const a = next(dir);
   assert.equal(a.action, 'failed');
-  assert.match(a.reason, /Stage spec wrote no result after 2 dispatches/);
+  assert.match(a.reason, /Step spec wrote no result after 2 dispatches/);
   assert.equal(next(dir).action, 'dispatch');
   assert.equal(next(dir).action, 'dispatch');
   assert.equal(next(dir).action, 'failed');
@@ -309,4 +329,24 @@ test('a failed coder that runs again leaves its blocker in the implementation lo
   assert.equal(next(dir).skill, 'orc-standard-workflow:code');
   const log = fs.readFileSync(path.join(dir, DOCS, 'implementation-log.md'), 'utf8');
   assert.match(log, /## T1 — failed\n- Blockers: build broke\n/);
+});
+
+test('the coder gets the build that the engine runs, with the project override', () => {
+  const dir = project({ stack: { build: { run: 'make all' } } });
+  const check = pass(dir, pass(dir, next(dir, '.orchestra/task.txt')));
+  assert.equal(checked(dir, check, 1).inputs.build, 'make all');
+});
+
+test('every action carries the three report sections', () => {
+  const dir = project();
+  const spec = raw(dir, '.orchestra/task.txt');
+  assert.deepEqual(Object.keys(spec.sections), ['Assumptions', 'Deviations', 'Integration points']);
+  const code = checked(dir, pass(dir, pass(dir, spec)), 1);
+  writeJson(path.join(dir, code.result), { status: 'ok', assumptions: ['x'] });
+  assert.deepEqual(raw(dir).sections.Assumptions, ['code-1: x']);
+});
+
+test('next.js loads the engine module from a relative --orchestra folder too', () => {
+  const dir = project();
+  assert.equal(wf.next(dir, '.orchestra/task.txt', path.relative(process.cwd(), ORCHESTRA)).action, 'dispatch');
 });

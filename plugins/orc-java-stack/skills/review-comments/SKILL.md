@@ -5,60 +5,28 @@ description: Reviews the comments and Javadoc of the changed Java code against t
 
 # Comments review
 
-## Inputs
+## Scope
 
-- `spec`: the brief. Read it only for the scope of the task.
-- `base`: the commit before any work.
-- `notes`: the run's notes folder. Your findings file goes here.
-- `decisions` (optional): the human's answers.
+Changed `.java` files are in scope: their comments and Javadoc. When the change has no `.java`
+file, skip.
 
-## Procedure
+## Steps
 
-1. Get the change: `git diff <base> HEAD -- '*.java'`. Read each changed file in full. If the change
-   has nothing in scope, write the result with `"status": "skipped"` and stop.
-   Run the tier-1 sweep below on the changed files. Each hit is a finding under rule 2, 3 or 4. A hit that is not a change description or a plan
-   reference is not a finding.
-   Then run the tier-2 sweep. A tier-2 hit is only a hint: judge it against rule 4, because the
-   same tokens name real things (a garbage collector, a chip).
-2. Check the lines this change adds or edits against each rule below. Code the change does not touch
-   is not in scope.
-3. The project's code wins. When the untouched code of the same kind in this project does it another
-   way, follow the project: that rule is not a finding.
-4. The title of each finding starts with its rule number, as in `▸ Rule 3: <title>`, and its "In the
-   code" line gives `file:line`.
-5. If the input `shared-role.triage` is given, follow that skill: give every finding its axes and one bucket. Otherwise sort each finding by your own judgement: Decide (a person must answer it), Patch (you fix it), Evaluate (a person should look at it later) or Noise (not a real problem).
-6. Write `<notes>/comments.md`, one line per finding with its bucket, in the triage notes format when a triage skill is given.
-7. If there is an open Decide finding (one that `decisions` does not answer), stop here. Do not fix
-   anything. Write the result with `"status": "decide"`.
-8. Otherwise fix every Patch finding and every answered Decide. Your fixes must not change
-   behaviour. Run only the tests of the files you changed. Never pipe a test command: the pipe hides the exit code. Commit once:
-   `fix(comments): <summary>`. orchestra commits `notes` itself: do not stage files under `docs/runs/`
-   or `tmp/`. Do not review your own fixes again.
+Run the two sweeps on the changed files only:
 
-Not yours: logic, structure, log statements, layout and test style. Other gates own them.
-
-## Result
-
-Write to the path given in the prompt:
-
-```json
-{
-  "stage": "comments",
-  "status": "ok",
-  "decide": [],
-  "counts": { "decide": 0, "patch": 2, "evaluate": 0, "noise": 1 },
-  "evaluate": [],
-  "files": ["<notes>/comments.md"]
-}
+```sh
+TIER1='(\b(AC[0-9]+|T[0-9]+\.[0-9]+|P[0-9]+|Step [0-9]+|Phase ?-?[0-9]+|is now|no longer|was previously|used to)\b|\bR-?[0-9]+:)'
+TIER2='\b([GMBEDRT]-?[0-9]+|WS[0-9]+|concept [0-9]+)\b'
+git diff --name-only --diff-filter=d <base> HEAD -- '*.java' | xargs -r grep -nE "^\s*(//|\*).*${TIER1}"
+git diff --name-only --diff-filter=d <base> HEAD -- '*.java' | xargs -r grep -nE "^\s*(//|\*).*${TIER2}"
 ```
 
-`status` is `ok`, `decide`, `skipped` or `failed`. `evaluate` lists every Evaluate finding as one
-line with `file:line`.
+1. **Tier-1 sweep.** Each hit is a finding under rule 2, 3 or 4. A hit that is not a change
+   description or a plan reference is not a finding.
+2. **Tier-2 sweep.** A tier-2 hit is only a hint: judge it against rule 4, because the same tokens
+   name real things (a garbage collector, a chip).
 
-## Permitted actions
-
-Edit code and tests. Run tests. Commit. Do not push. Do not change branches. Do not ask the user; a
-question goes into `decide`.
+A hit on a line this change did not add or edit is out of scope.
 
 ## Rules
 
@@ -88,7 +56,7 @@ accuracy up to three times. The bar is accuracy, not volume.
 4. **Bare plan shorthand** (`G1`, `R-9`, `D4`, `M1`, `WS2`, `E1`) is a plan coordinate too, when the
    context shows it is one. The same token can name a real thing (`G1` garbage collector, `M1` chip,
    `D3` library, `R2` bucket): then it is not a finding.
-5. **Never invent a reason.** A reason that the code, the brief or the commit history cannot back is a
+5. **Never invent a reason.** A reason that the code, the spec or the commit history cannot back is a
    finding. Delete the reason; keep any fact the comment holds. A plausible wrong reason is the most
    expensive comment there is.
 6. **Delete on sight:**
@@ -156,14 +124,3 @@ In a test (rule 7):
 // only the two oldest aged groups are promoted; without the cap all five would rank first and the
 // urgent group would not make the tick at all
 ```
-
-Sweeps. Run them on the changed files only:
-
-```sh
-TIER1='(\b(AC[0-9]+|T[0-9]+\.[0-9]+|P[0-9]+|Step [0-9]+|Phase ?-?[0-9]+|is now|no longer|was previously|used to)\b|\bR-?[0-9]+:)'
-TIER2='\b([GMBEDRT]-?[0-9]+|WS[0-9]+|concept [0-9]+)\b'
-git diff --name-only --diff-filter=d <base> HEAD -- '*.java' | xargs -r grep -nE "^\s*(//|\*).*${TIER1}"
-git diff --name-only --diff-filter=d <base> HEAD -- '*.java' | xargs -r grep -nE "^\s*(//|\*).*${TIER2}"
-```
-
-A hit on a line this change did not add or edit is out of scope.

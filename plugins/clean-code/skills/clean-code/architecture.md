@@ -29,28 +29,22 @@ use [architecture-fundamentals](../architecture-fundamentals/SKILL.md).
 First question: can the core behaviour be tested without the UI or IO? If
 not, the separation is missing; start there.
 
-Take each value the UI or the route handler shows, and each decision it
-makes. Look for the domain function that owns it. The adapter asks that
-function and translates the answer into HTML, JSON, bytes, or copy. It does
-not redo the rule. Formatting is the adapter's job (dates, currency, labels, a greyed
-button); the decision behind the formatting is not.
+The rule is rule 11 of `rules.md`. Take each value the UI or the route
+handler shows, and each decision it makes. Look for the domain function that
+owns it, and check the adapter against rule 11.
 
 Smells: a handler that computes a total, a component that decides whether a
 user may edit, a template that evaluates a business rule. Fix: move the
 rule into the high-level module, call it from the adapter.
 
-**A correct import direction does not excuse duplicated logic.** When the
-adapter computes an answer that a domain function already gives, the
-adapter is wrong. The mirror case is wrong too: a domain function that only
-the tests call, while the adapter keeps its own copy of the rule. Make the
-adapter call the function, or remove the function.
+Rule 11 also holds when the import direction is correct: make the adapter
+call the domain function, or remove the function.
 
 ## Phase 2 — Dependency rule
 
-Source code dependencies point inward. A high-level module never imports a
-volatile low-level one. A low-level module calls inward through a narrow
-interface the high-level module owns. A dependency on a stable platform
-facility, such as the standard library, is not the smell.
+The rule is rule 12 of `rules.md`: source code dependencies point inward. A
+low-level module calls inward through a narrow interface the high-level
+module owns.
 
 Smells: a domain module importing the ORM, the HTTP framework, a client
 library; a service that takes the framework's request object (an
@@ -65,9 +59,8 @@ Check with the import graph, not with the folder names. A file in
 
 ## Phase 3 — Information hiding
 
-A module exposes concepts, not its representation. No persistence shape,
-framework type, or transport format crosses a boundary; what crosses is a
-simple, isolated data structure in the form the inner circle wants.
+The rule is rule 13 of `rules.md`: a module exposes concepts, not its
+representation.
 
 Smells: an ORM row or entity handed across a boundary in either direction;
 a Pydantic request model passed into a domain function; a component that
@@ -84,14 +77,8 @@ in the adapter; the ORM and the transport mapping stay in the outer layer.
 The usual code-level review, aimed at the code on each side of the
 boundary: naming, branching, repeated code, failure handling and corner
 cases. The adapter is thin; the
-translation is explicit. Duplication across a boundary is judged
-differently from duplication inside a module: only true duplication counts,
-where every change to one instance forces the same change to the other. Two
-similar views, queries or schemas that serve different use cases and will
-change for different reasons stay apart. An error crosses the boundary in the form the
-inner module defines: the adapter turns an external failure into a domain
-error on the way in and a domain error into a transport error on the way
-out. A domain module never names a transport or framework error type.
+translation is explicit. Judge duplication across a boundary by rule 6 of
+`rules.md`, and an error that crosses it by rule 13.
 
 ## Automated checks
 

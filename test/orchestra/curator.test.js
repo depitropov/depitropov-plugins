@@ -13,7 +13,7 @@ const resolved = { slots: { curator: { plugin: 'cur', declaration: { curate: 'cu
 
 function root() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cur-'));
-  writeJson(path.join(dir, RUN, 'run.json'), { base: 'abc', branch: 'task/x', spec: 'docs/runs/task/x/brief.md', docs: 'docs/runs/task/x' });
+  writeJson(path.join(dir, RUN, 'run.json'), { base: 'abc', branch: 'task/x', spec: 'docs/runs/task/x/spec.md', docs: 'docs/runs/task/x' });
   return dir;
 }
 
@@ -49,10 +49,10 @@ test('a setup that ends ok but writes no flag fails once, then runs again', () =
   assert.equal(curator.setup(dir, RUN, resolved).action, 'inline');
 });
 
-test('curate on done gives an inline curate with base, brief and notes; ok ends it', () => {
+test('curate on done gives an inline curate with base, spec and notes; ok ends it', () => {
   const dir = root();
   const a = curator.curate(dir, RUN, resolved);
-  assert.deepEqual(a, { action: 'inline', skill: 'cur:curate', inputs: { base: 'abc', brief: 'docs/runs/task/x/brief.md', notes: 'docs/runs/task/x' }, result: `${RUN}/curate.result.json`, runDir: RUN });
+  assert.deepEqual(a, { action: 'inline', skill: 'cur:curate', inputs: { base: 'abc', spec: 'docs/runs/task/x/spec.md', notes: 'docs/runs/task/x' }, result: `${RUN}/curate.result.json`, runDir: RUN });
   writeJson(path.join(dir, a.result), { status: 'ok' });
   assert.equal(curator.curate(dir, RUN, resolved), null);
 });
@@ -75,6 +75,6 @@ test('the inline prompt says to work in this session, in the worktree, and names
   assert.match(p, /^Invoke the skill `cur:curate` in this session and follow it\. It may ask the user questions; ask them\./);
   assert.match(p, /Work in `\/r`\./);
   assert.match(p, /- base: abc/);
-  assert.match(p, /write the result JSON that the skill describes to `tmp\/runs\/task\/x\/curate\.result\.json`/);
+  assert.match(p, /write the result JSON that the skill or its guides describe to `tmp\/runs\/task\/x\/curate\.result\.json`/);
   assert.doesNotMatch(p, /subagent|priority/);
 });

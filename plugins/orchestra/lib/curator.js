@@ -1,18 +1,10 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
+const { readResult } = require('./workflow');
 
 // The Curator runs in the main session, not in a subagent, so it can ask the user (S76). Setup runs
 // apart from a feature run, on the default branch or its own branch (S77); curate when the workflow is done.
-
-function readResult(file) {
-  if (!fs.existsSync(file)) return null;
-  try {
-    return JSON.parse(fs.readFileSync(file, 'utf8'));
-  } catch (e) {
-    return { status: 'failed', reason: `Invalid result JSON in ${file}: ${e.message}` };
-  }
-}
 
 function inline(c, skill, name, runDir, inputs) {
   return { action: 'inline', skill: `${c.plugin}:${skill}`, inputs, result: `${runDir}/${name}.result.json`, runDir };
@@ -57,7 +49,7 @@ function curate(project, runDir, resolved) {
   const c = resolved.slots.curator;
   if (!c) return null;
   const run = JSON.parse(fs.readFileSync(path.join(project, runDir, 'run.json'), 'utf8'));
-  return settle(project, inline(c, c.declaration.curate, 'curate', runDir, { base: run.base, brief: run.spec, notes: run.docs }));
+  return settle(project, inline(c, c.declaration.curate, 'curate', runDir, { base: run.base, spec: run.spec, notes: run.docs }));
 }
 
 module.exports = { setUp, setup, curate };

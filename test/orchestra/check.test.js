@@ -16,7 +16,7 @@ test('a valid declaration passes', () => {
     config: { 'entity-pattern': { type: 'string', default: '@Entity' } },
     guides: { code: 'guides/code.md' },
     gates: [
-      { name: 'ops', phase: 'implementation-check', kind: 'agent', skill: 'review-ops', files: ['**/*.java', '**/*.sql'] },
+      { name: 'errors', phase: 'implementation-check', kind: 'agent', skill: 'review-errors', files: ['**/*.java', '**/*.sql'] },
       { name: 'entities', phase: 'conventions-check', kind: 'agent', skill: 'review-entities', grep: '{config.entity-pattern}' },
       { name: 'fmt', phase: 'finish', kind: 'tool', run: 'fmt {plugin}', fix: 'fixer', guide: 'fix-fmt', max_rounds: 1, always: true },
       { name: 'shape', phase: 'implementation-check', kind: 'agent', skill: 'review-shape', always: true },
@@ -100,8 +100,8 @@ function project(config, declarations) {
   return dir;
 }
 
-test('a workflow declaration with the old key roles fails with the rename', () => {
-  assert.match(errors({ slot: 'workflow', roles: ['code'] }).join('\n'), /unknown key "roles" for slot workflow\. Fix: rename it to "stages"/);
+test('a workflow declaration with the key roles fails as an unknown key', () => {
+  assert.match(errors({ slot: 'workflow', roles: ['code'] }).join('\n'), /unknown key "roles" for slot workflow\. Fix: remove it; the allowed keys are slot, config, stages, gates/);
 });
 
 test('a guide for a stage the workflow has no stage for fails, unless the config disables it', () => {
@@ -351,7 +351,7 @@ function addProject(dir, d, { skills = [], ignore = false } = {}) {
   }
   for (const s of skills) {
     fs.mkdirSync(path.join(dir, '.agents/skills', s), { recursive: true });
-    fs.writeFileSync(path.join(dir, '.agents/skills', s, 'SKILL.md'), `---\nname: ${s}\ndescription: Test skill.\n---\n`);
+    fs.writeFileSync(path.join(dir, '.agents/skills', s, 'SKILL.md'), `---\nname: ${s}\ndescription: Test skill.\n---\n\n## Scope\n\nChanged files.\n\n## Rules\n\n1. A rule.\n`);
   }
   if (!ignore) fs.appendFileSync(path.join(dir, '.gitignore'), '!.orchestra/project/\n');
   const file = path.join(dir, '.orchestra/resolved.json');
@@ -374,7 +374,7 @@ test('a project skill must exist in .agents/skills/ with only name and descripti
   assert.equal(missing.length, 1, missing.join(' | '));
   assert.match(missing[0], /names skill "check-money", which is not in .*\.agents\/skills/);
   const dir = addProject(both(), d, { skills: ['check-money'] });
-  fs.writeFileSync(path.join(dir, '.agents/skills/check-money/SKILL.md'), '---\nname: check-money\ndescription: x\nmodel: opus\n---\n');
+  fs.writeFileSync(path.join(dir, '.agents/skills/check-money/SKILL.md'), '---\nname: check-money\ndescription: x\nmodel: opus\n---\n\n## Scope\n\nChanged files.\n\n## Rules\n\n1. A rule.\n');
   const extra = checkProject(dir);
   assert.equal(extra.length, 1, extra.join(' | '));
   assert.match(extra[0], /frontmatter has the keys name, description, model/);
@@ -465,13 +465,13 @@ test('shared-roles names known roles and skills of the plugin, and only core and
   assert.match(checkDeclaration(d, dir, 'core/orchestra.json').join('\n'), /shared role "triage" names skill "triage", which is not in skills\//);
 });
 
-test('a declaration with the old global-gates slot fails with the rename', () => {
-  assert.deepEqual(checkDeclaration({ slot: 'global-gates' }, tmp('gg-'), 'gg/orchestra.json'), ['gg/orchestra.json: "slot" is "global-gates". Fix: rename it to "core".']);
+test('a declaration with the slot global-gates fails as an unknown slot', () => {
+  assert.deepEqual(checkDeclaration({ slot: 'global-gates' }, tmp('gg-'), 'gg/orchestra.json'), ['gg/orchestra.json: "slot" is "global-gates". Fix: set it to one of workflow, stack-skills, core, curator.']);
 });
 
-test('a config with the old global-gates section fails with the rename', () => {
+test('a config with the section global-gates fails as an unknown section', () => {
   const out = checkProject(project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, 'global-gates': { plugin: 'orc-global-gates' } }, { workflow: wf, 'stack-skills': st }));
-  assert.deepEqual(out, ['.orchestra/config.json: section "global-gates" is now "core". Fix: rename the section to "core" and choose orc-core.']);
+  assert.deepEqual(out, ['.orchestra/config.json: unknown section "global-gates". Fix: use the slots workflow, stack-skills, core, curator.']);
 });
 
 test('a project guide may be keyed by a shared role that the core plugin or the project fills', () => {
@@ -481,4 +481,41 @@ test('a project guide may be keyed by a shared role that the core plugin or the 
   const withCore = project({ workflow: { plugin: 'wf' }, 'stack-skills': { plugin: 'st' }, core: { plugin: 'core' } }, { workflow: wf, 'stack-skills': st, core: { slot: 'core', 'shared-roles': { triage: 'triage' } } });
   assert.deepEqual(checkProject(addProject(withCore, amend)), []);
   assert.match(checkProject(addProject(both(), { slot: 'project', guides: { review: 'guides/review.md' } })).join('\n'), /unknown guide stage "review"/);
+});
+
+test('an agent gate skill with the old shape fails with the section to remove', () => {
+  const d = stack({ gates: [{ name: 'g', phase: 'finish', kind: 'agent', skill: 'g', always: true }] });
+  const dir = writePlugin(tmp('st-'), 'st', d);
+  fs.writeFileSync(path.join(dir, 'skills/g/SKILL.md'), '---\nname: g\ndescription: d\n---\n\n## Inputs\n\nx\n\n```\n## Example\n```\n\n## Procedure\n\nx\n');
+  const out = checkDeclaration(d, dir, 'st').join('\n');
+  assert.match(out, /st\/skills\/g\/SKILL\.md: the section "## Procedure" is not part of a gate skill\. Fix: keep only Scope, Steps, Rules and Fixing; orchestra gives the procedure\./);
+  assert.match(out, /"## Inputs"/);
+  assert.doesNotMatch(out, /Example/);
+  assert.match(out, /has no "## Scope"/);
+  assert.match(out, /neither "## Steps" nor "## Rules"/);
+});
+
+test('a project gate skill in .agents/skills is checked the same way', () => {
+  const dir = addProject(both(), { slot: 'project', gates: [money] }, { skills: ['check-money'] });
+  fs.writeFileSync(path.join(dir, '.agents/skills/check-money/SKILL.md'), '---\nname: check-money\ndescription: d\n---\n\n## Scope\n\nx\n\n## Inputs\n\nx\n');
+  const out = checkProject(dir).join('\n');
+  assert.match(out, /\.agents\/skills\/check-money\/SKILL\.md: the section "## Inputs" is not part of a gate skill/);
+  assert.match(out, /neither "## Steps" nor "## Rules"/);
+});
+
+test('a gate skill with Scope and Steps and no Rules passes, and ### headings pass', () => {
+  const d = stack({ gates: [{ name: 'g', phase: 'finish', kind: 'agent', skill: 'g', always: true }] });
+  const dir = writePlugin(tmp('st-'), 'st', d);
+  fs.writeFileSync(path.join(dir, 'skills/g/SKILL.md'), '---\nname: g\ndescription: d\n---\n\n## Scope\n\nx\n\n### Detail\n\nx\n\n## Steps\n\n1. Do it.\n\n### More\n\nx\n');
+  assert.deepEqual(checkDeclaration(d, dir, 'st'), []);
+});
+
+test('a ## heading inside a ~~~ fence is ignored, and a fence closes only with its own marker', () => {
+  const d = stack({ gates: [{ name: 'g', phase: 'finish', kind: 'agent', skill: 'g', always: true }] });
+  const dir = writePlugin(tmp('st-'), 'st', d);
+  const head = '---\nname: g\ndescription: d\n---\n\n## Scope\n\nx\n\n## Steps\n\n1. Do it.\n\n';
+  fs.writeFileSync(path.join(dir, 'skills/g/SKILL.md'), `${head}~~~\n## Foo\n~~~\n`);
+  assert.deepEqual(checkDeclaration(d, dir, 'st'), []);
+  fs.writeFileSync(path.join(dir, 'skills/g/SKILL.md'), `${head}~~~\n\`\`\`\n## Foo\n~~~\n`);
+  assert.deepEqual(checkDeclaration(d, dir, 'st'), []);
 });

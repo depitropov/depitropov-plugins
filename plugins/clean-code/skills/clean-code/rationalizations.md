@@ -11,7 +11,7 @@ right column is the answer.
 | "We'll clean it up later." | Later equals never. Later is where this file came from. There is no refactor task on the board. |
 | "The linter passes." | Ruff and ESLint defaults do not check function length or nesting; ruff needs `--select PLR0915,C901` and ESLint's `max-lines-per-function` is not in `recommended`. Pylint's defaults do, at 50 statements and 5 blocks, looser than this skill. No linter here checks layer boundaries unless the project turned on `import-linter` or `dependency-cruiser`. `measure.py` measures length, complexity, parameters and nesting every run; `boundaries.py` counts the imports that cross a boundary the wrong way. |
 | "The tests pass." | Tests prove behaviour, not shape. Both are the deliverable. |
-| "Don't gold-plate it." | A function under 20 lines is not gold. Uncle Bob: functions "should hardly ever be 20 lines long", and Kent Beck's Sparkle functions were two to four. 20 is where he stops, not where he aims. |
+| "Don't gold-plate it." | A function inside the limit of rule 3 is not gold. Uncle Bob: functions "should hardly ever be 20 lines long", and Kent Beck's Sparkle functions were two to four. 20 is where he stops, not where he aims. |
 | "The user just wants it working." | The user wants it working next month too. |
 | "Adding a `# noqa` is faster." | A suppression is a safety the code overrode on purpose. Write the reason on the line or fix the finding. |
 | "This function is complex because the domain is complex." | Then the complexity is a type, not a branch: polymorphism, a strategy, or a lookup table. Not nested `if`s. |

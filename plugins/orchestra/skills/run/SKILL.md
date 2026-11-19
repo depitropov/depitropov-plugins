@@ -78,8 +78,8 @@ the run is open. Tell the user both once, when the run starts. Every path in the
   `git show <branch>:<report>`. If the action has `note`, show it. If the action has `kept`, say the worktree `<worktree>` was kept and show `kept`. When the user has dealt with the files, they remove it with `git worktree remove <worktree>`.
 - `failed`: show the `reason`, the `branch`, and `<worktree>/<report>` when the action has them.
 - `decide`: show each line of `questions` and `<worktree>/<report>`. The user answers in
-  `decisions.md` in the notes folder inside `<worktree>`: a **new** section `## <gate>` at the end of the file, with
-  one line per question: `- <question> → <answer>`. A `business-facts` stop counts these lines and
+  `decisions.md` in the notes folder inside `<worktree>`: a **new** section `## <step>` at the end of the file, with
+  one line per question: `- <question> → <answer>`. A stop can need one answer line per question; it
   stops again until every question has one. If the user gives the answers to you in the conversation, add that new section
   yourself: one line per question, `- <question> → <their answer>`, with the question copied from
   `questions` and the answer in their words exactly. Then run `node <orchestra>/bin/drive.js --resume`.
@@ -93,8 +93,8 @@ Stop after `setup`'s choice is carried out, and after `setup-done`, `done`, `fai
   the user's answers to a `decide`, written to `decisions.md` inside the worktree as above, the
   work of an `inline` action, and the setup skill in the checkout when the user chose it at a
   `setup`.
-- Do not change the order, skip a dispatch or run a stage that was not printed.
+- Do not change the order, skip a dispatch or run a dispatch that was not printed.
 - Do not push and do not open a pull request.
 - If you cannot dispatch a subagent, stop the run. Tell the user that orchestra needs subagents:
-  each stage runs in a fresh context, so a reviewer never judges work from its own context. Never
-  do a stage yourself; an `inline` action is not a stage.
+  each dispatch runs in a fresh context, so a reviewer never judges work from its own context. Never
+  do the work of a dispatch yourself; an `inline` action is not a dispatch.

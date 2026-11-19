@@ -11,7 +11,7 @@ Keep values in the trailing data argument at call sites:
 
 ```typescript
 logger.info("api.ok", { url: "/api/search", status: 200, ms: 67.3 });
-logger.info("search.executed", { scope: "customer", q_len: 8, hits: 12 });
+logger.info("search.executed", { scope: "customer", q: "red cars", hits: 12 });
 logger.error("api.error", {
   url: "/api/search", status: 500, message: "Can't read file",
 });
@@ -20,9 +20,9 @@ logger.error("api.error", {
 Readable outputs:
 
 ```text
-api ok, url: /api/search, status: 200, ms: 67.3
-search executed, scope: customer, q_len: 8, hits: 12
-api error, url: /api/search, status: 500, message: 'Can''t read file'
+API ok, url: /api/search, status: 200, ms: 67.3
+Search executed, scope: customer, q: 'red cars', hits: 12
+API error, url: /api/search, status: 500, message: 'Can''t read file'
 ```
 
 `scope` changes less often than query length. `url` precedes status and time.

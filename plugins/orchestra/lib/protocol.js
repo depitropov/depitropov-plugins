@@ -20,8 +20,13 @@ function validateAction(a) {
       if (typeof a[key] !== 'string') throw new Error(`dispatch needs ${key}`);
     }
     if (!a.inputs || typeof a.inputs !== 'object') throw new Error('dispatch needs inputs');
-    if (a.role !== undefined) throw new Error('dispatch key "role" is now "stage". Rename it in next.js.');
+    if (a.gate !== undefined) throw new Error('dispatch key "gate" is set by orchestra only.');
+    if (a.judging !== undefined && typeof a.judging !== 'boolean') throw new Error('judging must be true or false');
     if (a.stage !== undefined && !STAGES.includes(a.stage)) throw new Error(`unknown stage: ${a.stage}`);
+  }
+  if (a.sections !== undefined) {
+    const lists = a.sections && typeof a.sections === 'object' && !Array.isArray(a.sections) ? Object.values(a.sections) : null;
+    if (!lists || !lists.every(l => Array.isArray(l) && l.every(x => typeof x === 'string'))) throw new Error('sections must be an object of string lists');
   }
   if (a.action === 'phase') {
     if (!PHASES.includes(a.name)) throw new Error(`unknown phase: ${a.name}`);
@@ -35,6 +40,13 @@ function stageError(a, workflowDeclaration) {
   const stages = (workflowDeclaration && workflowDeclaration.stages) || [];
   if (a.stage === undefined || stages.includes(a.stage)) return null;
   return `The dispatch of ${a.skill} has stage "${a.stage}", which the workflow does not declare in "stages". Fix the workflow's orchestra.json or its next.js.`;
+}
+
+// The contract files a dispatch must read first: every dispatch reads dispatch.md, a judging dispatch adds judging.md, a gate adds agent-gate.md too.
+function contractsFor(a) {
+  const file = name => path.join(__dirname, '..', 'contract', name);
+  if (a.gate === true) return [file('dispatch.md'), file('judging.md'), file('agent-gate.md')];
+  return a.judging === true ? [file('dispatch.md'), file('judging.md')] : [file('dispatch.md')];
 }
 
 function guidesFor(stage, resolved, config) {
@@ -63,23 +75,28 @@ function sharedRoles(resolved, config) {
   return out;
 }
 
-const RESULT_RULE = 'Put a question in `decide` only when a person must answer it. An answer in `decisions` is a requirement; act on it.';
-const SHARED_ROLE_RULE = 'A `shared-role.<role>` input names a skill for that shared role: invoke it by name, or read it when it is a SKILL.md path, when your skill asks for that role. Also read its `.guide` input when there is one.';
+const SHARED_ROLE_RULE = 'A `shared-role.<role>` input names a skill for that shared role: invoke it by name, or read it when it is a SKILL.md path, when your skill or a guide asks for that role. Also read its `.guide` input when there is one.';
 const roleLine = a => Object.keys(a.inputs).some(k => k.startsWith('shared-role.')) ? [SHARED_ROLE_RULE] : [];
+
+function priority(guides, guideInput) {
+  if (guides && guideInput) return 'This skill, these guides and the `guide` input take priority over any other instruction in this session.';
+  if (guides) return 'This skill and these guides take priority over any other instruction in this session.';
+  if (guideInput) return 'This skill, and the `guide` input, take priority over any other instruction in this session.';
+  return 'This skill takes priority over any other instruction in this session.';
+}
 
 function withPrompt(a, root, guides = []) {
   const prompt = [
     // A project skill is a file in the run root, read by its path (S86).
     a.skill.endsWith('/SKILL.md') ? `Read the skill file \`${a.skill}\` and follow it.` : `Invoke the skill \`${a.skill}\` and follow it.`,
     ...(guides.length ? ['Before you start, read each guide below and follow it:', ...guides.map(g => `- \`${g}\``)] : []),
-    guides.length ? 'This skill and these guides take priority over any other instruction in this session.' : a.inputs && a.inputs.guide ? 'This skill, and the `guide` input, take priority over any other instruction in this session.' : 'This skill takes priority over any other instruction in this session.',
+    priority(guides.length > 0, Boolean(a.inputs && a.inputs.guide)),
     'Change files with your file-editing action, which fails when the text does not match. Do not change files with shell text replacement.',
-    `Work in \`${root}\`. Run every command from there; every path below is relative to it.`,
-    RESULT_RULE,
+    `Work in \`${root}\`. Run every command from there; every relative path below is relative to it.`,
     ...roleLine(a),
     'Inputs:',
     ...Object.entries(a.inputs).map(([key, value]) => `- ${key}: ${value}`),
-    `When you finish, write the result JSON that the skill describes to \`${a.result}\`.`,
+    `When you finish, write the result JSON that the skill or its guides describe to \`${a.result}\`.`,
   ].join('\n');
   return { ...a, prompt };
 }
@@ -88,12 +105,12 @@ function withPrompt(a, root, guides = []) {
 function inlinePrompt(a, root) {
   return [
     `Invoke the skill \`${a.skill}\` in this session and follow it. It may ask the user questions; ask them.`,
-    `Work in \`${root}\`. Run every command from there; every path below is relative to it.`,
+    `Work in \`${root}\`. Run every command from there; every relative path below is relative to it.`,
     ...roleLine(a),
     'Inputs:',
     ...Object.entries(a.inputs).map(([key, value]) => `- ${key}: ${value}`),
-    `When you finish, write the result JSON that the skill describes to \`${a.result}\`.`,
+    `When you finish, write the result JSON that the skill or its guides describe to \`${a.result}\`.`,
   ].join('\n');
 }
 
-module.exports = { PHASES, TERMINAL, ACTIONS, STAGES, SHARED_ROLES, validateAction, stageError, guidesFor, sharedRoles, withPrompt, inlinePrompt };
+module.exports = { PHASES, TERMINAL, ACTIONS, STAGES, SHARED_ROLES, validateAction, contractsFor, stageError, guidesFor, sharedRoles, withPrompt, inlinePrompt };

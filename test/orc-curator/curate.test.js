@@ -9,7 +9,7 @@ const text = fs.readFileSync(path.join(DIR, 'skills/curate/SKILL.md'), 'utf8');
 const landing = fs.existsSync(path.join(DIR, 'procedures/landing.md')) ? fs.readFileSync(path.join(DIR, 'procedures/landing.md'), 'utf8') : '';
 
 test('curate takes the inline inputs and runs by hand on a commit range', () => {
-  for (const input of ['`base`', '`brief`', '`notes`']) assert.ok(text.includes(input), input);
+  for (const input of ['`base`', '`spec`', '`notes`']) assert.ok(text.includes(input), input);
   assert.match(text, /by hand/i);
   assert.match(text, /commit range/i);
 });

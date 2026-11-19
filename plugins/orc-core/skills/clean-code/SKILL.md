@@ -5,149 +5,46 @@ description: Reviews the shape of the changed code and the clean-code rules — 
 
 # Clean-code review
 
-## Inputs
+## Scope
 
-- `spec`: the brief. Read it only for the scope of the task.
-- `base`: the commit before any work.
-- `notes`: the run's notes folder. Your findings file goes here.
-- `decisions` (optional): the human's answers.
-- `config.legacy`: `true` when the project marks its code as legacy. The project sets it in the
-  `core` section of its `.orchestra/config.json`; the default is `false`.
+Changed source and test files are in scope. When the change has no source code and no tests, skip.
+The whole repository does not need to be clean, but the task's code must not get worse.
 
-## Procedure
+`config.legacy` is `true` when the project marks its code as legacy. The project sets it in the
+`core` section of its `.orchestra/config.json`. The default is `false`.
 
-1. Get the change: `git diff <base> HEAD -- . ':(exclude)docs/runs' ':(exclude)tmp'`. Read each
-   changed source and test file in full. If the change has no source code and no tests, write the
-   result with `"status": "skipped"` and stop.
-2. **Measure.** The measurement and the language rules come from the `clean-code` plugin, which
-   this plugin depends on. Invoke the skill `clean-code:manifest`. It answers `PLUGIN_DIR=<folder>`.
-   - When it answers: run this once, from the run root, with `--legacy` added when `config.legacy`
-     is `true`:
-     `python3 "<folder>/skills/clean-code/measure.py" . --changed --base <base> --compare`
-     Keep the whole output. Exit code 0 means it measured, also when it says it found no files to
-     measure. Any other exit code is a broken measurement: record one Evaluate finding with the line
-     that says what went wrong. That is the first error line of the output. For a Python traceback
-     it is the last line. Then go on with the rules.
-   - When the skill does not exist: record one Evaluate finding with this text:
-     `No shape measurement: the clean-code plugin is not installed. The review used the gate's rules only.`
-     Go on with the rules, and judge rule 3 by reading.
-3. Each measured row with one of these verdicts is a finding against rule 3:
+Untouched code that breaks a rule of `rules.md` or of a language skill, also long or complex code,
+does not excuse a new break.
 
-   | Verdict | Meaning |
-   |---|---|
-   | `new-over` | A function or a file that the task created is over a threshold. |
-   | `crossed` | A function that the task touched crossed a threshold it was under, or a file crossed 500 lines. |
-   | `grew` | Over before and after, and a measure that is over went up. For a file: over 500 lines, and longer. |
-   | `suppressions-up` | A file has more suppressions than before. Each new one without its reason on its line is a finding. |
+## Steps
 
-   With `--legacy` the measurement gives no `grew` row: code that was already over a threshold may
-   grow. `new-over`, `crossed` and `suppressions-up` stay findings.
+1. Invoke the skill `clean-code:manifest`. It answers `PLUGIN_DIR=<folder>`. When the skill does
+   not exist, write the result `failed` with the reason "the clean-code plugin is not installed",
+   and stop.
+2. Read `skills/clean-code/measurement.md` and `skills/clean-code/rules.md` in that folder. The
+   rules of `rules.md` are your rules.
+3. **Measure.** Run the command of `measurement.md` once, with `PLUGIN_DIR` as the folder of the plugin, from the run root, on the path `.`, with
+   `--changed --base <base> --compare --at HEAD`, and with `--legacy` when `config.legacy` is
+   `true`. Keep the whole output. A broken measurement, as `measurement.md` defines it, is one
+   Report finding with its message; then go on with the rules.
+4. Each measured row with the verdict `new-over`, `crossed` or `grew`, and each `suppressions-up`
+   row with a new suppression without its reason on its line, is a finding against rule 3. A rule
+   may say that such a row is not a finding: the flat `switch` of rule 3, or TS rule 7. Read the
+   diff before you call a row new.
+5. For each language of the changed files, invoke its rules skill from the `clean-code` plugin and
+   check those rules too: `clean-code:clean-code-python` for `.py`,
+   `clean-code:clean-code-typescript` for `.ts` and `.tsx`, `clean-code:clean-code-java` for
+   `.java`. Take only their rules, layers and searches, not their process. Check the lines that the
+   change adds or edits against each rule of `rules.md` and of the language skills.
+6. The title of each finding starts with its rule: `▸ Rule <n>: <title>` for `rules.md`, and the
+   language skill's form for one of its rules, for example `▸ TS rule <n>: <title>`. A finding
+   against rule 3 gives the before and after numbers of its row.
+7. Under Checked, give the `SUMMARY`, `BEFORE` and `VERDICT` lines of the measurement, or the
+   reason there is none.
 
-   `fixed`, `still-over` and `new` are not findings. A row matches by file and name, so a renamed
-   function shows as `new-over`: read the diff before you call it new, and judge it against the old
-   function. One exception: a flat `switch` or `match` whose arms answer one question can be over
-   complexity 10. List it under Checked with that reason; it is not a finding. Never split it into
-   helpers that take a flag the caller already knows.
-4. Check the lines this change adds or edits against each rule below. Then, for each language of
-   the changed files, invoke its rules skill from the `clean-code` plugin and check those rules too:
-   `clean-code:clean-code-python` for `.py`, `clean-code:clean-code-typescript` for `.ts` and
-   `.tsx`, `clean-code:clean-code-java` for `.java`. The process in those skills is not yours; take
-   only their rules, layers and searches. Code the change does not touch is not in scope: the whole
-   repository does not need to be clean, but the task's code must not get worse.
-5. The project wins. The project's `AGENTS.md` or `CLAUDE.md` overrides every rule and threshold
-   here. Existing long or complex code is not a project rule: it does not excuse a new finding.
-6. The title of each finding starts with its rule, as in `▸ Rule 3: <title>` or
-   `▸ TS rule 4: <title>`, or with the bold title of a language rule that has no number, and its "In the code" line gives `file:line`. A finding against rule 3
-   gives the before and after numbers of its row.
-7. If the input `shared-role.triage` is given, follow that skill: give every finding its axes and one bucket. Otherwise sort each finding by your own judgement: Decide (a person must answer it), Patch (you fix it), Evaluate (a person should look at it later) or Noise (not a real problem).
-8. Write `<notes>/clean-code.md`, one line per finding with its bucket, in the triage notes format when a triage skill is given. Under Checked, give the `SUMMARY`,
-   `BEFORE` and `VERDICT` lines of the measurement, or the reason there is none.
-9. If there is an open Decide finding (one that `decisions` does not answer), stop here. Do not fix
-   anything. Write the result with `"status": "decide"`.
-10. Otherwise fix every Patch finding and every answered Decide. A fix changes the shape, never the
-    behaviour: extract, rename, flatten, delete dead code. Never change a threshold or add a
-    suppression to make a row pass. Run only the tests of the files you changed. Never pipe a test
-    command: the pipe hides the exit code. When step 2 measured, run the same command once more
-    and give its `VERDICT` line under Patched; undo a fix that makes a row worse. Commit once:
-    `refactor(clean-code): <summary>`. orchestra commits `notes` itself: do not stage files under
-    `docs/runs/` or `tmp/`. Do not review your own fixes again.
+## Fixing
 
-Not yours: whether the behaviour is right and whether the plan was followed (the workflow's own reviews), log statements, formatting.
-
-## Result
-
-Write to the path given in the prompt:
-
-```json
-{
-  "stage": "clean-code",
-  "status": "ok",
-  "decide": [],
-  "counts": { "decide": 0, "patch": 2, "evaluate": 1, "noise": 0 },
-  "evaluate": ["No shape measurement: the clean-code plugin is not installed. The review used the gate's rules only."],
-  "files": ["<notes>/clean-code.md"]
-}
-```
-
-`status` is `ok`, `decide`, `skipped` or `failed`. `evaluate` lists every Evaluate finding as one
-line, with `file:line` when it has one.
-
-## Permitted actions
-
-Edit code and tests. Run tests and `measure.py`. Commit. Do not push. Do not change
-branches. Do not ask the user; a question goes into `decide`.
-
-## Rules
-
-1. **Names say what, not how.** `remainingBudget`, not `calc`. A name that needs a comment is the
-   wrong name.
-2. **One job per function.** A function is a paragraph. When it has sections with heading comments,
-   each section is a function.
-3. **Small.** A function has at most 20 lines (blank lines and doc comments count), complexity at
-   most 10, at most 3 parameters, and nesting at most 2. A test has at most 50 lines: a function in
-   a file named `test_*.py`, `*_test.py`, `conftest.py`, `*.test.ts(x)`, `*.spec.ts(x)`,
-   `*Test.java`, `*Tests.java` or `*IT.java`, or under `__tests__/` or `src/test/`. A file has at most 500 lines. Each
-   suppression of a check carries its reason on its line. The measured rows are the evidence. What
-   crossing a threshold usually means:
-   - lines: the sections (declarations, setup, loop, output) are several jobs; extract each one;
-   - complexity: an `if` chain or a `switch` that does several things; put it once behind
-     polymorphism, or extract each branch;
-   - parameters: arguments that travel together are a missing object; a flag argument is two
-     functions (rule 4);
-   - nesting: nested blocks hide the normal flow; return early with a guard clause, or extract each
-     block into a one-line call;
-   - file lines: more than one job in one file; split by job, not by line count.
-   The Boy Scout Rule: leave each function you edited (its body or its signature) better in at
-   least one measure, or with one fewer smell, when the step stays inside the task. A function you
-   did not edit is not yours to clean. When an edited function stays over a threshold, the finding
-   says why, and what the split would be. With `config.legacy`, that is not a finding.
-4. **No flag arguments.** A boolean parameter that picks a path means two functions.
-5. **No hidden side effects.** A function named like a query does not write.
-6. **No duplication inside one responsibility.** Extract at the second copy, not the third, when
-   both copies change for the same reason. Only true duplication counts: every change to one copy
-   forces the same change to the other. Two similar views, queries or data shapes that serve
-   different use cases, or different domain contexts, stay apart.
-7. **Errors are types.** A domain error is a class in the domain: not a string, not a status code,
-   not a null with a comment.
-8. **Comments explain why.** Intent, a warning, a consequence the reader would not expect. A comment
-   that repeats the next line is deleted, and its reason goes into a better name. Code you cannot
-   rename (a regular expression, an obscure library argument) is the one place where a comment may
-   say what the code does.
-9. **Dead code is deleted.** Not commented out, not kept "in case".
-10. **Tests are code.** The same rules apply. One behaviour per test, not one assertion; a name that
-    reads as a sentence; no logic in a test that needs its own test.
-11. **The core works without the UI and the IO.** A handler, a component or a template asks a domain
-    function for each decision and translates the answer into HTML, JSON or text. It does not
-    compute the rule itself. Formatting is the adapter's job (dates, currency, labels, a greyed
-    button); the decision behind the formatting is not. A correct import direction does not excuse a
-    copy: an adapter that computes what a domain function already gives is wrong, and so is a
-    domain function that only the tests call while the adapter keeps its own copy.
-12. **Dependencies point inward.** A domain module does not import the ORM, the HTTP framework or a
-    client library, does not take the framework's request object, and does not read an environment
-    variable. It defines an interface; the adapter implements it, and the caller injects it. A
-    stable platform facility, such as the standard library, is not a finding. Judge by the imports,
-    not by the folder name.
-13. **A simple typed value crosses a boundary.** No ORM row or entity, no request schema, no free
-    map whose keys the receiver must know. The adapter translates. An error crosses in the form the
-    inner module defines: the adapter turns an outside failure into a domain error, and a domain
-    error into a transport error. A domain module never names a transport or framework error type.
+A fix changes the shape, never the behaviour: extract, rename, flatten, delete dead code. Never
+change a threshold or add a suppression to make a row pass. When step 3 measured, check your fixes.
+Before you commit, run the command once more without `--at HEAD`, so it measures the files you
+changed, and give its `VERDICT` line under Fix. Undo a fix that makes a row worse.

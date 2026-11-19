@@ -1,6 +1,4 @@
 {
   "slot": "stack-skills",
-  "config": {},
-  "build": { "run": "npm ci && npm test", "guide": "fix-build", "max_rounds": 3 },
-  "gates": []
+  "build": { "run": "npm ci && npm test", "guide": "fix-build", "max_rounds": 3 }
 }

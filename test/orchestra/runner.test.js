@@ -7,6 +7,7 @@ const path = require('node:path');
 const { makeRepo, writeJson, git, writePlugin } = require('../helpers');
 const { resolve } = require('../../plugins/orchestra/lib/resolved');
 const runner = require('../../plugins/orchestra/lib/runner');
+const { contractsFor } = require('../../plugins/orchestra/lib/protocol');
 
 const ORCHESTRA = path.join(__dirname, '../../plugins/orchestra');
 const OK = 'node -e "process.exit(0)"';
@@ -26,7 +27,7 @@ function setup({ build = OK, maxRounds = 1, stackGates = [], workflowGates = [],
   }
   for (const s of own) {
     fs.mkdirSync(path.join(dir, '.agents/skills', s), { recursive: true });
-    fs.writeFileSync(path.join(dir, '.agents/skills', s, 'SKILL.md'), `---\nname: ${s}\ndescription: Test skill.\n---\n`);
+    fs.writeFileSync(path.join(dir, '.agents/skills', s, 'SKILL.md'), `---\nname: ${s}\ndescription: Test skill.\n---\n\n## Scope\n\nChanged files.\n\n## Rules\n\n1. A rule.\n`);
   }
   git(dir, 'add', '-A');
   git(dir, 'commit', '-m', 'config');
@@ -95,21 +96,21 @@ test('a build still red after max_rounds fails the phase', () => {
   assert.match(r.reason, /build still fails after 1 fix round/);
 });
 
-test('a tool gate still red after max_rounds goes to Evaluate and the phase goes on', () => {
+test('a tool gate still red after max_rounds goes to Report', () => {
   const crap = { name: 'crap', phase: 'implementation-check', kind: 'tool', run: 'node -e "process.exit(2)"', fix: 'fixer', guide: 'fix-crap', max_rounds: 1, files: '**/*.java' };
   const t = setup({ stackGates: [crap] });
   const a = t.step('implementation-check');
   assert.equal(a.inputs.guide, 'st:fix-crap');
   t.write(a.result, { stage: 'fixer', status: 'ok' });
   assert.equal(t.step('implementation-check').status, 'ok');
-  assert.equal(t.read(`${t.runDir}/implementation-check.crap.result.json`).status, 'evaluate');
+  assert.equal(t.read(`${t.runDir}/implementation-check.crap.result.json`).status, 'report');
 });
 
 test('a missing command counts as a failure, not a crash', () => {
   const lint = { name: 'lint', phase: 'conventions-check', kind: 'tool', run: 'definitely-not-a-command-xyz', files: '**/*.java' };
   const t = setup({ stackGates: [lint] });
   assert.equal(t.step('conventions-check').status, 'ok');
-  assert.equal(t.read(`${t.runDir}/conventions-check.lint.result.json`).status, 'evaluate');
+  assert.equal(t.read(`${t.runDir}/conventions-check.lint.result.json`).status, 'report');
 });
 
 test('selection skips gates that do not match and records why', () => {
@@ -178,7 +179,7 @@ test('a Decide stops the phase until decisions.md answers that gate', () => {
   const t = setup({ workflowGates: [logicReview] });
   const a = t.step('implementation-check');
   t.write(a.result, { stage: 'logic-review', status: 'decide', decide: ['Round half up or half even? — options: up | even'] });
-  assert.deepEqual(t.step('implementation-check'), { status: 'decide', gate: 'logic-review', questions: ['Round half up or half even? — options: up | even'] });
+  assert.deepEqual(t.step('implementation-check'), { status: 'decide', step: 'logic-review', questions: ['Round half up or half even? — options: up | even'] });
   const decisions = path.join(t.dir, t.docs, 'decisions.md');
   fs.writeFileSync(decisions, '## other-gate\nup\n');
   assert.equal(t.step('implementation-check').status, 'decide');
@@ -295,7 +296,27 @@ test('an agent gate gets the config values of its slot as config.<key> inputs', 
 test('an agent gate gets only the inputs every workflow gives', () => {
   const t = setup({ workflowGates: [logicReview] });
   const a = t.step('implementation-check');
-  assert.deepEqual(Object.keys(a.inputs).sort(), ['base', 'notes', 'spec']);
+  assert.deepEqual(Object.keys(a.inputs).sort(), ['base', 'gate', 'notes', 'phase', 'spec']);
+});
+
+test('an agent gate dispatch is marked as a gate and names the gate and the phase', () => {
+  const t = setup({ workflowGates: [logicReview] });
+  const a = t.step('implementation-check');
+  assert.equal(a.gate, true);
+  assert.equal(a.inputs.gate, 'logic-review');
+  assert.equal(a.inputs.phase, 'implementation-check');
+});
+
+test('a fixer dispatch gets only the dispatch contract', () => {
+  const crap = { name: 'crap', phase: 'implementation-check', kind: 'tool', run: 'node -e "process.exit(2)"', fix: 'fixer', guide: 'fix-crap', max_rounds: 1, files: '**/*.java' };
+  const a = setup({ stackGates: [crap] }).step('implementation-check');
+  assert.equal(a.skill, 'orchestra:fixer');
+  assert.equal(a.gate, undefined);
+  assert.ok('output' in a.inputs && 'guide' in a.inputs);
+  assert.deepEqual(contractsFor(a).map(p => path.basename(p)), ['dispatch.md']);
+  const g = setup({ workflowGates: [logicReview] }).step('implementation-check');
+  assert.equal(g.gate, true);
+  assert.equal(contractsFor(g).length, 3);
 });
 
 test('a $ in the plugin folder stays literal in a gate command', () => {
@@ -319,15 +340,5 @@ test('a build override runs the project command and its fixer gets the project g
   assert.equal(a.skill, 'orchestra:fixer');
   assert.equal(a.inputs.guide, '.agents/skills/fix-all/SKILL.md');
   assert.match(fs.readFileSync(path.join(t.dir, a.inputs.output), 'utf8'), /process\.exit\(1\)/);
-});
-
-test('a step saved before skill references were full gets its plugin prefix back', () => {
-  const t = setup({ workflowGates: [logicReview] });
-  t.step('implementation-check');
-  const file = `${t.runDir}/implementation-check.state.json`;
-  const state = t.read(file);
-  for (const s of state.steps) if (s.name === 'logic-review') s.skill = 'logic-review';
-  t.write(file, state);
-  assert.equal(t.step('implementation-check').skill, 'wf:logic-review');
 });
 
