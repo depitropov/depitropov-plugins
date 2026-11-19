@@ -229,7 +229,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--line);
 <div class="shell">
 <nav class="rail" aria-label="Guide sections">
   <div class="brand">Orchestra</div>
-  <div class="ver">Field guide · plugins 0.24.0 · decisions to S88</div>
+  <div class="ver">Field guide · plugins 0.25.0 · decisions to S93</div>
   <ol>
     <li><a class="lvl" href="#l1"><span class="n">1</span> What it does</a>
       <ul><li><a href="#delivers">What it delivers</a></li><li><a href="#what">The result</a></li><li><a href="#why">Why use it</a></li><li><a href="#philosophy">Many gates, one workflow</a></li><li><a href="#explore">Explore a run</a></li></ul></li>
@@ -343,7 +343,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--line);
   <h4>2 · Gates that always run</h4>
   <p>After the code is written, orchestra runs a fixed series of checks called <strong>gates</strong>. The workflow brings its gates, the optional core plugin brings the gates that every workflow gets, the stack brings its own, and orchestra runs all of them in one fixed order, with the full build first and last. A gate fixes what it finds and commits the fix. The AI cannot skip a gate, reorder the gates, or call the work done while the build is red.</p>
   <figure class="dg-fig"><div class="dg-scroll">
-  <svg class="dg" viewBox="0 0 720 296" role="img" aria-label="A grid of three phases against four providers. Orchestra adds the build at the start of implementation-check and at the end of finish. The workflow adds plan-conformance and logic-review. The core gates add clean-code. The stack adds ops in implementation-check, testing in conventions-check, and comments, logging, layout and Spotless in finish. Your config can turn gates off and tune fix rounds.">
+  <svg class="dg" viewBox="0 0 720 296" role="img" aria-label="A grid of three phases against four providers. Orchestra adds the build at the start of implementation-check and at the end of finish. The workflow adds plan-conformance and logic-review. The core gates add clean-code. The stack adds general and persistence in implementation-check, testing in conventions-check, and comments, logging, layout and Spotless in finish. Your config can turn gates off and tune fix rounds.">
     <defs><marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
     <line x1="170" y1="14" x2="706" y2="14" class="ln mute" marker-end="url(#m2)"/>
     <text x="170" y="10" class="sm m">runs in this order</text>
@@ -367,7 +367,8 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--line);
 
     <rect x="208" y="146" width="88" height="26" rx="5" class="box"/><text x="252" y="163" text-anchor="middle" class="sm">clean code</text>
 
-    <rect x="213" y="194" width="76" height="26" rx="5" class="gateb"/><text x="251" y="211" text-anchor="middle" class="sm">ops</text>
+    <rect x="176" y="194" width="62" height="26" rx="5" class="gateb"/><text x="207" y="211" text-anchor="middle" class="sm">general</text>
+    <rect x="244" y="194" width="74" height="26" rx="5" class="gateb"/><text x="281" y="211" text-anchor="middle" class="sm">persistence</text>
     <rect x="401" y="194" width="76" height="26" rx="5" class="gateb"/><text x="439" y="211" text-anchor="middle" class="sm">testing</text>
     <rect x="544" y="190" width="76" height="22" rx="5" class="gateb"/><text x="582" y="205" text-anchor="middle" class="sm">comments</text>
     <rect x="626" y="190" width="76" height="22" rx="5" class="gateb"/><text x="664" y="205" text-anchor="middle" class="sm">logging</text>
@@ -408,13 +409,13 @@ orchestra: run notes (done)</div>
       <div class="sample">Status: done
 Results
   spec ............ ok
-  plan-check ...... ok  patch 2
+  plan-check ...... ok  fix 2
   code-1 .......... ok
-  logic-review .... ok  patch 1, evaluate 1
-  clean-code ...... ok  patch 2
+  logic-review .... ok  fix 1, report 1
+  clean-code ...... ok  fix 2
 Assumptions
   rounded HALF_UP to 2 decimals
-Evaluate
+Report
   OrderService.java:42 a null
   customer now throws</div>
     </div>
@@ -461,7 +462,7 @@ Evaluate
     <text x="384" y="195" text-anchor="end" class="sm m">writes</text>
     <text transform="translate(730,140) rotate(-90)" text-anchor="middle" class="sm m">reads</text>
     <rect x="390" y="210" width="310" height="30" rx="6" class="sunk"/>
-    <text x="545" y="229" text-anchor="middle" class="sm">files: brief, plan, results, commits</text>
+    <text x="545" y="229" text-anchor="middle" class="sm">files: spec, plan, results, commits</text>
   </svg></div>
   <figcaption>The same work, two shapes. On the left everything shares one context. On the right each step starts clean, and the only memory between steps is the files on disk.</figcaption>
   </figure>
@@ -482,7 +483,7 @@ Evaluate
   <p>Orchestra splits a run into two parts that change at different speeds. The <strong>workflow</strong> is the same for every project: the same steps, in the same order, with the same places to stop. The <strong>gates</strong> differ per project: each level adds the checks it knows about. So you always know what a run will do, while the checks fit the code in front of it.</p>
 
   <figure class="dg-fig"><div class="dg-scroll">
-  <svg class="dg" viewBox="0 0 720 350" role="img" aria-label="Two projects side by side. A Java service and an example TypeScript app run the identical steps spec, plan, check and code, in the same order with the same stops. Their gates differ: the Java service gets ops, testing, comments, logging, layout and Spotless; the TypeScript app gets a type check, component and API client reviews, and eslint. Both get the build first and last, the two workflow gates and the clean-code gate of the core gates.">
+  <svg class="dg" viewBox="0 0 720 350" role="img" aria-label="Two projects side by side. A Java service and an example TypeScript app run the identical steps spec, plan, check and code, in the same order with the same stops. Their gates differ: the Java service gets general, persistence, testing, comments, logging, layout and Spotless; the TypeScript app gets a type check, component and API client reviews, and eslint. Both get the build first and last, the two workflow gates and the clean-code gate of the core gates.">
     <rect x="114" y="34" width="218" height="180" rx="10" class="ln blue dash"/>
     <text x="223" y="118" text-anchor="middle" class="sm ta b">same steps</text>
     <text x="223" y="133" text-anchor="middle" class="sm ta b">same order</text>
@@ -501,7 +502,7 @@ Evaluate
     <rect x="344" y="98" width="108" height="18" rx="4" class="okb"/><text x="398" y="111" text-anchor="middle" class="sm">conformance</text>
     <rect x="344" y="120" width="108" height="18" rx="4" class="okb"/><text x="398" y="133" text-anchor="middle" class="sm">logic review</text>
     <rect x="344" y="142" width="108" height="18" rx="4" class="box"/><text x="398" y="155" text-anchor="middle" class="sm">clean code</text>
-    <rect x="344" y="164" width="108" height="18" rx="4" class="gateb"/><text x="398" y="177" text-anchor="middle" class="sm">ops</text>
+    <rect x="344" y="164" width="108" height="18" rx="4" class="gateb"/><text x="398" y="177" text-anchor="middle" class="sm" style="font-size:9px">general, persistence</text>
     <rect x="470" y="76" width="108" height="18" rx="4" class="gateb"/><text x="524" y="89" text-anchor="middle" class="sm">testing</text>
         <rect x="596" y="76" width="108" height="18" rx="4" class="gateb"/><text x="650" y="89" text-anchor="middle" class="sm">comments</text>
     <rect x="596" y="98" width="108" height="18" rx="4" class="gateb"/><text x="650" y="111" text-anchor="middle" class="sm">logging</text>
@@ -538,7 +539,7 @@ Evaluate
     <thead><tr><th>Level</th><th>Knows about</th><th>Adds</th></tr></thead>
     <tbody>
       <tr><td><strong>Orchestra</strong></td><td>Any project</td><td>The full build, first and last. The fix loop, the round limits, the result contract and the report for every gate.</td></tr>
-      <tr><td><strong>Workflow</strong></td><td>Any language</td><td>Checks that need no stack and read its own brief and plan: was the plan done, is the logic right, can each test fail.</td></tr>
+      <tr><td><strong>Workflow</strong></td><td>Any language</td><td>Checks that need no stack and read its own spec and plan: was the plan done, is the logic right, can each test fail.</td></tr>
       <tr><td><strong>Core</strong></td><td>Any workflow</td><td>Optional. Checks that read only what every workflow gives: is the code clean. Each one is declared once, for every workflow (S80).</td></tr>
       <tr><td><strong>Stack</strong></td><td>One language and its tools</td><td>The build command, tool gates (coverage, mutation, formatting) and reviewers for its conventions.</td></tr>
       <tr><td><strong>Project</strong></td><td>Your code base</td><td>Which gates are on, how many fix rounds, your own patterns. Later: its own gates and a build that overrides the stack.</td></tr>
@@ -563,8 +564,8 @@ Evaluate
 
     <text x="490" y="20" text-anchor="middle" class="b">after writing</text>
     <rect x="280" y="32" width="76" height="116" rx="8" class="acc"/><text x="318" y="84" text-anchor="middle" class="sm b">build</text><text x="318" y="100" text-anchor="middle" class="sm">all tests</text>
-    <rect x="364" y="32" width="76" height="116" rx="8" class="okb"/><text x="402" y="84" text-anchor="middle" class="sm b">logic</text><text x="402" y="100" text-anchor="middle" class="sm">the brief</text>
-    <rect x="448" y="32" width="76" height="116" rx="8" class="gateb"/><text x="486" y="84" text-anchor="middle" class="sm b">ops</text><text x="486" y="100" text-anchor="middle" class="sm">full rules</text>
+    <rect x="364" y="32" width="76" height="116" rx="8" class="okb"/><text x="402" y="84" text-anchor="middle" class="sm b">logic</text><text x="402" y="100" text-anchor="middle" class="sm">the spec</text>
+    <rect x="448" y="32" width="76" height="116" rx="8" class="gateb"/><text x="486" y="84" text-anchor="middle" class="sm b">general</text><text x="486" y="100" text-anchor="middle" class="sm">full rules</text>
     <rect x="532" y="32" width="76" height="116" rx="8" class="gateb"/><text x="570" y="84" text-anchor="middle" class="sm b">testing</text><text x="570" y="100" text-anchor="middle" class="sm">full rules</text>
     <rect x="616" y="32" width="76" height="116" rx="8" class="gateb"/><text x="654" y="84" text-anchor="middle" class="sm b">logging</text><text x="654" y="100" text-anchor="middle" class="sm">full rules</text>
     <text x="486" y="168" text-anchor="middle" class="sm m">one topic per gate, each in a fresh context</text>
@@ -578,7 +579,7 @@ Evaluate
     <div class="card"><h4>Machines first</h4><div class="sub">The build and tool gates run before reviewers, so reviewers judge code that already compiles and passes.</div></div>
     <div class="card"><h4>Only what changed</h4><div class="sub">A gate runs only when the change touches its files or patterns. The report lists what was skipped and why.</div></div>
     <div class="card"><h4>Fix in place, once</h4><div class="sub">A reviewer fixes its findings and commits, and never re-reviews its own fix. A tool gets a fixed number of fix rounds.</div></div>
-    <div class="card"><h4>Leftovers go to you</h4><div class="sub">What a gate cannot or should not fix goes to the report as Evaluate. The run goes on. No endless loops.</div></div>
+    <div class="card"><h4>Leftovers go to you</h4><div class="sub">What a gate cannot or should not fix goes to the report as Report. The run goes on. No endless loops.</div></div>
     <div class="card"><h4>Green is the proof</h4><div class="sub">The last gate is always the full build. Gates in finish must not change behaviour, because nothing reviews after them.</div></div>
   </div>
 
@@ -619,23 +620,23 @@ Evaluate
           <p>The default branch comes from <code>origin/HEAD</code>. The worktree is <code>.orchestra/worktrees/&lt;branch&gt;</code>. The workflow never checks out, pulls or switches. A taken branch name gets <code>-2</code>, <code>-3</code>. The base commit is what every later review compares against.</p>
         </div>
         <div data-depth="code" hidden>
-          <p>Orchestra creates the worktree in <code>orchestra/lib/worktree.js</code>. <code>prepare()</code> in <code>orc-standard-workflow/bin/next.js</code> then runs inside it. It writes <code>tmp/runs/&lt;branch&gt;/run.json</code> (base, branch, brief path, notes folder) and <code>docs/runs/&lt;branch&gt;/task.md</code>.</p>
+          <p>Orchestra creates the worktree in <code>orchestra/lib/worktree.js</code>. <code>prepare()</code> in <code>orc-standard-workflow/bin/next.js</code> then runs inside it. It writes <code>tmp/runs/&lt;branch&gt;/run.json</code> (base, branch, spec path, notes folder) and <code>docs/runs/&lt;branch&gt;/task.md</code>.</p>
         </div>
       </section>
 
       <section class="xp-panel" data-step="2" hidden>
         <h4>Spec</h4>
-        <div class="xp-meta"><span class="chip">AI agent, fresh</span><span class="chip">writes brief.md</span></div>
+        <div class="xp-meta"><span class="chip">AI agent, fresh</span><span class="chip">writes spec.md</span></div>
         <div data-depth="what">
-          <p>An agent turns your task into a short brief: the goal, the acceptance criteria as given-when-then, what is in and out of scope, the other services and repos it touches (its integration points), and its assumptions. Every later step is checked against this brief, so it is the contract of the run.</p>
+          <p>An agent turns your task into a short spec: the goal, the acceptance criteria as given-when-then, what is in and out of scope, the other services and repos it touches (its integration points), and its assumptions. Every later step is checked against this spec, so it is the contract of the run.</p>
         </div>
         <div data-depth="flow" hidden>
-          <ol class="xp-flow"><li>read the task</li><li class="arrow">→</li><li>load the spec guides, if any</li><li class="arrow">→</li><li>read AGENTS.md and the code</li><li class="arrow">→</li><li>external fact? read it at its source</li><li class="arrow">→</li><li>open question?</li><li class="arrow">→</li><li>technical: take a default, record it</li><li class="arrow">·</li><li class="s">business fact: mark it</li><li class="arrow">→</li><li>write brief.md</li></ol>
+          <ol class="xp-flow"><li>read the task</li><li class="arrow">→</li><li>load the spec guides, if any</li><li class="arrow">→</li><li>read AGENTS.md and the code</li><li class="arrow">→</li><li>external fact? read it at its source</li><li class="arrow">→</li><li>open question?</li><li class="arrow">→</li><li>technical: take a default, record it</li><li class="arrow">·</li><li class="s">business fact: mark it</li><li class="arrow">→</li><li>write spec.md</li></ol>
           <p>A <strong>technical choice</strong> (rounding, null handling, order of two steps) gets a boring default. A <strong>business fact</strong> (a rate, a price, a limit, who qualifies) never gets a value. A fact from outside the project is read at its source (a sibling checkout, an API contract, a schema or a migration) or recorded as an assumption. A repo the task names is read only: its needed changes become follow-ups. See <a href="#lanes">who does what</a>.</p>
-          <p>With a Curator, the spec guide adds one more job. The agent reads the backlog (Vision, Now and Next, never Later), the product and tech docs and <code>GLOSSARY.md</code> at the repo root, and writes the brief in the glossary's words. It ends the brief with a <code>## Direction</code> section: <code>Serves: B&lt;n&gt; | new</code>, then <code>Deferred:</code> lines for wants the task leaves for later and <code>Question:</code> lines for gaps only you can close. A <code>Question:</code> line never stops the run.</p>
+          <p>With a Curator, the spec guide adds one more job. The agent reads the backlog (Vision, Now and Next, never Later), the product and tech docs and <code>GLOSSARY.md</code> at the repo root, and writes the spec in the glossary's words. It ends the spec with a <code>## Direction</code> section: <code>Serves: B&lt;n&gt; | new</code>, then <code>Deferred:</code> lines for wants the task leaves for later and <code>Question:</code> lines for gaps only you can close. A <code>Question:</code> line never stops the run.</p>
         </div>
         <div data-depth="code" hidden>
-          <p>Skill <code>orc-standard-workflow:spec</code>. Dispatched by <code>stage(ctx, 'spec', …)</code> in <code>next.js</code>. Result in <code>spec.result.json</code>, with an <code>assumptions</code> list.</p>
+          <p>Skill <code>orc-standard-workflow:spec</code>. Dispatched by <code>step(ctx, 'spec', …)</code> in <code>next.js</code>, with the stage <code>spec</code> and the shape of <code>formats/spec.md</code> (S92). Result in <code>spec.result.json</code>, with an <code>assumptions</code> list.</p>
         </div>
       </section>
 
@@ -643,14 +644,14 @@ Evaluate
         <h4>Missing facts</h4>
         <div class="xp-meta"><span class="chip">plain code</span><span class="chip stopc">asks you</span></div>
         <div data-depth="what">
-          <p>If the brief needs a fact that only you know, the run stops here and asks. This is before any plan or code, so nothing is built on a guessed value. When the brief has no open fact, this step does nothing.</p>
+          <p>If the spec needs a fact that only you know, the run stops here and asks. This is before any plan or code, so nothing is built on a guessed value. When the spec has no open fact, this step does nothing.</p>
         </div>
         <div data-depth="flow" hidden>
-          <ol class="xp-flow"><li>find "business fact:" lines</li><li class="arrow">→</li><li class="s">stop with the questions</li><li class="arrow">→</li><li>you add ## business-facts</li><li class="arrow">→</li><li>run again</li><li class="arrow">→</li><li>plan writes the values into the brief</li></ol>
+          <ol class="xp-flow"><li>find "business fact:" lines</li><li class="arrow">→</li><li class="s">stop with the questions</li><li class="arrow">→</li><li>you add ## business-facts</li><li class="arrow">→</li><li>run again</li><li class="arrow">→</li><li>plan writes the values into the spec</li></ol>
           <p>See <a href="#answer">answer a question</a> for the exact format.</p>
         </div>
         <div data-depth="code" hidden>
-          <p><code>openFacts()</code> in <code>next.js</code> reads the brief with a regex. It writes <code>business-facts.result.json</code> so the stop shows in the report.</p>
+          <p><code>openFacts()</code> in <code>next.js</code> reads the spec with a regex. It writes <code>business-facts.result.json</code> so the stop shows in the report.</p>
         </div>
       </section>
 
@@ -658,10 +659,10 @@ Evaluate
         <h4>Plan</h4>
         <div class="xp-meta"><span class="chip">AI agent, fresh</span><span class="chip">uses the plan guides, if any</span><span class="chip">writes plan.md</span></div>
         <div data-depth="what">
-          <p>An agent splits the brief into small, ordered tasks. Each task names its files and the tests that prove each acceptance criterion. The plan has no code. With a Curator, the plan must also respect its direction file: each constraint (<code>Cn</code>) that the task touches is listed under the approach with the task that satisfies it.</p>
+          <p>An agent splits the spec into small, ordered tasks. Each task names its files and the tests that prove each acceptance criterion. The plan has no code. With a Curator, the plan must also respect its direction file: each constraint (<code>Cn</code>) that the task touches is listed under the approach with the task that satisfies it.</p>
         </div>
         <div data-depth="flow" hidden>
-          <ol class="xp-flow"><li>load the plan guides, if any</li><li class="arrow">→</li><li>apply your answers to the brief</li><li class="arrow">→</li><li>read the affected files</li><li class="arrow">→</li><li>write tasks T1, T2, …</li></ol>
+          <ol class="xp-flow"><li>load the plan guides, if any</li><li class="arrow">→</li><li>apply your answers to the spec</li><li class="arrow">→</li><li>read the affected files</li><li class="arrow">→</li><li>write tasks T1, T2, …</li></ol>
           <p>A task has at most about four files and one job. Notes may hold a signature or ten lines of pseudo-code, no more. A constraint the plan cannot satisfy gets a <code>Warning:</code> line under <code>## Approach</code>. It is never skipped in silence.</p>
         </div>
         <div data-depth="code" hidden>
@@ -671,16 +672,16 @@ Evaluate
 
       <section class="xp-panel" data-step="5" hidden>
         <h4>Plan check</h4>
-        <div class="xp-meta"><span class="chip">AI agent, fresh</span><span class="chip stopc">can ask you</span><span class="chip">fixes the brief and plan</span></div>
+        <div class="xp-meta"><span class="chip">AI agent, fresh</span><span class="chip stopc">can ask you</span><span class="chip">fixes the spec and plan</span></div>
         <div data-depth="what">
-          <p>A second agent, which did not write the plan, checks the brief and the plan against the real code and fixes them. A wrong plan is cheapest to fix here, before any code exists. It also checks that every external fact has a source, and it stops the run when the task needs a change in a repo the task does not name.</p>
+          <p>A second agent, which did not write the plan, checks the spec and the plan against the real code and fixes them. A wrong plan is cheapest to fix here, before any code exists. It also checks that every external fact has a source, and it stops the run when the task needs a change in a repo the task does not name.</p>
         </div>
         <div data-depth="flow" hidden>
           <ol class="xp-flow"><li>every criterion has a test?</li><li class="arrow">→</li><li>every constraint met or warned?</li><li class="arrow">→</li><li>files and signatures exist?</li><li class="arrow">→</li><li>in scope, small, no over-building?</li><li class="arrow">→</li><li>external facts sourced?</li><li class="arrow">→</li><li><a href="#triage">triage</a></li><li class="arrow">→</li><li class="s">a real decision? stop</li><li class="arrow">·</li><li>else patch</li></ol>
           <p>After it, code counts the task headings <code>### T1…Tn</code>. A plan with gaps in the numbers sends the run back to plan check.</p>
         </div>
         <div data-depth="code" hidden>
-          <p>Skill <code>orc-standard-workflow:plan-check</code>, which invokes <code>orc-core:triage</code> when it is given. A constraint that applies and has neither a task nor a <code>Warning:</code> line is a Patch finding. <code>planTasks()</code> in <code>next.js</code> counts the tasks.</p>
+          <p>Skill <code>orc-standard-workflow:plan-check</code>, a judging step that sorts its findings by <code>contract/judging.md</code> (S90). A constraint that applies and has neither a task nor a <code>Warning:</code> line is a Fix finding. <code>planTasks()</code> in <code>next.js</code> counts the tasks.</p>
         </div>
       </section>
 
@@ -703,7 +704,7 @@ Evaluate
         <h4>Implementation check</h4>
         <div class="xp-meta"><span class="chip">full build, then reviewers</span><span class="chip stopc">a red build fails the run</span></div>
         <div data-depth="what">
-          <p>Is the code correct and sound? The full build and tests run. Then one reviewer checks that the plan was done, and a second checks the logic against the brief. With the core gates, a third checks the clean-code rules. They fix what they find and commit the fixes.</p>
+          <p>Is the code correct and sound? The full build and tests run. Then one reviewer checks that the plan was done, and a second checks the logic against the spec. With the core gates, a third checks the clean-code rules. They fix what they find and commit the fixes.</p>
         </div>
         <div data-depth="flow" hidden>
           <ol class="xp-flow"><li>build (up to 3 fix rounds)</li><li class="arrow">→</li><li>tool checks</li><li class="arrow">→</li><li>plan-conformance</li><li class="arrow">→</li><li>logic-review</li><li class="arrow">→</li><li>clean-code</li></ol>
@@ -718,7 +719,7 @@ Evaluate
         <h4>Conventions check</h4>
         <div class="xp-meta"><span class="chip">stack reviewers</span><span class="chip">no gates yet</span></div>
         <div data-depth="what">
-          <p>Does the code follow your team's conventions? Stack reviewers check things like test style, and fix them. Only the reviewers that concern the changed files run. The Java reviewer here is <code>testing</code>. The <code>ops</code> reviewer runs earlier, in implementation-check.</p>
+          <p>Does the code follow your team's conventions? Stack reviewers check things like test style, and fix them. Only the reviewers that concern the changed files run. The Java reviewer here is <code>testing</code>. The <code>general</code> and <code>persistence</code> reviewers run earlier, in implementation-check.</p>
         </div>
         <div data-depth="flow" hidden>
           <ol class="xp-flow"><li>select by changed files</li><li class="arrow">→</li><li>tool checks</li><li class="arrow">→</li><li>review agents</li></ol>
@@ -750,7 +751,7 @@ Evaluate
           <p>Orchestra writes <code>report.md</code> and commits the run notes. With a Curator, the <code>curate</code> step runs first, in the main session, and commits the updated <code>docs/curator/</code> docs. You read the report, check the branch, and push when you are happy. Orchestra never pushes and never opens a pull request.</p>
         </div>
         <div data-depth="flow" hidden>
-          <ol class="xp-flow"><li>status and reason</li><li class="arrow">·</li><li>plugin versions</li><li class="arrow">·</li><li>commits and changed files</li><li class="arrow">·</li><li>results in run order</li><li class="arrow">·</li><li>assumptions</li><li class="arrow">·</li><li>deviations</li><li class="arrow">·</li><li>integration points</li><li class="arrow">·</li><li>Evaluate findings</li><li class="arrow">·</li><li>skipped checks</li><li class="arrow">·</li><li>your answers</li></ol>
+          <ol class="xp-flow"><li>status and reason</li><li class="arrow">·</li><li>plugin versions</li><li class="arrow">·</li><li>commits and changed files</li><li class="arrow">·</li><li>results in run order</li><li class="arrow">·</li><li>assumptions</li><li class="arrow">·</li><li>deviations</li><li class="arrow">·</li><li>integration points</li><li class="arrow">·</li><li>Report findings</li><li class="arrow">·</li><li>skipped checks</li><li class="arrow">·</li><li>your answers</li></ol>
           <p>See <a href="#readreport">read the report</a>.</p>
         </div>
         <div data-depth="code" hidden>
@@ -832,15 +833,15 @@ orchestra run                                            # continue a stopped ru
   <p>A <code>failed</code> run shows the reason and the report. Fix the cause if it is yours (for example a config that is not on <code>origin/&lt;default&gt;</code>), then run <code>orchestra run</code> again. The failed step runs again. Steps that finished never run again.</p>
 
   <h3 id="readreport">Read the report</h3>
-  <p>The report is in <code>docs/runs/&lt;branch&gt;/report.md</code>, next to the brief, the plan and the review notes. While the run is stopped, open it in the worktree. When the run is <code>done</code>, the worktree is removed and the branch stays. The run folder is copied to <code>tmp/runs/&lt;branch&gt;/</code> in your checkout, with the logs. Read the report with <code>git show &lt;branch&gt;:docs/runs/&lt;branch&gt;/report.md</code>. Read these parts first:</p>
+  <p>The report is in <code>docs/runs/&lt;branch&gt;/report.md</code>, next to the spec, the plan and the review notes. While the run is stopped, open it in the worktree. When the run is <code>done</code>, the worktree is removed and the branch stays. The run folder is copied to <code>tmp/runs/&lt;branch&gt;/</code> in your checkout, with the logs. Read the report with <code>git show &lt;branch&gt;:docs/runs/&lt;branch&gt;/report.md</code>. Read these parts first:</p>
   <div class="tablewrap"><table>
     <thead><tr><th>Part</th><th>What to do with it</th></tr></thead>
     <tbody>
       <tr><td><strong>Assumptions</strong></td><td>Technical choices the agents made on their own. Check that you agree.</td></tr>
       <tr><td><strong>Deviations</strong></td><td>Tasks the coder did another way than the plan says, with the reason. Check that the change of direction is right.</td></tr>
       <tr><td><strong>Integration points</strong></td><td>The other services and repos the task touches. A change that another repo needs is a follow-up for you: the run never changes another repo.</td></tr>
-      <tr><td><strong>Evaluate</strong></td><td>Findings a reviewer chose not to fix, because the fix costs more than the problem, or because only a human can judge it. Each has a <code>file:line</code>.</td></tr>
-      <tr><td><strong>Results</strong></td><td>Every step in order, with its counts: how many findings were patched, sent to you, or dropped.</td></tr>
+      <tr><td><strong>Report</strong></td><td>Findings a reviewer chose not to fix, because the fix costs more than the problem, or because only a human can judge it. Each has a <code>file:line</code>.</td></tr>
+      <tr><td><strong>Results</strong></td><td>Every step in order, with how many findings it put in each bucket: Decide, Fix, Report and Noise.</td></tr>
       <tr><td><strong>Skipped checks</strong></td><td>Checks that did not run, and why (for example "no changed file matches"), and checks that ran but found nothing in scope.</td></tr>
       <tr><td><strong>Decisions</strong></td><td>A copy of your answers, so the report is the full record.</td></tr>
       <tr><td><strong>Commits</strong></td><td>The commits of the run and a list of the changed files, without the run notes.</td></tr>
@@ -898,8 +899,8 @@ orchestra run                                            # continue a stopped ru
   <div class="stack">
     <div class="layer orc"><div class="who">Orchestrator<small>orchestra</small></div><div>The engine: the entry, the loop, the checks, the report. You do not change it.</div></div>
     <div class="layer wf"><div class="who">Workflow<small>orc-standard-workflow</small></div><div>The steps of a run and their order, plus its own two gates: plan-conformance and logic-review. Works with any stack.</div></div>
-    <div class="layer"><div class="who">Core<small>orc-core</small></div><div>Optional. The gates that every workflow gets: <code>clean-code</code> today. It also fills the shared roles; it gives <code>triage</code> (S87). A core gate reads only what every workflow gives: the brief, the base commit, the notes folder, your answers and its own config. <code>clean-code</code> takes the measure and the language rules from the <code>clean-code</code> plugin, which it depends on (S85).</div></div>
-    <div class="layer st"><div class="who">Stack Skills<small>orc-java-stack</small></div><div>Java with Maven: the build, a code guide, fix guides, and six gates: ops, testing, comments, logging, layout and Spotless. Later: crap4java and mutate4java as tool gates.</div></div>
+    <div class="layer"><div class="who">Core<small>orc-core</small></div><div>Optional. The gates that every workflow gets: <code>clean-code</code> today. It also fills the shared roles; it gives <code>triage</code> (S87). A core gate reads only what every workflow gives: the spec, the base commit, the notes folder, your answers and its own config. <code>clean-code</code> takes its rules, the measure and the language rules from the <code>clean-code</code> plugin, which it depends on (S85, S92).</div></div>
+    <div class="layer st"><div class="who">Stack Skills<small>orc-java-stack</small></div><div>Java with Maven: the build, a code guide, fix guides, and seven gates: general, persistence, testing, comments, logging, layout and Spotless. Every project is Quarkus (S93). Later: crap4java and mutate4java as tool gates.</div></div>
     <div class="layer st"><div class="who">Stack Skills<small>orc-ts-stack</small></div><div>TypeScript: the build (<code>npm ci &amp;&amp; npm test</code>) and its fix guide. No gates yet.</div></div>
     <div class="layer pr"><div class="who">Project<small>.orchestra/config.json</small></div><div>Your choices: which plugins, which checks are off, and what changes in a plugin's gate or in the build: its command, its files, its fix rounds. Plus your naming patterns.</div></div>
     <div class="layer pr"><div class="who">Project Customization<small>.orchestra/project/</small></div><div>Your own gates, your own rules for the spec, plan and code stages, and your own shared roles, committed in your project (S86). Their skills live in <code>.agents/skills/</code>. <code>orchestra project</code> writes them.</div></div>
@@ -923,10 +924,10 @@ orchestra run                                            # continue a stopped ru
   },
   "curator": { "plugin": "orc-curator" }      // optional: leave it out to run with no Curator
 }</code></pre>
-  <p>The <code>core</code> and <code>curator</code> sections are optional. Orchestra refuses the old section <code>global-gates</code> and says to rename it. Every section has the same <code>disable</code> key. It names a gate by its name, or a guide by its path inside the plugin. Before 0.19.0, a guide was a skill and had a name: an old <code>"disable": ["code-guide"]</code> now fails <code>orchestra check</code>. Write <code>"guides/code.md"</code> instead.</p>
+  <p>The <code>core</code> and <code>curator</code> sections are optional. An old section such as <code>global-gates</code> fails as unknown (S89). Every section has the same <code>disable</code> key. It names a gate by its name, or a guide by its path inside the plugin. Before 0.19.0, a guide was a skill and had a name: an old <code>"disable": ["code-guide"]</code> now fails <code>orchestra check</code>. Write <code>"guides/code.md"</code> instead.</p>
   <p>Under <code>gates</code> you can change these keys of a plugin's gate: <code>max_rounds</code>, <code>run</code>, <code>files</code>, <code>grep</code>, <code>when</code> and <code>always</code>. Under <code>build</code>, in the <code>stack-skills</code> section only, you can change <code>run</code>, <code>guide</code> and <code>max_rounds</code>. A gate keeps its phase, its kind and its reviewer. For a different gate, turn the plugin's gate off and add your own.</p>
   <h4>Shared roles</h4>
-  <p>A <strong>shared role</strong> is a company rule that every stage and gate can read. The list is fixed: <code>triage</code>, <code>writing-style</code>, <code>pr-review</code> and <code>pr-description</code>. Only the <code>core</code> slot fills them, and today <code>orc-core</code> fills <code>triage</code> alone. Orchestra gives each filled role to every dispatch as the input <code>shared-role.&lt;role&gt;</code>. A skill uses a role only when it is given: today only the judging skills read <code>triage</code>. The PR roles belong to the workflow: a workflow that ends with a PR invokes them when they are given (S87).</p>
+  <p>A <strong>shared role</strong> is a company rule that every stage and gate can read. The list is fixed: <code>triage</code>, <code>writing-style</code>, <code>pr-review</code> and <code>pr-description</code>. Only the <code>core</code> slot fills them, and today <code>orc-core</code> fills <code>triage</code> alone. Orchestra gives each filled role to every dispatch as the input <code>shared-role.&lt;role&gt;</code>. A skill uses a role only when it is given: today only the judging steps and agent gates read <code>triage</code>, through <code>contract/judging.md</code>. The PR roles belong to the workflow: a workflow that ends with a PR invokes them when they are given (S87).</p>
   <p>Your project can override a shared role with a skill of its own, or amend it with a short guide.</p>
 <pre><code>// .orchestra/project/orchestra.json
 {
@@ -993,7 +994,7 @@ orchestra run                                            # continue a stopped ru
     <text x="634" y="210" text-anchor="middle" class="sm m">before its fixes</text>
     <text x="826" y="240" text-anchor="end" class="sm m">then report.md · red final build = failed</text>
   </svg></div>
-  <figcaption>Red marks the three places a run can stop for a human. Each stop comes before the work that would build on a guess. The Java stack brings six gates: ops in implementation-check, testing in conventions-check, and comments, logging, layout and Spotless in finish.</figcaption>
+  <figcaption>Red marks the three places a run can stop for a human. Each stop comes before the work that would build on a guess. The Java stack brings seven gates: general and persistence in implementation-check, testing in conventions-check, and comments, logging, layout and Spotless in finish.</figcaption>
   </figure>
 
   <p>One more kind of step runs in the main session, with you, and not in a fresh agent. When a Curator is configured but its flag file is missing on the default branch, its <code>setup</code> runs before any run starts: in your checkout on the default branch, or inline on its own branch <code>curator/setup</code>. Its <code>curate</code> runs when the workflow is done, before the report. Both can ask you questions and start subagents. <code>setup</code> records the present and ends with the flag file. <code>curate</code> is the only writer of the Curator's docs in a run: it moves the served backlog row to Shipped, records what the run decided, removes what the diff made false, runs the <code>direction</code> sweep that writes new constraints, asks you each judgement call as it comes, and commits once. Outside a run, you start <code>curate</code> yourself, on a finished burst or on a change in words. If a run stops while <code>curate</code> is running, the resume tells the agent to discard its files and run it again. A run that went on without setup skips <code>curate</code>, and its report says so.</p>
@@ -1044,7 +1045,7 @@ orchestra run                                            # continue a stopped ru
   <h4>The build and the fix loop</h4>
   <p>The build is special. It is not a gate you can turn off. It runs first in implementation-check and last in finish, and it produces the test coverage that other tools read. When a tool or the build fails, a fixer agent gets the raw output and a fix guide from the stack, fixes only what the output reports, and commits. Then the tool runs again.</p>
   <figure class="dg-fig"><div class="dg-scroll">
-  <svg class="dg" viewBox="0 0 720 270" role="img" aria-label="Tool gate loop: run the command; exit 0 means ok. Otherwise, while rounds are below the limit, the fixer fixes and commits and the command runs again. After the last round a red build fails the run, and any other tool goes to Evaluate.">
+  <svg class="dg" viewBox="0 0 720 270" role="img" aria-label="Tool gate loop: run the command; exit 0 means ok. Otherwise, while rounds are below the limit, the fixer fixes and commits and the command runs again. After the last round a red build fails the run, and any other tool goes to Report.">
     <defs><marker id="a6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
     <rect x="20" y="90" width="150" height="46" rx="6" class="box"/>
     <text x="95" y="110" text-anchor="middle" class="b">run the command</text>
@@ -1058,7 +1059,7 @@ orchestra run                                            # continue a stopped ru
     <text x="85" y="196" text-anchor="middle" class="b">fixer subagent</text>
     <text x="85" y="212" text-anchor="middle" class="sm m">raw log + fix guide</text>
     <rect x="360" y="152" width="340" height="36" rx="6" class="stopb"/><text x="374" y="175" class="sm"><tspan class="b">build</tspan>: the run stops as failed</text>
-    <rect x="360" y="216" width="340" height="36" rx="6" class="gateb"/><text x="374" y="239" class="sm"><tspan class="b">any other tool</tspan>: Evaluate, the phase goes on</text>
+    <rect x="360" y="216" width="340" height="36" rx="6" class="gateb"/><text x="374" y="239" class="sm"><tspan class="b">any other tool</tspan>: Report, the phase goes on</text>
     <g class="ln">
       <line x1="170" y1="113" x2="198" y2="113" marker-end="url(#a6)"/>
       <line x1="300" y1="113" x2="358" y2="113" marker-end="url(#a6)"/>
@@ -1081,9 +1082,9 @@ orchestra run                                            # continue a stopped ru
   <h3 id="reviewers">The review gates</h3>
   <p>Three review gates run in implementation-check. The workflow brings two: plan-conformance and logic-review. The core gates bring the third, clean-code. The first two split one job on purpose, and each one sees different documents:</p>
   <figure class="dg-fig"><div class="dg-scroll">
-  <svg class="dg" viewBox="0 0 720 300" role="img" aria-label="Which documents each reviewer reads. logic-review reads the brief, decisions, the diff and code, and code.md last. plan-conformance reads decisions, the diff, code.md, the plan and the implementation log. The plan is blocked from logic-review.">
+  <svg class="dg" viewBox="0 0 720 300" role="img" aria-label="Which documents each reviewer reads. logic-review reads the spec, decisions, the diff and code, and code.md last. plan-conformance reads decisions, the diff, code.md, the plan and the implementation log. The plan is blocked from logic-review.">
     <defs><marker id="a9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
-    <rect x="20" y="30" width="180" height="32" rx="5" class="box"/><text x="110" y="50" text-anchor="middle" class="c">brief.md</text>
+    <rect x="20" y="30" width="180" height="32" rx="5" class="box"/><text x="110" y="50" text-anchor="middle" class="c">spec.md</text>
     <rect x="20" y="75" width="180" height="32" rx="5" class="box"/><text x="110" y="95" text-anchor="middle" class="c">decisions.md</text>
     <rect x="20" y="120" width="180" height="32" rx="5" class="box"/><text x="110" y="140" text-anchor="middle" class="c">diff + code</text>
     <rect x="20" y="165" width="180" height="32" rx="5" class="box dash"/><text x="110" y="185" text-anchor="middle" class="c">code.md (read last)</text>
@@ -1118,24 +1119,24 @@ orchestra run                                            # continue a stopped ru
   </svg></div>
   <figcaption>Two reviewers, two different sets of documents. logic-review judges the code against the requirements only. plan-conformance compares the code with the plan only. Neither one's blind spot is the other's.</figcaption>
   </figure>
-  <p><strong>plan-conformance</strong> checks that every task of the plan is done, every named test exists, a task done another way is declared as a deviation, and nothing falls outside the brief's scope. The plan sets the direction, not every line: an extra check or a helper inside a task is not a deviation (S67). It gives no verdict on correctness.</p>
+  <p><strong>plan-conformance</strong> checks that every task of the plan is done, every named test exists, a task done another way is declared as a deviation, and nothing falls outside the spec's scope. The plan sets the direction, not every line: an extra check or a helper inside a task is not a deviation (S67). It gives no verdict on correctness.</p>
   <p><strong>logic-review</strong> first writes down what each acceptance criterion requires and one likely wrong version of the code (the wrong rounding mode, <code>&lt;</code> for <code>&lt;=</code>, a missing null check). Only then does it read the code. Each test must fail on that wrong version. A test that would pass on wrong code is a finding. Then it hunts for bugs. Last, it reads <code>code.md</code>: a recorded choice that changes behaviour, such as a check that throws, needs its own test too.</p>
-  <p><strong>clean-code</strong> runs last of the three. It comes from <code>orc-core</code>, so every workflow gets it, and a project without that plugin has no clean-code gate (S80). It reads the diff and the code, and the brief only for the scope. It never reads the plan. It checks thirteen rules: the language-agnostic clean-code rules, comments included, and three Clean Architecture rules. It fixes its Patch findings.</p>
-  <p>The measure and the language rules come from the <code>clean-code</code> plugin, the only copy of both (S85). <code>orc-core</code> lists <code>clean-code</code> under <code>dependencies</code>, so Claude Code installs it with the gate. The gate finds its folder through the skill <code>clean-code:manifest</code> and runs <code>measure.py</code> against the base commit. The script reads Python, TypeScript and Java; for Java the JDK parses the code with its own compiler API (S83). The gate then loads the rules for each language of the changed files: <code>clean-code-python</code>, <code>clean-code-typescript</code> or <code>clean-code-java</code>. A stack declares nothing for clean code. Without <code>clean-code</code>, the gate has no measurement, adds an Evaluate warning to the report and reviews with its own thirteen rules. On a harness with no <code>dependencies</code>, you install <code>clean-code</code> by hand (<code>docs/harness-exceptions.md</code>).</p>
+  <p><strong>clean-code</strong> runs last of the three. It comes from <code>orc-core</code>, so every workflow gets it, and a project without that plugin has no clean-code gate (S80). It reads the diff and the code, and the spec only for the scope. It never reads the plan. It checks the thirteen rules of <code>rules.md</code> in the <code>clean-code</code> plugin: the language-agnostic clean-code rules, comments included, and three Clean Architecture rules. It fixes its Fix findings.</p>
+  <p>The measure and the language rules come from the <code>clean-code</code> plugin, the only copy of both (S85). <code>orc-core</code> lists <code>clean-code</code> under <code>dependencies</code>, so Claude Code installs it with the gate. The gate finds its folder through the skill <code>clean-code:manifest</code> and runs the command of <code>measurement.md</code> against the base commit, on the committed files (<code>--at HEAD</code>). The script reads Python, TypeScript and Java; for Java the JDK parses the code with its own compiler API (S83). The gate then loads the rules for each language of the changed files: <code>clean-code-python</code>, <code>clean-code-typescript</code> or <code>clean-code-java</code>. A stack declares nothing for clean code. Without <code>clean-code</code>, the gate fails: its rules live there (S92). On a harness with no <code>dependencies</code>, you install <code>clean-code</code> by hand (<code>docs/harness-exceptions.md</code>).</p>
   <p>The gate judges only what the change made worse. A function or file the task created that is over a threshold is a finding (<code>new-over</code>), and so is one that crossed a threshold it was under (<code>crossed</code>). Old code that the change did not make worse is not a finding. A function may have 20 lines, a test 50 (S84). The Boy Scout Rule applies to each function the task edited, in its body or its signature: the gate leaves it better in at least one measure when the step stays inside the task. A function in the same file that the task did not edit is not the gate's to clean (S82).</p>
   <p><strong>Legacy code.</strong> Without the setting, a function that was over a threshold and grew is a finding (<code>grew</code>), for example a function with 10 parameters that gets an 11th. On legacy code these findings are noise. Set <code>"legacy": true</code> in the <code>core</code> section of the project config, and <code>grew</code> is no finding. <code>new-over</code>, <code>crossed</code> and new suppressions still are. The same switch exists by hand: <code>measure.py --compare --legacy</code> in the clean-code plugin (S82).</p>
   <p>Why the split: the plan is the author's view of the code. A reviewer who reads it tends to check "did the code follow the plan" and to take over the plan's blind spots. Research shows that author framing makes AI reviewers miss bugs (<a href="#research">R5</a>).</p>
 
   <h3 id="triage">Triage: what happens to a finding</h3>
-  <p>Every reviewer puts each finding into exactly one bucket. The bucket decides the action. The sorting rules are the shared role <code>triage</code>, filled by the skill <code>orc-core:triage</code>. It is optional: without it, a gate sorts by its own judgement. Orchestra keeps only the result contract: the <code>status</code>, <code>decide</code> (the run stops and asks a person) and <code>evaluate</code> (listed for later).</p>
+  <p>Every reviewer puts each finding into exactly one bucket. The bucket decides the action. Orchestra owns the buckets, the stop, the notes format and the result, in <code>contract/judging.md</code>, which every judging step and agent gate gets (S90). The method that picks the bucket is the shared role <code>triage</code>, filled by the skill <code>orc-core:triage</code>. It is optional: without it, a gate sorts by the bucket lines of <code>judging.md</code>.</p>
   <div class="buckets">
     <div class="dec"><b>Decide</b><span>Stop and ask you, before any fix.</span></div>
-    <div class="pat"><b>Patch</b><span>Fix it now, with the smallest fix.</span></div>
-    <div class="eva"><b>Evaluate</b><span>Do not fix. Show it in the report.</span></div>
+    <div class="pat"><b>Fix</b><span>Fix it now, with the smallest fix.</span></div>
+    <div class="eva"><b>Report</b><span>Do not fix. Show it in the report.</span></div>
     <div class="noi"><b>Noise</b><span>Drop it, with one line why.</span></div>
   </div>
   <figure class="dg-fig"><div class="dg-scroll">
-  <svg class="dg" viewBox="0 0 720 330" role="img" aria-label="Triage tree. First: a real fork and not your call gives Decide. Else: low probability, low risk and a costly fix gives Noise. Else: a cheap or worthwhile fix, or a document mismatch, gives Patch. Everything else is Evaluate.">
+  <svg class="dg" viewBox="0 0 720 330" role="img" aria-label="Triage tree. First: a real fork and not your call gives Decide. Else: low probability, low risk and a costly fix gives Noise. Else: a cheap or worthwhile fix, or a document mismatch, gives Fix. Everything else is Report.">
     <defs><marker id="a7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
     <rect x="20" y="12" width="680" height="36" rx="6" class="sunk"/>
     <text x="360" y="34" text-anchor="middle" class="sm">a finding · check it first, a wrong one is rejected · the rules from real runs apply before this tree</text>
@@ -1149,12 +1150,12 @@ orchestra run                                            # continue a stopped ru
     <text x="34" y="221" class="b">3 · A cheap fix, a worthwhile fix, or a doc mismatch?</text>
     <text x="34" y="238" class="sm m">Fix-Risk Low · or Mid with Risk and Probability Mid+ · or docs disagree</text>
     <rect x="20" y="272" width="420" height="46" rx="6" class="gateb"/>
-    <text x="34" y="291" class="b">Evaluate</text>
+    <text x="34" y="291" class="b">Report</text>
     <text x="34" y="308" class="sm">do not fix · it goes to the report for a human</text>
 
     <rect x="520" y="62" width="180" height="46" rx="6" class="stopb"/><text x="534" y="81" class="b">Decide</text><text x="534" y="98" class="sm">stop before any fix</text>
     <rect x="520" y="132" width="180" height="46" rx="6" class="box"/><text x="534" y="151" class="b">Noise</text><text x="534" y="168" class="sm">drop it, one line why</text>
-    <rect x="520" y="202" width="180" height="46" rx="6" class="okb"/><text x="534" y="221" class="b">Patch</text><text x="534" y="238" class="sm">smallest fix, commit</text>
+    <rect x="520" y="202" width="180" height="46" rx="6" class="okb"/><text x="534" y="221" class="b">Fix</text><text x="534" y="238" class="sm">smallest fix, commit</text>
 
     <g class="ln">
       <line x1="230" y1="48" x2="230" y2="60" marker-end="url(#a7)"/>
@@ -1171,7 +1172,7 @@ orchestra run                                            # continue a stopped ru
     <text x="520" y="305" class="sm m">Make the call, write why,</text>
     <text x="520" y="320" class="sm m">and go on to rule 2.</text>
   </svg></div>
-  <figcaption>The tree runs top to bottom and stops at the first yes. Size alone never makes a Decide. A large finding with a clear recommendation is Evaluate.</figcaption>
+  <figcaption>The tree runs top to bottom and stops at the first yes. Size alone never makes a Decide. A large finding with a clear recommendation is Report.</figcaption>
   </figure>
   <p>Each finding is rated on five axes: where it comes from, the risk, the risk of the fix, how likely it is, and what kind of problem it is. <strong>Decide</strong> needs two things together: a real choice between options with different trade-offs, and a reason the agent cannot make the call. Either the answer is a product question nobody wrote down, or the choice reshapes the work and no option is clearly better. When the agent can reason to an answer, it must make the call and write why. Asking you about something it could decide is a failure too.</p>
 
@@ -1209,7 +1210,7 @@ orchestra run                                            # continue a stopped ru
     <text x="190" y="168" text-anchor="middle" class="sm m">git-ignored</text>
     <rect x="420" y="110" width="220" height="70" rx="8" class="acc"/>
     <text x="530" y="134" text-anchor="middle" class="c b">docs/runs/&lt;branch&gt;/</text>
-    <text x="530" y="152" text-anchor="middle" class="sm">brief · plan · reviews · report</text>
+    <text x="530" y="152" text-anchor="middle" class="sm">spec · plan · reviews · report</text>
     <text x="530" y="168" text-anchor="middle" class="sm m">committed</text>
     <g class="ln">
       <line x1="320" y1="54" x2="220" y2="108" marker-end="url(#a14)"/>
@@ -1229,7 +1230,7 @@ orchestra run                                            # continue a stopped ru
   <div class="tablewrap"><table>
     <thead><tr><th>Folder</th><th>Holds</th></tr></thead>
     <tbody>
-      <tr><td><code>docs/runs/&lt;branch&gt;/</code><br>committed</td><td><code>task.md</code>, <code>brief.md</code>, <code>plan.md</code>, <code>plan-check.md</code>, <code>implementation-log.md</code>, <code>code.md</code>, <code>plan-conformance.md</code>, <code>logic-review.md</code>, <code>decisions.md</code>, <code>report.md</code></td></tr>
+      <tr><td><code>docs/runs/&lt;branch&gt;/</code><br>committed</td><td><code>task.md</code>, <code>spec.md</code>, <code>plan.md</code>, <code>plan-check.md</code>, <code>implementation-log.md</code>, <code>code.md</code>, <code>plan-conformance.md</code>, <code>logic-review.md</code>, <code>decisions.md</code>, <code>report.md</code></td></tr>
       <tr><td><code>docs/curator/</code><br>committed, only with a Curator</td><td>The project's direction docs: <code>BACKLOG</code>, <code>PRODUCT</code>, <code>DIRECTION</code>, <code>DECISIONS</code>, <code>QUESTIONS</code>, <code>TECH</code>, a <code>research/</code> folder with one evidence note per topic, and a <code>maps/</code> folder with the map of each landed burst. The glossary is <code>GLOSSARY.md</code> at the repo root. <code>curate</code> creates it when the first domain term appears. The Curator's <code>curate</code> step is the only writer in a run, and it commits at the end. A burst's map stays in the git-ignored <code>.scratch/&lt;effort&gt;/</code> until its landing. A flag file, named in the Curator's declaration, tells orchestra that <code>setup</code> is done: <code>docs/curator/.setup</code>.</td></tr>
       <tr><td><code>.orchestra/project/</code>, <code>.agents/skills/</code><br>committed, only with a Project Customization</td><td>Your own gates and guides in <code>orchestra.json</code> and <code>guides/</code>, and the skills of your agent gates and fix guides (S86).</td></tr>
       <tr><td><code>tmp/runs/&lt;branch&gt;/</code><br>git-ignored</td><td>result files, checkpoints, tool logs. A resume works on the same machine only, because this folder is not committed. At <code>done</code> it is copied to your checkout.</td></tr>
@@ -1319,7 +1320,7 @@ orchestra run                                            # continue a stopped ru
       <tr><td>S72, S73</td><td>Phase 1 is closed on Claude Code. The Codex run moves to plan 5, which stays paused.</td><td>The exit test passed; no Codex install is available.</td></tr>
       <tr><td>S74</td><td>Every run works in its own git worktree.</td><td>From the first real run: a run moved the user's branch (O9).</td></tr>
       <tr><td>S75</td><td>Clean code is a workflow gate, and a Stack Skills plugin may declare a <code>measure</code>. New stack plugin <code>orc-ts-stack</code>.</td><td>User decision.</td></tr>
-      <tr><td>S76</td><td>The Curator is an optional slot plugin that also works by hand. Guides are given by stage, and orchestra lists them in the prompt of each dispatch. Its <code>setup</code> and <code>curate</code> run in the main session through a new <code>inline</code> action. Plan 2 amendment: <code>curate</code> ships a <code>Serves</code> row found in Later, and it checks Now, Next and Later and asks you before it adds a row for <code>Serves: new</code>, so no row is duplicated. The plan guide writes a <code>Warning:</code> line for a constraint it cannot satisfy, and plan-check raises a missing one as Patch. Plan 3 amendment: <code>setup</code> writes its flag only when the product half is confirmed, so a stopped product interview runs setup again, and an open tech or direction question does not stop it. On a project with code, it states the existing product back and does not explore from zero. S77 replaces its "setup inline before the first stage".</td><td>User decision, brainstorm of October 16. It closes O3.</td></tr>
+      <tr><td>S76</td><td>The Curator is an optional slot plugin that also works by hand. Guides are given by stage, and orchestra lists them in the prompt of each dispatch. Its <code>setup</code> and <code>curate</code> run in the main session through a new <code>inline</code> action. Plan 2 amendment: <code>curate</code> ships a <code>Serves</code> row found in Later, and it checks Now, Next and Later and asks you before it adds a row for <code>Serves: new</code>, so no row is duplicated. The plan guide writes a <code>Warning:</code> line for a constraint it cannot satisfy, and plan-check raises a missing one as Fix. Plan 3 amendment: <code>setup</code> writes its flag only when the product half is confirmed, so a stopped product interview runs setup again, and an open tech or direction question does not stop it. On a project with code, it states the existing product back and does not explore from zero. S77 replaces its "setup inline before the first stage".</td><td>User decision, brainstorm of October 16. It closes O3.</td></tr>
       <tr><td>S77</td><td>The Curator's setup never runs inside a feature run. When the flag file is missing on <code>origin/&lt;default&gt;</code>, a run start makes no branch and returns <code>setup</code>. You choose: set up on the default branch now, set up on its own branch <code>curator/setup</code> (<code>drive.js --setup</code>, which ends with <code>setup-done</code>), or go on without setup (<code>--skip-setup</code>; curate is skipped). The setup check before each dispatch is gone.</td><td>The sample run of October 20: setup asked feature questions and turned the feature into product decisions.</td></tr>
       <tr><td>S78</td><td>At <code>done</code>, orchestra copies the run folder to <code>tmp/runs/&lt;branch&gt;/</code> in your checkout before it removes the worktree. It stays git-ignored, and the logs stay for local debugging.</td><td>User decision, October 20: the sample run lost its logs.</td></tr>
       <tr><td>S79</td><td>Navigation and curation are two jobs. Navigation is <code>/wayfinder</code>, unchanged, in bursts that only you start; its map stays in <code>.scratch/</code>. <code>setup</code> records the present once and nudges to <code>/wayfinder</code>. <code>curate</code> is the one organizer and the only writer of decisions and questions, with three inputs: a diff, a map (a landing) and a change in words. At a landing, an ADR gives a <code>hard:</code> decision and a plain answer a <code>soft:</code> one. <code>direction</code>, <code>backlog</code> and <code>landing</code> are procedures, not skills. <code>shape-product</code>, <code>shape-tech</code> and <code>research</code> are removed. The glossary is <code>GLOSSARY.md</code> at the repo root. Guides are files, declared by path; <code>manifest</code> stays a skill. This changes S76.</td><td>User decision and R9: setup explored the future, and the open questions had no reader that drove them to closure.</td></tr>
@@ -1327,9 +1328,15 @@ orchestra run                                            # continue a stopped ru
       <tr><td>S85</td><td>One copy of the measure and the language rules, in the <code>clean-code</code> plugin. The core clean-code gate depends on it and finds it through its <code>manifest</code> skill; stacks declare nothing for clean code, and orchestra drops its <code>measure</code> keys.</td><td>User decision.</td></tr>
       <tr><td>S86</td><td>The Project Customization, formerly PSK. A project overrides build and gate keys in its config, adds its own gates and guides in <code>.orchestra/project/</code>, and keeps its skills in <code>.agents/skills/</code>, read by path. <code>orchestra project</code> writes it. The steps, the phases, the build's place and triage stay fixed.</td><td>User decision, October 27. It closes O6.</td></tr>
       <tr><td>S87</td><td>Shared roles: a fixed list (<code>triage</code>, <code>writing-style</code>, <code>pr-review</code>, <code>pr-description</code>) that only the <code>core</code> slot fills. A project overrides one with a skill or amends it with a guide. Every dispatch gets <code>shared-role.&lt;role&gt;</code>, and a skill uses a role only when it is given. The <code>global-gates</code> slot becomes <code>core</code> and <code>orc-global-gates</code> becomes <code>orc-core</code>. The triage skill moves there and is optional. What a workflow stage does is now a <strong>stage</strong>, not a role. Orchestra keeps only the result contract.</td><td>User decision.</td></tr>
+      <tr><td>S88</td><td>Feedback skills: <code>log-feedback</code> writes one self-contained note with the evidence; <code>process-feedback</code> turns notes into rules in the plugins or the project.</td><td>User decision.</td></tr>
+      <tr><td>S89</td><td>One word for each thing. The run document is the <strong>spec</strong> (<code>spec.md</code>); "brief" is gone. A <strong>stage</strong> is only the tag <code>spec</code>, <code>plan</code> or <code>code</code>; a dispatched unit is a <strong>step</strong>. A <code>decide</code> action names who asks in the key <code>step</code>. The hints for the old S87 names are removed.</td><td>User decision.</td></tr>
+      <tr><td>S90</td><td>Orchestra owns the judging contract: <code>contract/judging.md</code> (the buckets Decide, Fix, Report, Noise, the stop, the notes and the result) and <code>contract/agent-gate.md</code> (the fix, its test, the commit). A gate skill holds only its scope, steps and rules. <code>counts</code> is gone. <code>orc-core:triage</code> only sorts.</td><td>Design review.</td></tr>
+      <tr><td>S91</td><td>An engine module for a workflow. The engine runs <code>next.js --orchestra &lt;dir&gt;</code>, and <code>next.js</code> loads <code>lib/workflow.js</code>: the build with the project's override, the result helpers and the one rule for a new answer. Every action carries the report <code>sections</code>.</td><td>Design review.</td></tr>
+      <tr><td>S92</td><td>One home for each rule: <code>contract/dispatch.md</code>, the workflow's <code>formats/</code>, and the clean-code <code>rules.md</code> and <code>measurement.md</code>. The clean-code gate fails without its plugin. A guide uses no workflow words and holds no short forms of gate rules.</td><td>User decision.</td></tr>
+      <tr><td>S93</td><td>The Java gates: <code>review-general</code> and <code>review-persistence</code> replace <code>review-ops</code>. No security gate. Every project is Quarkus, with no stack detection.</td><td>User decision.</td></tr>
     </tbody>
   </table></div>
-  <p>Each real run on a sample project fed back into the design. The first runs led to clearer errors, a skip for repeated builds, the Evaluate list in the report, the assumptions list, the business-fact stop, and the rebuilt logic review.</p>
+  <p>Each real run on a sample project fed back into the design. The first runs led to clearer errors, a skip for repeated builds, the Report list in the report, the assumptions list, the business-fact stop, and the rebuilt logic review.</p>
 </section>
 
 <!-- ============================== LEVEL 5 ============================== -->
@@ -1342,10 +1349,12 @@ orchestra run                                            # continue a stopped ru
     <thead><tr><th>File</th><th>Job</th></tr></thead>
     <tbody>
       <tr><td><code>orchestra/bin/drive.js</code></td><td>One call advances the run to the next step that needs an AI agent, then prints it. It also starts a Curator setup on its own branch, and at <code>done</code> copies the run folder to your checkout.</td></tr>
-      <tr><td><code>orc-standard-workflow/bin/next.js</code></td><td>Reads the files on disk and prints the next workflow step.</td></tr>
+      <tr><td><code>orc-standard-workflow/bin/next.js</code></td><td>Reads the files on disk and prints the next workflow step, with the report sections.</td></tr>
+      <tr><td><code>orchestra/lib/workflow.js</code></td><td>What a workflow's <code>next.js</code> may use from the engine: the settings with the project's override, the result helpers, the rule for a new answer and the phase result file (S91).</td></tr>
+      <tr><td><code>orchestra/contract/</code></td><td><code>dispatch.md</code> for every dispatch, <code>judging.md</code> and <code>agent-gate.md</code> for every agent gate (S90, S92).</td></tr>
       <tr><td><code>orchestra/lib/runner.js</code></td><td>Runs one phase gate by gate, with a checkpoint file.</td></tr>
       <tr><td><code>orchestra/lib/gates.js</code></td><td>Collects, selects and orders the gates of a phase.</td></tr>
-      <tr><td><code>orchestra/lib/report.js</code></td><td>Writes <code>report.md</code> from the result files.</td></tr>
+      <tr><td><code>orchestra/lib/report.js</code></td><td>Writes <code>report.md</code> from the result files and the workflow's sections.</td></tr>
       <tr><td><code>orchestra/lib/protocol.js</code></td><td>Checks each action, lists the guides for a dispatch's stage and builds the agent prompt.</td></tr>
       <tr><td><code>orchestra/lib/curator.js</code></td><td>Checks the Curator's flag file, and decides when <code>setup</code> (on its own branch) and <code>curate</code> run inline, from the flag file and the result files.</td></tr>
       <tr><td><code>orchestra/bin/resolve.js</code>, <code>lib/resolved.js</code></td><td>Find the plugins, write <code>.orchestra/resolved.json</code>, then run <code>orchestra check</code> on the config.</td></tr>
@@ -1396,15 +1405,15 @@ orchestra run                                            # continue a stopped ru
     <text x="145" y="404" text-anchor="middle" class="sm">action + prompt</text>
     <text x="365" y="438" text-anchor="middle" class="sm m">… repeat until done, decide or failed, then report.md</text>
   </svg></div>
-  <figcaption>Blue boxes are code, green is the model in the main session, amber is a subagent. Each <code>drive.js</code> call runs every step that needs no model (next.js, the runner, the build), then returns at the first step that needs one.</figcaption>
+  <figcaption>Blue boxes are code, green is the model in the main session, amber is a subagent. Each <code>drive.js</code> call runs every step that needs no model (next.js, the runner, the build), then returns at the first step that needs one. It runs <code>next.js</code> with <code>--orchestra &lt;engine dir&gt;</code>, and every action brings its report <code>sections</code> (S91).</figcaption>
   </figure>
 
-  <p>One action is not in the figure: <code>inline</code>. Only <code>drive.js</code> prints it, never <code>next.js</code>. It asks the main session to run a Curator skill itself, with no subagent, so the skill can ask you questions. When a run starts, <code>drive.js</code> checks the Curator's flag file on the default branch. When it is missing, it makes no branch and prints <code>setup</code>, and the user chooses how to set up. On the setup branch, <code>drive.js</code> prints <code>inline</code> for <code>setup</code> until the flag is written. When <code>next.js</code> says <code>done</code>, <code>drive.js</code> prints <code>inline</code> for <code>curate</code> before the report. Before every dispatch, it also checks that the stage is one the workflow declares, and it fails the run if not.</p>
+  <p>One action is not in the figure: <code>inline</code>. Only <code>drive.js</code> prints it, never <code>next.js</code>. It asks the main session to run a Curator skill itself, with no subagent, so the skill can ask you questions. When a run starts, <code>drive.js</code> checks the Curator's flag file on the default branch. When it is missing, it makes no branch and prints <code>setup</code>, and the user chooses how to set up. On the setup branch, <code>drive.js</code> prints <code>inline</code> for <code>setup</code> until the flag is written. When <code>next.js</code> says <code>done</code>, <code>drive.js</code> prints <code>inline</code> for <code>curate</code> before the report. Before every dispatch, it also checks that the stage tag is one the workflow declares, and it fails the run if not.</p>
 
   <h3 id="lifecycle">Step lifecycle</h3>
   <p>Each workflow step and each reviewer gate follows the same small state machine, driven by its result file.</p>
   <figure class="dg-fig"><div class="dg-scroll">
-  <svg class="dg" viewBox="0 0 720 250" role="img" aria-label="Stage state machine. No result file leads to a dispatch; the subagent writes ok, failed or decide. Ok moves to the next stage. Failed is reported once, then the next call deletes the result and dispatches again. Decide stores the answer count and waits; a new answer section deletes the result and dispatches again.">
+  <svg class="dg" viewBox="0 0 720 250" role="img" aria-label="Step state machine. No result file leads to a dispatch; the subagent writes ok, failed or decide. Ok moves to the next step. Failed is reported once, then the next call deletes the result and dispatches again. Decide stores the answer count in its result file and waits; a new answer section deletes the result and dispatches again.">
     <defs><marker id="a11" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
     <rect x="20" y="90" width="120" height="34" rx="6" class="box"/><text x="80" y="111" text-anchor="middle" class="sm">no result file</text>
     <rect x="180" y="90" width="120" height="34" rx="6" class="okb"/><text x="240" y="111" text-anchor="middle" class="sm">subagent runs</text>
@@ -1412,7 +1421,7 @@ orchestra run                                            # continue a stopped ru
     <rect x="360" y="90" width="120" height="34" rx="6" class="stopb"/><text x="420" y="111" text-anchor="middle" class="sm b">failed</text>
     <rect x="360" y="160" width="120" height="34" rx="6" class="stopb"/><text x="420" y="181" text-anchor="middle" class="sm b">decide</text>
     <rect x="540" y="90" width="150" height="34" rx="6" class="box"/><text x="615" y="111" text-anchor="middle" class="sm">reported once</text>
-    <rect x="540" y="160" width="150" height="34" rx="6" class="box"/><text x="615" y="181" text-anchor="middle" class="sm">waiting, seen = n</text>
+    <rect x="540" y="160" width="150" height="34" rx="6" class="box"/><text x="615" y="181" text-anchor="middle" class="sm">waiting, seen = n in the result</text>
     <g class="ln">
       <line x1="140" y1="107" x2="178" y2="107" marker-end="url(#a11)"/>
       <line x1="300" y1="100" x2="358" y2="40" marker-end="url(#a11)"/>
@@ -1426,13 +1435,13 @@ orchestra run                                            # continue a stopped ru
     </g>
     <text x="159" y="100" text-anchor="middle" class="sm">dispatch</text>
     <text x="240" y="142" text-anchor="middle" class="sm m">writes result</text>
-    <text x="545" y="41" class="sm">next stage</text>
+    <text x="545" y="41" class="sm">next step</text>
     <text x="509" y="100" text-anchor="middle" class="sm">print failed</text>
     <text x="509" y="170" text-anchor="middle" class="sm">print decide</text>
     <text x="609" y="212" text-anchor="end" class="sm m">a new ## section</text>
     <text x="360" y="240" text-anchor="middle" class="sm m">next call: delete the result, dispatch again</text>
   </svg></div>
-  <figcaption>A stop and a retry are the same move: delete the result file, so the stage looks like it never ran. A result file with broken JSON counts as failed. Each dispatch is counted in a <code>.sent</code> file next to the result: after two dispatches with no result, the step fails. A retry deletes the count too, so it starts with two fresh tries. An <code>inline</code> step uses the same result file. Its <code>ok</code> goes on; its <code>failed</code> is reported once and runs again on the next call. Setup counts as done only when its flag file exists.</figcaption>
+  <figcaption>A stop and a retry are the same move: delete the result file, so the step looks like it never ran. A result file with broken JSON counts as failed. Each dispatch is counted in a <code>.sent</code> file next to the result: after two dispatches with no result, the step fails. A retry deletes the count too, so it starts with two fresh tries. An <code>inline</code> step uses the same result file. Its <code>ok</code> goes on; its <code>failed</code> is reported once and runs again on the next call. Setup counts as done only when its flag file exists.</figcaption>
   </figure>
 
   <h3 id="plugins">Plugin contracts</h3>
@@ -1467,8 +1476,8 @@ orchestra run                                            # continue a stopped ru
               "guide": "fix-build", "max_rounds": 3 },
   "guides": { "code": "guides/code.md" },
   "gates": [
-    { "name": "ops", "phase": "implementation-check", "kind": "agent",
-      "skill": "review-ops", "files": ["**/*.java", "**/*.sql"] },
+    { "name": "persistence", "phase": "implementation-check", "kind": "agent",
+      "skill": "review-persistence", "files": ["**/*.java", "**/*.sql"] },
     { "name": "spotless", "phase": "finish", "kind": "tool", "files": "**/*.java",
       "run": "if grep -q spotless-maven-plugin pom.xml 2&gt;/dev/null; then ./mvnw -B spotless:apply; fi",
       "fix": "fixer", "guide": "fix-spotless" }
@@ -1476,7 +1485,7 @@ orchestra run                                            # continue a stopped ru
 }</code></pre>
   <p>Every <code>agent</code> gate gets each <code>config</code> value of its plugin as the input <code>config.&lt;key&gt;</code> (S82). Until S85 a stack could declare <code>measure</code>; now <code>orchestra check</code> rejects it, because the clean-code gate measures with the <code>clean-code</code> plugin.</p>
   <p>The build skips the format check only when the root <code>pom.xml</code> names the Spotless plugin, the same test the Spotless gate uses: the gate formats the code before the final build (S69).</p>
-  <p>Guides are given by <strong>stage</strong>. The stages are fixed by orchestra: <code>spec</code>, <code>plan</code> and <code>code</code>. A slot plugin declares <code>"guides": { "&lt;stage&gt;": "&lt;path&gt;" }</code>, where the path names a file inside the plugin, such as <code>guides/code.md</code>. A guide is a file, not a skill (S79). For each dispatch, orchestra lists the absolute path of each guide for its stage in the prompt, the Curator's first, then the Stack Skills', then the project's. A project guide's path is relative to the run's worktree. The stage reads and follows each file. <code>manifest</code> stays a skill, because it is how orchestra finds a plugin's folder from its name alone.</p>
+  <p>Guides are given by <strong>stage</strong>. The stages are fixed by orchestra: <code>spec</code>, <code>plan</code> and <code>code</code>. A slot plugin declares <code>"guides": { "&lt;stage&gt;": "&lt;path&gt;" }</code>, where the path names a file inside the plugin, such as <code>guides/code.md</code>. A guide is a file, not a skill (S79). For each dispatch, orchestra lists the absolute path of each guide for its stage in the prompt, the Curator's first, then the Stack Skills', then the project's. A project guide's path is relative to the run's worktree. The dispatch reads and follows each file. A guide says what it needs, in no workflow's words; the workflow's skill knows how to write it (S92). <code>manifest</code> stays a skill, because it is how orchestra finds a plugin's folder from its name alone.</p>
   <p>A workflow declares <code>"slot": "workflow"</code>, its <code>stages</code> (for example <code>["spec", "plan", "code"]</code>), its config keys and its own gates, and ships <code>bin/next.js</code>. <code>next.js</code> tags each dispatch with one of its stages (the key <code>stage</code>). A dispatch with a stage the workflow did not declare fails the run.</p>
   <p>The real declaration of <code>orc-curator</code>:</p>
 <pre><code>{
@@ -1496,13 +1505,15 @@ orchestra run                                            # continue a stopped ru
   ],
   "shared-roles": { "triage": "triage" }
 }</code></pre>
+  <p><strong>Breaking changes in 0.25.0.</strong> The run document is <code>spec.md</code>, not <code>brief.md</code>, and the Curator's <code>curate</code> gets the input <code>spec</code>. A <code>decide</code> action names who asks in <code>step</code>, not <code>gate</code>. The buckets are Decide, Fix, Report and Noise; a result has <code>fix</code>, <code>report</code> and <code>noise</code> lists, and no <code>counts</code> or <code>evaluate</code>. A gate skill holds only <code>## Scope</code>, <code>## Steps</code> and <code>## Rules</code>. A workflow's <code>next.js</code> needs <code>--orchestra</code>. <code>review-ops</code> is gone: <code>general</code> and <code>persistence</code> replace it. The clean-code gate fails without the <code>clean-code</code> plugin. The old names of 0.23.0 no longer get a rename message. Finish open runs before you update.</p>
   <p><strong>Breaking changes in 0.19.0.</strong> A guide in <code>disable</code> is now named by its path: <code>"code-guide"</code> fails <code>orchestra check</code>, and <code>"guides/code.md"</code> works. <code>clean-code</code> is no longer a gate of <code>orc-standard-workflow</code>: add the <code>core</code> section to keep it.</p>
-  <p><strong>Breaking changes in 0.23.0.</strong> The slot <code>global-gates</code> is now <code>core</code>, and the plugin <code>orc-global-gates</code> is now <code>orc-core</code>. The workflow key <code>roles</code> is now <code>stages</code>, and the dispatch key <code>role</code> is now <code>stage</code>. The triage skill moved from orchestra to <code>orc-core:triage</code>. The old names fail <code>orchestra check</code> with a rename message.</p>
+  <p><strong>Breaking changes in 0.23.0.</strong> The slot <code>global-gates</code> is now <code>core</code>, and the plugin <code>orc-global-gates</code> is now <code>orc-core</code>. The workflow key <code>roles</code> is now <code>stages</code>, and the dispatch key <code>role</code> is now <code>stage</code>. The triage skill moved from orchestra to <code>orc-core:triage</code>. The old names fail <code>orchestra check</code> (since 0.25.0 with no rename message).</p>
   <p><strong>Breaking change in 0.13.0.</strong> A workflow with no <code>stages</code>, paired with a stack that declares guides, now fails <code>orchestra check</code>. Add the stages to the workflow, or list the guides in <code>disable</code>. <code>check</code> also fails on a guide for a stage the workflow lacks, unless <code>disable</code> names it.</p>
   <p>Every step writes a small result file that code reads:</p>
-<pre><code>{ "stage": "logic-review", "status": "ok",
-  "decide": [], "counts": { "decide": 0, "patch": 2, "evaluate": 1, "noise": 0 },
-  "evaluate": ["OrderService.java:42 — a null customer now throws"], "assumptions": [] }</code></pre>
+<pre><code>{ "status": "ok", "decide": [],
+  "fix": ["Rule 4: OrderService.java:30 — a missing null check"],
+  "report": ["OrderService.java:42 — a null customer now throws"], "noise": [],
+  "notes": "&lt;notes&gt;/logic-review.md" }</code></pre>
   <p>The skill <code>orchestra:writing-plugins</code> is the reference card for every key. When you finish, run the check on your plugin. It lists every broken rule with its fix, and for a workflow it starts your <code>next.js</code> in a throwaway git repo and checks the first action:</p>
 <pre><code>node &lt;orchestra&gt;/bin/check.js path/to/your-plugin
 # orc-my-stack/orchestra.json: gate "lint" uses the fixer but names no guide. Fix: add "guide" with its fix guide skill.
@@ -1538,7 +1549,7 @@ orchestra run                                            # continue a stopped ru
     <tbody>
       <tr><td>The run: start, resume, all workflow steps, the build, the fixer, the review gates, triage, the report</td><td><span class="pill built">built</span></td></tr>
       <tr><td>Java stack: build, code guide, build fix guide, Spotless fix guide</td><td><span class="pill built">built</span></td></tr>
-      <tr><td>Java reviewers (ops, testing, comments, logging, layout, Spotless)</td><td><span class="pill built">built</span></td></tr>
+      <tr><td>Java reviewers (general, persistence, testing, comments, logging, layout, Spotless)</td><td><span class="pill built">built</span></td></tr>
       <tr><td>The clean-code gate and the TypeScript stack <code>orc-ts-stack</code> (build)</td><td><span class="pill built">built</span></td></tr>
       <tr><td>Gates of the TypeScript stack</td><td><span class="pill later">not built yet</span></td></tr>
       <tr><td>Legacy mode of the clean-code gate: the project key <code>legacy</code>, <code>measure.py --legacy</code>, config values as agent gate inputs (S82)</td><td><span class="pill built">built</span></td></tr>
@@ -1562,6 +1573,7 @@ orchestra run                                            # continue a stopped ru
       <tr><td>The Project Customization: overrides in the config, project gates and guides, project skills by path, <code>orchestra project</code> (S86)</td><td><span class="pill built">built</span></td></tr>
       <tr><td>Shared roles, the <code>core</code> slot, the optional <code>orc-core:triage</code> and stages in place of roles (S87)</td><td><span class="pill built">built</span></td></tr>
       <tr><td>Feedback skills: <code>log-feedback</code> writes one self-contained note with the evidence; <code>process-feedback</code> turns notes into rules in the plugins or the project, and keeps each note in <code>evals/pending/</code> (S88)</td><td><span class="pill built">built</span></td></tr>
+      <tr><td>The spec and step words, the judging contract in orchestra, the engine module <code>lib/workflow.js</code>, one home for each rule, and the general and persistence Java gates (S89–S93)</td><td><span class="pill built">built</span></td></tr>
       <tr><td>Red/green evals that run a model on each rule (R12)</td><td><span class="pill later">later</span></td></tr>
       <tr><td>The Curator writes project guides (O14)</td><td><span class="pill later">next</span></td></tr>
       <tr><td>Adapters for other AI frameworks</td><td><span class="pill later">later</span></td></tr>
@@ -1582,19 +1594,21 @@ orchestra run                                            # continue a stopped ru
     <dt>Burst</dt><dd>One short round of navigation with a narrow destination: a kick-off, a big feature, a redesign, or a turn whose answer is unknown. You start it. Its map lives in <code>.scratch/&lt;effort&gt;/</code> until the landing.</dd>
     <dt>Landing</dt><dd><code>curate</code> reading a finished burst's map and writing its results into the Curator's docs: decisions, backlog rows, scope cuts, open questions. The map then moves to <code>docs/curator/maps/&lt;effort&gt;/</code>.</dd>
     <dt>Direction sweep</dt><dd>The Curator's <code>direction</code> procedure, which <code>curate</code> follows. It compares the near-term backlog rows with the direction file and writes a constraint (<code>Cn</code>) for each row that puts a demand on code written today.</dd>
-    <dt>Stage</dt><dd>A step of a workflow that an agent does: <code>spec</code>, <code>plan</code> or <code>code</code>. The workflow declares its stages and tags each dispatch.</dd>
+    <dt>Stage</dt><dd>The tag on a dispatch: <code>spec</code>, <code>plan</code> or <code>code</code>. The workflow declares its stages and tags a dispatch with one. Guides are given by stage.</dd>
+    <dt>Step</dt><dd>One unit that a workflow dispatches, with its own result file. A step can have a stage tag.</dd>
     <dt>Shared role</dt><dd>A company rule that every dispatch can read: <code>triage</code>, <code>writing-style</code>, <code>pr-review</code> or <code>pr-description</code>. Only the <code>core</code> slot fills it. A project overrides it with a skill or amends it with a guide. A skill uses it only when it is given.</dd>
     <dt>Inline</dt><dd>An action that only <code>drive.js</code> prints. The main session runs the skill itself, so it can ask you.</dd>
     <dt>Declaration</dt><dd>A plugin's <code>orchestra.json</code>. Data only.</dd>
     <dt>orchestra check</dt><dd>The command that tests a plugin or a project config against every contract rule. Each run starts with it.</dd>
-    <dt>Brief</dt><dd>The goal and acceptance criteria of a run. Every check compares against it.</dd>
+    <dt>Spec</dt><dd><code>spec.md</code>: the goal and acceptance criteria of a run (formerly brief). Every check compares against it.</dd>
     <dt>Phase</dt><dd>implementation-check, conventions-check, finish: the three groups of gates.</dd>
     <dt>Gate</dt><dd>One check after the code: a tool (a command) or an agent (a reviewer).</dd>
     <dt>Build</dt><dd>The full build and tests. It runs first and last. Not a gate.</dd>
     <dt>Measure</dt><dd>The shape of the changed code against the run's base commit: <code>measure.py</code> of the <code>clean-code</code> plugin, for Python, TypeScript and Java. The clean-code gate runs it itself (S85).</dd>
     <dt>Fixer</dt><dd>The agent that fixes a failed tool, using the tool's fix guide.</dd>
-    <dt>Guide</dt><dd>A file with short rules for one stage or shared role, inside a slot plugin or <code>.orchestra/project/</code>, and declared by its path. Orchestra lists its path in the prompt of each dispatch for that stage.</dd>
-    <dt>Triage</dt><dd>Sorting a finding into Decide, Patch, Evaluate or Noise. A shared role, filled by <code>orc-core:triage</code>.</dd>
+    <dt>Guide</dt><dd>A file with short rules for one stage or shared role, inside a slot plugin or <code>.orchestra/project/</code>, and declared by its path. Orchestra lists its path in the prompt of each dispatch for that stage. It uses no workflow's words.</dd>
+    <dt>Triage</dt><dd>Sorting a finding into Decide, Fix, Report or Noise. The buckets are orchestra's, in <code>contract/judging.md</code>; the method is a shared role, filled by <code>orc-core:triage</code>.</dd>
+    <dt>Contract file</dt><dd>A file in <code>orchestra/contract/</code> that a dispatch gets: <code>dispatch.md</code> for every dispatch, <code>judging.md</code> and <code>agent-gate.md</code> for every agent gate.</dd>
     <dt>Business fact</dt><dd>A product value no agent may invent: a rate, a price, a limit, who qualifies.</dd>
     <dt>Technical choice</dt><dd>A choice with a sensible default, taken and recorded.</dd>
     <dt>Notes folder</dt><dd><code>docs/runs/&lt;branch&gt;/</code>. What you read. Committed.</dd>
@@ -1604,7 +1618,7 @@ orchestra run                                            # continue a stopped ru
 </section>
 
 <footer>
-  This guide matches plugin version 0.24.0 and decisions up to S88. The sources of truth are <code>docs/DESIGN.md</code>, <code>docs/TENSIONS.md</code>, <code>docs/DECISIONS.md</code>, <code>docs/CONTEXT.md</code> and the code in <code>plugins/</code>.
+  This guide matches plugin version 0.25.0 and decisions up to S93. The sources of truth are <code>docs/DESIGN.md</code>, <code>docs/TENSIONS.md</code>, <code>docs/DECISIONS.md</code>, <code>docs/CONTEXT.md</code> and the code in <code>plugins/</code>.
 </footer>
 </main>
 </div>
