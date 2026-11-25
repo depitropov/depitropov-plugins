@@ -548,7 +548,8 @@ only and need no change in the workflow.
 ### 10.1 `orc-ts-stack`
 
 Empty at the start (S75): `build` is `npm ci && npm test` with the fix guide `fix-build`; no gates,
-no guides. The measure and the TypeScript rules moved to the `clean-code` plugin (S85). The measure
+no guides. In a project with `pnpm-lock.yaml`, the build is `pnpm install --frozen-lockfile &&
+pnpm test` (S94). The measure and the TypeScript rules moved to the `clean-code` plugin (S85). The measure
 needs Python 3.11 or later and the project's own `typescript@5`.
 
 ## 11. Packaging

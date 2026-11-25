@@ -1,4 +1,4 @@
 {
   "slot": "stack-skills",
-  "build": { "run": "npm ci && npm test", "guide": "fix-build", "max_rounds": 3 }
+  "build": { "run": "if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile && pnpm test; else npm ci && npm test; fi", "guide": "fix-build", "max_rounds": 3 }
 }
